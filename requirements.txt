@@ -1,0 +1,5 @@
+RabbitMQ
+
+SQLAlchemy (1.0.4)
+pika (0.9.14)
+CherryPy (3.7.0)
