@@ -1,14 +1,46 @@
 from sqlalchemy import create_engine
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Table
+from sqlalchemy import Integer, String, DateTime, Boolean
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 
-engine = create_engine('sqlite:///data.db', echo = True)
+engine = create_engine('sqlite:///data.db') #, echo = True) # echo = true aktiviert debug logging
 
 Base = declarative_base()
+
+
+zone_set_table = Table('zones_sets', Base.metadata,
+    Column('zone_id', Integer, ForeignKey('zones.id')),
+    Column('set_id', Integer, ForeignKey('sets.id'))
+)
+
+class Set(Base):
+	__tablename__ = 'sets'
+	id = Column(Integer, primary_key=True)
+	name = Column(String, nullable=False)
+	description = Column(String)
+	
+	zones = relationship("Zone", secondary=zone_set_table, backref="sets")
+
+
+	def __repr__(self):
+		return "Set: %s" % (self.name)
+
+
+class Zone(Base):
+	__tablename__ = 'zones'
+	id = Column(Integer, primary_key=True)
+	name = Column(String, nullable=False)
+	description = Column(String)
+	
+	sensors = relationship("Sensor", backref="zone")
+
+
+	def __repr__(self):
+		return "Zone: %s" % (self.name)
 
 
 class Sensor(Base):
@@ -18,11 +50,13 @@ class Sensor(Base):
 	description = Column(String)
 	gpio_pin = Column(Integer)
 	
+	zone_id = Column(Integer, ForeignKey('zones.id'))
+	
 	alarms = relationship("Alarm", backref="sensor")
 
 
 	def __repr__(self):
-		return "Sensor: %s (pin: %i)" % (self.name, self.gpio_pin)
+		return "Sensor: %s (pin: %i) in Zone %s" % (self.name, self.gpio_pin, self.zone.name)
 		
 
 class Alarm(Base):
