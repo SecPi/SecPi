@@ -15,3 +15,6 @@ def set(key, value):
 def save():
 	with open(config_file, 'w') as outfile:
 		json.dump(conf, outfile)
+
+def getDict():
+	return conf
