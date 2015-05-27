@@ -6,28 +6,31 @@ from sqlalchemy import Integer, String, DateTime, Boolean
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
 
+from tools import config
 
-engine = create_engine('sqlite:///data.db') #, echo = True) # echo = true aktiviert debug logging
+
+engine = create_engine("sqlite:///%s/data.db"%config.get("project_path")) #, echo = True) # echo = true aktiviert debug logging
 
 Base = declarative_base()
 
 
-zone_set_table = Table('zones_sets', Base.metadata,
+zone_setup_table = Table('zones_setups', Base.metadata,
     Column('zone_id', Integer, ForeignKey('zones.id')),
-    Column('set_id', Integer, ForeignKey('sets.id'))
+    Column('setup_id', Integer, ForeignKey('setups.id'))
 )
 
-class Set(Base):
-	__tablename__ = 'sets'
+class Setup(Base):
+	__tablename__ = 'setups'
 	id = Column(Integer, primary_key=True)
 	name = Column(String, nullable=False)
 	description = Column(String)
+	active = Column(Boolean)
 	
-	zones = relationship("Zone", secondary=zone_set_table, backref="sets")
+	zones = relationship("Zone", secondary=zone_setup_table, backref="setups")
 
 
 	def __repr__(self):
-		return "Set: %s" % (self.name)
+		return "Setup: %s" % (self.name)
 
 
 class Zone(Base):
@@ -48,7 +51,7 @@ class Sensor(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String, nullable=False)
 	description = Column(String)
-	gpio_pin = Column(Integer)
+	gpio_pin = Column(Integer, nullable=False)
 	
 	zone_id = Column(Integer, ForeignKey('zones.id'))
 	
@@ -56,14 +59,14 @@ class Sensor(Base):
 
 
 	def __repr__(self):
-		return "Sensor: %s (pin: %i) in Zone %s" % (self.name, self.gpio_pin, self.zone.name)
+		return "Sensor: %s (pin: %i) in Zone %s" % (self.name, self.gpio_pin, self.zone)
 		
 
 class Alarm(Base):
 	__tablename__ = 'alarms'
 
 	id = Column(Integer, primary_key=True)
-	alarmtime = Column(DateTime)
+	alarmtime = Column(DateTime, nullable=False)
 	ack = Column(Boolean)
 	sensor_id = Column(Integer, ForeignKey('sensors.id'))
 	
@@ -72,6 +75,21 @@ class Alarm(Base):
 
 	def __repr__(self):
 		return "Alarm@%s for sensor %s (ack: %s)" % (self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.sensor_id, self.ack)
+
+
+class LogEntry(Base):
+	__tablename__ = 'logs'
+
+	id = Column(Integer, primary_key=True)
+	time = Column(DateTime, nullable=False)
+	ack = Column(Boolean)
+	level = Column(Integer, nullable=False)
+	
+	message = Column(String, nullable=False)
+	
+
+	def __repr__(self):
+		return "%s[%i,%s]: %s" %(self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.level, self.message, self.ack)
 
 
 

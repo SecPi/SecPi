@@ -11,6 +11,7 @@ session.add_all([
 	objects.Sensor(name="window contact sensor", gpio_pin=17, description="this is the contact sensor at the window")
 	])
 
+
 zone_door = objects.Zone(name="door")
 zone_window = objects.Zone(name="windows")
 
@@ -24,8 +25,8 @@ zone_window.sensors = windows
 
 session.commit()
 
-set_away = objects.Set(name="away")
-set_home = objects.Set(name="at home")
+set_away = objects.Setup(name="away")
+set_home = objects.Setup(name="at home")
 
 set_away.zones = [zone_door, zone_window]
 set_home.zones = [zone_window]
@@ -39,7 +40,7 @@ print sensors
 zones = session.query(objects.Zone).all()
 print zones
 
-sets = session.query(objects.Set).all()
+sets = session.query(objects.Setup).all()
 print sets
 
 #win_sensor = session.query(objects.Sensor).get(3)
