@@ -2,7 +2,7 @@ import pygame.camera
 import pygame.image
 import time
 
-class Webcam:
+class Webcam(Actor):
 
 	def __init__(self, path, resolution):
 		self.path = path
@@ -23,4 +23,9 @@ class Webcam:
 			pygame.image.save(img, "%s_%d.jpg" % (time.strftime("%Y%m%d_%H%M%S"), i))
 			time.sleep(seconds_between)
 		self.cam.stop()
+	
+	def execute(self, params):
+		self.take_adv_picture(5, 1)
+		
+		self.finished()
 
