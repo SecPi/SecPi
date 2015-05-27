@@ -2,6 +2,42 @@ import pika
 import time
 import sys
 
+state = False
+
+def init():
+	# register cb_onoff
+	check_setups()
+
+def check_setups():
+	# TODO: check if active setup is the same
+	setups = get_active_setups()
+	if(len(setups)>0):
+		if(not state):
+			state = True
+			send_config(True)
+	else:
+		if(state):
+			state = False
+			send_config(False)
+
+def get_active_setups():
+	# get stuff from db
+	
+	
+def send_config(new_state):
+	# get stuff from db
+	# convert stuff to json
+	# send stuff over queue to worker
+
+def cb_onoff():
+	check_setups()
+	
+
+def cb_data():
+	# wait for data
+
+
+
 class Manager:
 
 	def __init__(self):
@@ -37,3 +73,7 @@ class Manager:
 
 	def destroy(self):
 		self.connection.close()
+
+
+if __name__ == '__main__':
+    init()
