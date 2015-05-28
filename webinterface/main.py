@@ -19,8 +19,9 @@ from mako.lookup import TemplateLookup
 from tools.db import objects
 from tools import config
 
-from sensors import SensorsPage
 
+from sensors import SensorsPage
+from zones import ZonesPage
 
 lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
 
@@ -28,6 +29,7 @@ class Root(object):
 
 	def __init__(self):
 		self.sensors = SensorsPage()
+		self.zones = ZonesPage()
 	
 	@property
 	def db(self):

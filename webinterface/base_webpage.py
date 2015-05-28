@@ -6,6 +6,8 @@ from mako.lookup import TemplateLookup
 from collections import OrderedDict
 
 
+import urllib
+
 class BaseWebPage(object):
 	"""A baseclass for a CherryPy web page."""
 	
