@@ -48,7 +48,12 @@ class BaseWebPage(object):
 		
 		if(params and len(params)>0):
 			cherrypy.log("got something %s"%params)
-			newObj = self.baseclass(params)
+			newObj = self.baseclass()
+			
+			for k, v in params.iteritems():
+				if(v and not v == ""):
+					setattr(newObj, k, v)
+			
 			self.db.add(newObj)
 			self.db.commit()
 			flash_message="Added new object with id %i"%newObj.id
