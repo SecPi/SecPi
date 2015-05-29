@@ -25,7 +25,7 @@ class BaseWebPage(object):
 		tmpl = self.lookup.get_template("list.mako")
 		objects = self.db.query(self.baseclass).all()
 		
-		return tmpl.render(data=objects, page_title="Sensors List", flash_message=flash_message, fields=self.fields)
+		return tmpl.render(data=objects, page_title="List", flash_message=flash_message, fields=self.fields)
 	
 	
 	@cherrypy.expose
@@ -40,3 +40,25 @@ class BaseWebPage(object):
 				
 			
 		raise cherrypy.HTTPRedirect("list?%s"%urllib.urlencode({'flash_message': 'Object deleted!'}))
+		
+		
+	@cherrypy.expose
+	def add(self, flash_message=None, **params):
+		tmpl = self.lookup.get_template("add.mako")
+		
+		if(params and len(params)>0):
+			cherrypy.log("got something %s"%params)
+			newObj = self.baseclass(params)
+			self.db.add(newObj)
+			self.db.commit()
+			flash_message="Added new object with id %i"%newObj.id
+			
+				
+		
+		return tmpl.render(page_title="Add", flash_message=flash_message, fields=self.fields)
+
+
+
+
+
+
