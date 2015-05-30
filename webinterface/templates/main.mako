@@ -7,6 +7,7 @@
 <body>
 	<div id="nav">
 		<%include file="nav.mako" />
+		<%block name="subnav" />
 	</div>
 	
 	<div id="main">
