@@ -1,10 +1,7 @@
 <%inherit file="main.mako"/>
 
 <%block name="subnav">
-<ul id="subnav">
-	<li><a href="list">List</a></li>
-	<li><a href="add">Add</a></li>
-</ul>
+<%include file="subnav.mako" />
 </%block>
 
 <h1>Sensors</h1>
