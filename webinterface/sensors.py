@@ -13,11 +13,11 @@ class SensorsPage(BaseWebPage):
 	
 	def __init__(self):
 		super(SensorsPage, self).__init__(objects.Sensor)
-		self.fields['id'] = 'ID'
-		self.fields['name'] = 'Name'
-		self.fields['description'] = 'Description'
-		self.fields['gpio_pin'] = 'GPIO Pin'
-		self.fields['zone_id'] = 'Zone ID'
+		self.fields['id'] = {'name':'ID', 'visible':['list']}
+		self.fields['name'] = {'name':'Name', 'visible':['list', 'add', 'update']}
+		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
+		self.fields['gpio_pin'] = {'name':'GPIO Pin', 'visible':['list', 'add', 'update']}
+		self.fields['zone_id'] = {'name':'Zone ID', 'visible':['list', 'add', 'update']}
 
 
 	@cherrypy.expose

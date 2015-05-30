@@ -13,9 +13,9 @@ class ZonesPage(BaseWebPage):
 	
 	def __init__(self):
 		super(ZonesPage, self).__init__(objects.Zone)
-		self.fields['id'] = 'ID'
-		self.fields['name'] = 'Name'
-		self.fields['description'] = 'Description'
+		self.fields['id'] = {'name':'ID', 'visible':['list']}
+		self.fields['name'] = {'name':'Name', 'visible':['list', 'add', 'update']}
+		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
 
 
 	@cherrypy.expose

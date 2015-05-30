@@ -13,10 +13,10 @@ class SetupsPage(BaseWebPage):
 	
 	def __init__(self):
 		super(SetupsPage, self).__init__(objects.Zone)
-		self.fields['id'] = 'ID'
-		self.fields['name'] = 'Name'
-		self.fields['description'] = 'Description'
-		self.fields['active'] = 'Active'
+		self.fields['id'] = {'name':'ID', 'visible':['list']}
+		self.fields['name'] = {'name':'Name', 'visible':['list', 'add', 'update']}
+		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
+		#self.fields['active'] = {'name':'Active', 'visible':['list', 'add', 'update']}
 
 
 	@cherrypy.expose

@@ -1,11 +1,14 @@
 <%inherit file="main.mako"/>
-
+<%!
+	from tools import utils
+%>
 % if fields is not None and len(fields)>0:
 	<form method="post" action="add">
 	<table>
-		% for field,desc in fields.iteritems():
+		<% filtered_fields = utils.filter_fields(fields, 'add') %>
+		% for field,finfo in filtered_fields.iteritems():
 			<tr>
-				<td>${desc}</td>
+				<td>${finfo['name']}</td>
 				<td><input type="text" name="${field}" id="${field}" /></td>
 			</tr>
 		%endfor
