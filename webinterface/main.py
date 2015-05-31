@@ -25,6 +25,7 @@ from zones import ZonesPage
 from setups import SetupsPage
 from alarms import AlarmsPage
 from workers import WorkersPage
+from logs import LogEntriesPage
 
 lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
 
@@ -36,6 +37,7 @@ class Root(object):
 		self.setups = SetupsPage()
 		self.alarms = AlarmsPage()
 		self.workers = WorkersPage()
+		self.logs = LogEntriesPage()
 	
 	@property
 	def db(self):
