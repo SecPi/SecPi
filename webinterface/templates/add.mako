@@ -1,4 +1,7 @@
 <%inherit file="main.mako"/>
+<%block name="subnav">
+<%include file="subnav.mako" />
+</%block>
 <%!
 	from tools import utils
 %>
