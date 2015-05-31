@@ -48,12 +48,13 @@ class Sensor(Base):
 	gpio_pin = Column(Integer, nullable=False)
 	
 	zone_id = Column(Integer, ForeignKey('zones.id'))
+	worker_id = Column(Integer, ForeignKey('workers.id'))
 	
 	alarms = relationship("Alarm", backref="sensor")
 
 
 	def __repr__(self):
-		return "Sensor: %s (pin: %i) in Zone %s" % (self.name, self.gpio_pin, self.zone)
+		return "Sensor: %s (pin: %i) in Zone %s on Worker %s" % (self.name, self.gpio_pin, self.zone, self.worker.name)
 		
 
 class Alarm(Base):
@@ -90,6 +91,8 @@ class Worker(Base):
 	name = Column(String, nullable=False)
 	address = Column(String, nullable=False)
 	description = Column(String)
+	
+	sensors = relationship("Sensor", backref="worker")
 	
 
 	def __repr__(self):

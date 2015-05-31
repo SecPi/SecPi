@@ -12,7 +12,7 @@ from base_webpage import BaseWebPage
 class SetupsPage(BaseWebPage):
 	
 	def __init__(self):
-		super(SetupsPage, self).__init__(objects.Zone)
+		super(SetupsPage, self).__init__(objects.Setup)
 		self.fields['id'] = {'name':'ID', 'visible':['list']}
 		self.fields['name'] = {'name':'Name', 'visible':['list', 'add', 'update']}
 		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}

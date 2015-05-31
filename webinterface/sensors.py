@@ -18,6 +18,7 @@ class SensorsPage(BaseWebPage):
 		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
 		self.fields['gpio_pin'] = {'name':'GPIO Pin', 'visible':['list', 'add', 'update']}
 		self.fields['zone_id'] = {'name':'Zone ID', 'visible':['list', 'add', 'update']}
+		self.fields['worker_id'] = {'name':'Worker ID', 'visible':['list', 'add', 'update']}
 
 
 	@cherrypy.expose

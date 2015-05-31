@@ -6,4 +6,5 @@
 	<li><a href="/alarms">Alarms</a></li>
 	<li><a href="/workers">Workers</a></li>
 	<li><a href="/actions">Actions</a></li>
+	<li><a href="/logs">Logs</a></li>
 </ul>
