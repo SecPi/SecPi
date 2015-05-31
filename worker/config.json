@@ -1,10 +1,13 @@
 {
-  "pi_id": "bpi",
+  "pi_id": "rpi",
   "master_IP": "192.168.0.100",
   "holddown": 30,
   "state": "Not defined",
   "sensors": [
-    {"id": "Sensor1","gpio": "11"},
+    {"id": "Sensor1","gpio": "17"},
     {"id": "Sensor2","gpio": "12"}
+  ],
+  "actors": [
+    {"id": "Webcam1","connection": "USB", "type": "webcam"}
   ]
 }

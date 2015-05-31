@@ -2,7 +2,7 @@ import pygame.camera
 import pygame.image
 import time
 
-class Webcam(Actor):
+class Webcam:
 
 	def __init__(self, path, resolution):
 		self.path = path
