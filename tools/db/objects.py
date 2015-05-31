@@ -1,18 +1,12 @@
-from sqlalchemy import create_engine
-
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Table
 from sqlalchemy import Integer, String, DateTime, Boolean
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from tools import config
-
-
-engine = create_engine("sqlite:///%s/data.db"%config.get("project_path")) #, echo = True) # echo = true aktiviert debug logging
+import datetime
 
 Base = declarative_base()
-
 
 zone_setup_table = Table('zones_setups', Base.metadata,
     Column('zone_id', Integer, ForeignKey('zones.id')),
@@ -66,12 +60,9 @@ class Alarm(Base):
 	__tablename__ = 'alarms'
 
 	id = Column(Integer, primary_key=True)
-	alarmtime = Column(DateTime, nullable=False)
-	ack = Column(Boolean)
+	alarmtime = Column(DateTime, nullable=False, default=datetime.datetime.now)
+	ack = Column(Boolean, default=False)
 	sensor_id = Column(Integer, ForeignKey('sensors.id'))
-	
-	
-	
 
 	def __repr__(self):
 		return "Alarm@%s for sensor %s (ack: %s)" % (self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.sensor_id, self.ack)
@@ -81,8 +72,8 @@ class LogEntry(Base):
 	__tablename__ = 'logs'
 
 	id = Column(Integer, primary_key=True)
-	time = Column(DateTime, nullable=False)
-	ack = Column(Boolean)
+	time = Column(DateTime, nullable=False, default=datetime.datetime.now)
+	ack = Column(Boolean, default=False)
 	level = Column(Integer, nullable=False)
 	
 	message = Column(String, nullable=False)
@@ -92,8 +83,32 @@ class LogEntry(Base):
 		return "%s[%i,%s]: %s" %(self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.level, self.message, self.ack)
 
 
+class Worker(Base):
+	__tablename__ = 'workers'
 
-		
+	id = Column(Integer, primary_key=True)
+	name = Column(String, nullable=False)
+	address = Column(String, nullable=False)
+	description = Column(String)
+	
 
-def setup():
+	def __repr__(self):
+		return "Worker %s (%i, %s)" % (self.name, self.id, self.address)
+
+
+class Action(Base):
+	__tablename__ = 'actions'
+
+	id = Column(Integer, primary_key=True)
+	name = Column(String, nullable=False)
+	description = Column(String)
+	cl = Column(String, nullable=False)
+	
+
+	def __repr__(self):
+		return "Action %s with class %s" % (self.name, self.cl)
+
+
+
+def setup(engine):
 	Base.metadata.create_all(engine)
