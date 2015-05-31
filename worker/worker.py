@@ -43,6 +43,7 @@ class Worker:
 		
 
 	def got_action(self, ch, method, properties, body):
+		# TODO: really interpret the action
 		print " [x] Received action %r" % (body,)
 		if "picture" in body:
 			for actor in self.actors:
@@ -70,6 +71,7 @@ class Worker:
 	
 	# Initialize all the actors
 	def setup_actors(self):
+		#TODO: initialize the actors according to their type, use more config params
 		for actor in self.conf["actors"]:
 			if actor["type"] == "webcam":
 				self.actors.append(Webcam("/dev/video0", (640,480)))

@@ -74,6 +74,7 @@ class Manager:
 
 
 	def got_alarm(self, ch, method, properties, body):
+		# TODO prepare actions according to the configured actors
 		logging.info("Sensor with ID %s raised an alarm" % body)
 		self.send_action("rpi_action", "picture")
 
