@@ -9,8 +9,8 @@ import datetime
 Base = declarative_base()
 
 zone_setup_table = Table('zones_setups', Base.metadata,
-    Column('zone_id', Integer, ForeignKey('zones.id')),
-    Column('setup_id', Integer, ForeignKey('setups.id'))
+	Column('zone_id', Integer, ForeignKey('zones.id')),
+	Column('setup_id', Integer, ForeignKey('setups.id'))
 )
 
 class Setup(Base):
@@ -18,7 +18,7 @@ class Setup(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String, nullable=False)
 	description = Column(String)
-	active = Column(Boolean)
+	active_state = Column(Boolean, nullable=False, default=False)
 	
 	zones = relationship("Zone", secondary=zone_setup_table, backref="setups")
 
