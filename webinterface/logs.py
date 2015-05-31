@@ -12,9 +12,9 @@ from base_webpage import BaseWebPage
 class LogEntriesPage(BaseWebPage):
 	
 	def __init__(self):
-		super(LogEntriesPage, self).__init__(objects.Action)
+		super(LogEntriesPage, self).__init__(objects.LogEntry)
 		self.fields['id'] = {'name':'ID', 'visible':['list']}
-		self.fields['time'] = {'name':'Time', 'visible':['list', 'add']}
+		self.fields['logtime'] = {'name':'Time', 'visible':['list', 'add']}
 		self.fields['ack'] = {'name':'Ack', 'visible':['list', 'add']}
 		self.fields['level'] = {'name':'Log Level', 'visible':['list', 'add']}
 		self.fields['message'] = {'name':'Message', 'visible':['list', 'add']}

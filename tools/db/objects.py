@@ -70,10 +70,15 @@ class Alarm(Base):
 
 
 class LogEntry(Base):
+	LEVEL_DEBUG=0
+	LEVEL_INFO=50
+	LEVEL_WARN=75
+	LEVEL_ERR=100
+	
 	__tablename__ = 'logs'
 
 	id = Column(Integer, primary_key=True)
-	time = Column(DateTime, nullable=False, default=datetime.datetime.now)
+	logtime = Column(DateTime, nullable=False, default=datetime.datetime.now)
 	ack = Column(Boolean, default=False)
 	level = Column(Integer, nullable=False)
 	
