@@ -21,7 +21,7 @@ filtered_fields = utils.filter_fields(fields, 'list')
 			% for field, finfo in filtered_fields.iteritems():
 				<td>${obj.__dict__[field]}</td>
 			% endfor
-				<td><a href="delete?id=${obj.id}">delete</a></td>
+				<td><a href="delete?id=${obj.id}"><img src="/static/img/icons/minus.png" alt="delete" title="delete" /></a></td>
 			</tr>
 		% endfor
 	</table>
