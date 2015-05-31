@@ -89,6 +89,11 @@ class LogEntry(Base):
 		return "%s[%i,%s]: %s" %(self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.level, self.message, self.ack)
 
 
+worker_action_table = Table('workers_actions', Base.metadata,
+	Column('worker_id', Integer, ForeignKey('workers.id')),
+	Column('action_id', Integer, ForeignKey('actions.id'))
+)
+
 class Worker(Base):
 	__tablename__ = 'workers'
 
@@ -98,6 +103,7 @@ class Worker(Base):
 	description = Column(String)
 	
 	sensors = relationship("Sensor", backref="worker")
+	actions = relationship("Action", secondary=worker_action_table, backref="workers")
 	
 
 	def __repr__(self):
