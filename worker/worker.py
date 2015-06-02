@@ -24,9 +24,11 @@ class Worker:
 		GPIO.setmode(GPIO.BCM)
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)
 		
+		logging.info("loading config...")
 		config.load("worker")
 		# TODO: generate md5 hash
 		
+		logging.info("setting up queues")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip']) #this will change because we need the ip initially
 		self.connection = pika.BlockingConnection(parameters=parameters) 
@@ -43,13 +45,12 @@ class Worker:
 		
 		self.channel.basic_consume(self.got_config, queue='%i_config' % config.get('pi_id'), no_ack=True)
 
-		
-		
-		self.channel.start_consuming()
+		logging.info("setting up sensors and actors")
 		self.setup_sensors()
 		self.setup_actors()
+		self.channel.start_consuming()
 		
-		
+		logging.info("setup done!")
 		
 
 	def got_action(self, ch, method, properties, body):

@@ -78,7 +78,7 @@ class Manager:
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue='alarm', no_ack=True)
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
-		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
+		#self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
 
 		self.channel.start_consuming()
 
