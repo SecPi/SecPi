@@ -45,8 +45,7 @@ from tools import config
 class Manager:
 
 	def __init__(self):
-		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)	
-		self.list_of_pis = ['1', 'bpi']
+		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)	# TODO make it nicer
 		
 		config.load("management")
 		db.connect()
@@ -68,17 +67,18 @@ class Manager:
 		self.channel.queue_bind(exchange='manager', queue='alarm')
 		self.channel.queue_bind(exchange='manager', queue='register')
 		
-		# todo from DB
-		for pi in self.list_of_pis:
-			self.channel.queue_declare(queue='%s_action'%pi)
-			self.channel.queue_declare(queue='%s_config'%pi)
-			self.channel.queue_bind(exchange='manager', queue='%s_action'%pi)
-			self.channel.queue_bind(exchange='manager', queue='%s_config'%pi)
+		# load workers from db
+		workers = db.session.query(db.objects.Worker).all()
+		for pi in workers:
+			self.channel.queue_declare(queue='%i_action'%pi.id)
+			self.channel.queue_declare(queue='%i_config'%pi.id)
+			self.channel.queue_bind(exchange='manager', queue='%i_action'%pi.id)
+			self.channel.queue_bind(exchange='manager', queue='%i_config'%pi.id)
 
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue='alarm', no_ack=True)
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
-		#self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
+		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
 
 		self.channel.start_consuming()
 
@@ -95,25 +95,30 @@ class Manager:
 			json:
 			{
 				"pi_id": 12,
-				"gpio_pin": 16
+				"sensor_id": 123
+				"gpio": 16
 			}
 			then select from sensors s join workers w on s.worker_id = w.id where w.id = pi_id and s.gpio_pin = 16
 		'''
-		logging.info("Sensor with ID %s raised an alarm" % body)
+		logging.info("received alarm: %s"%body)
+		
+		msg = json.loads(body)
 		
 		# TODO: check if last alarm more then x seconds ago
-		# TODO: interate over workers and send "execute"
-		self.send_message("1_action", "execute")
+		# interate over workers and send "execute"
+		workers = db.session.query(db.objects.Worker).all()
+		for pi in workers:	
+			self.send_message("%i_action"%pi.id, "execute")
 		
-		# send actions for all PIs!
-		# self.send_actions(pi_id)
 		
-		al = db.objects.Alarm(sensor_id=body)
-		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New Alarm from %s on GPIO Pin %s"%(body, body)) #FIXME 
+		al = db.objects.Alarm(sensor_id=msg['sensor_id'])
+		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New Alarm from %s on Sensor %s (GPIO Pin %s)"%(msg['pi_id'], msg['sensor_id'], msg['gpio']))
 		db.session.add(al)
 		db.session.add(lo)
 		db.session.commit()
 
+
+	# TODO send config
 	def send_actions(self, pi_id):
 		actions = db.session.query(db.objects.Action).join(db.objects.Worker).filter(Worker.id==pi_id).all()
 		
@@ -124,9 +129,16 @@ class Manager:
 	def cb_register(self, ch, method, properties, body):
 		'''Wait for new workers to register.'''
 	
-	def destroy(self):
+	def __del__(self):
 		self.connection.close()
 
+
+	# wait for config
+	# or queue
+	# if setup active in db && not active
+	# 	send activate, config etc.
+	# else if no setup active in db && active
+	# 	send deactivate
 
 if __name__ == '__main__':
     mg = Manager()
