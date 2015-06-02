@@ -87,7 +87,7 @@ class Worker:
 	
 	
 	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
-	def class_for_name(module_name, class_name):
+	def class_for_name(self, module_name, class_name):
 		# TODO: try/catch
 		# load the module, will raise ImportError if module cannot be loaded
 		m = importlib.import_module(module_name)
@@ -99,7 +99,7 @@ class Worker:
 	def setup_actors(self):
 		# TODO replace self.conf 
 		for actor in config.get("actors"):
-			a = class_for_name(actor["module"], actor["class"])
+			a = self.class_for_name(actor["module"], actor["class"])
 			act = a(actor["id"], actor["params"])
 			self.actors.append(act)
 			#if actor["type"] == "webcam":
