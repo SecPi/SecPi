@@ -46,7 +46,7 @@ class Manager:
 
 	def __init__(self):
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)	
-		self.list_of_pis = ['rpi', 'bpi']
+		self.list_of_pis = ['1', 'bpi']
 		
 		config.load("management")
 		
@@ -105,7 +105,7 @@ class Manager:
 		# self.send_actions(pi_id)
 		
 		al = db.objects.Alarm(sensor_id=body)
-		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New Alarm from %s on GPIO Pin %s"%())
+		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New Alarm from %s on GPIO Pin %s"%(body, body)) #FIXME 
 		db.session.add(al)
 		db.session.add(lo)
 		db.session.commit()
