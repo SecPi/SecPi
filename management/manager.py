@@ -2,6 +2,10 @@ import pika
 import time
 import sys
 import logging
+import json
+
+from tools.db import database as db
+from tools import config
 
 #state = False
 #
@@ -43,8 +47,12 @@ class Manager:
 	def __init__(self):
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)	
 		self.list_of_pis = ['rpi', 'bpi']
-		self.connection = pika.BlockingConnection(pika.ConnectionParameters(
-				host = 'localhost'))
+		
+		config.load("management")
+		
+		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
+		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip'])
+		self.connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = self.connection.channel()
 
 		#define exchange
@@ -56,6 +64,8 @@ class Manager:
 		self.channel.queue_declare(queue='alarm')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
+		
+		# todo from DB
 		for pi in self.list_of_pis:
 			self.channel.queue_declare(queue='%s_action'%pi)
 			self.channel.queue_declare(queue='%s_config'%pi)
@@ -68,20 +78,48 @@ class Manager:
 
 		self.channel.start_consuming()
 
-	def send_action(self, to_queue, message):
+	
+
+
+	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
 		logging.info("Sending Action to rpi")
 
 
 	def got_alarm(self, ch, method, properties, body):
+		'''
+			json:
+			{
+				"pi_id": 12,
+				"gpio_pin": 16
+			}
+			then select from sensors s join workers w on s.worker_id = w.id where w.id = pi_id and s.gpio_pin = 16
+		'''
 		logging.info("Sensor with ID %s raised an alarm" % body)
-		self.send_action("rpi_action", "picture")
+		
+		# TODO: check if last alarm more then x seconds ago
+		# TODO: interate over workers and send "execute"
+		self.send_message("rpi_action", "execute")
+		
+		# send actions for all PIs!
+		# self.send_actions(pi_id)
+		
+		al = db.objects.Alarm(sensor_id=body)
+		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New Alarm from %s on GPIO Pin %s"%())
+		db.session.add(al)
+		db.session.add(lo)
+		db.session.commit()
 
-
+	def send_actions(self, pi_id):
+		actions = db.session.query(db.objects.Action).join(db.objects.Worker).filter(Worker.id==pi_id).all()
+		
+		js = json.dumps(a.__dict__ for a in actions)
+		print(js)
+		
 
 	def destroy(self):
 		self.connection.close()
 
 
 if __name__ == '__main__':
-    init()
+    mg = Manager()
