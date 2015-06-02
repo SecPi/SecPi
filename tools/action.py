@@ -1,6 +1,6 @@
 import abc
 
-class Action:
+class Action(object):
 	
 	def __init__(self, id, params):
 		self.id = id
