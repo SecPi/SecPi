@@ -1,3 +1,4 @@
 *.pyc
 webinterface/logs/*
 worker/*.jpg
+data.db
