@@ -3,7 +3,7 @@ import time
 import sys
 sys.path.append('/root/SecPi/tools')
 import socket
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import logging
 import importlib
 import threading
@@ -81,8 +81,8 @@ class Worker:
 	# Initialize all the sensors for operation and add callback method
 	def setup_sensors(self):
 		for sensor in config.get("sensors"):
-			#GPIO.setup(int(sensor["gpio"]), GPIO.IN)
-			#GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=5000)		
+			GPIO.setup(int(sensor["gpio"]), GPIO.IN)
+			GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=5000)		
 			logging.info("Registered sensor gpio: %s" % sensor["gpio"])
 	
 	
