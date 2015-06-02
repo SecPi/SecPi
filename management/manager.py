@@ -49,6 +49,7 @@ class Manager:
 		self.list_of_pis = ['1', 'bpi']
 		
 		config.load("management")
+		db.connect()
 		
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip'])

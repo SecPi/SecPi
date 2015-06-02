@@ -6,6 +6,7 @@ config.load("management")
 
 import database as db
 
+db.connect()
 
 worker = db.objects.Worker(name="Philip's Pi", address="10.0.0.200")
 
