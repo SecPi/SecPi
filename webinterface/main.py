@@ -28,7 +28,9 @@ from workers import WorkersPage
 from actions import ActionsPage
 from logs import LogEntriesPage
 
+
 lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
+config.load("webinterface")
 
 class Root(object):
 
