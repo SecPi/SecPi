@@ -102,7 +102,7 @@ class Manager:
 		
 		# TODO: check if last alarm more then x seconds ago
 		# TODO: interate over workers and send "execute"
-		self.send_message("rpi_action", "execute")
+		self.send_message("1_action", "execute")
 		
 		# send actions for all PIs!
 		# self.send_actions(pi_id)

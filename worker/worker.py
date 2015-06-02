@@ -51,6 +51,7 @@ class Worker:
 		
 		# DONE: threading
 		#		http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
+		logging.info("received action from manager")
 		threads = []
 		
 		for act in self.actors:
