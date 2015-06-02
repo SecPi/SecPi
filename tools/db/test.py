@@ -1,4 +1,9 @@
 from sqlalchemy.orm import sessionmaker
+
+from tools import config
+
+config.load("management")
+
 import database as db
 
 

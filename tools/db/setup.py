@@ -1,3 +1,7 @@
+from tools import config
+
+config.load("management")
+
 import database
 
 
