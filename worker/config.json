@@ -1,8 +1,8 @@
 {
 	"rabbitmq":{
     	"master_ip": "10.0.0.200",
-    	"user": "philip",
-    	"password": "Passw0rd"
+    	"user": "secpi",
+    	"password": "S3cP1"
     },
     "pi_id": 1,
     "actors": [
