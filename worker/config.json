@@ -1,4 +1,10 @@
 {
+	"rabbitmq":{
+    	"master_ip": "10.0.0.200",
+    	"user": "philip",
+    	"password": "Passw0rd"
+    },
+    "pi_id": 1,
     "actors": [
         {
             "id": 15,
@@ -14,13 +20,6 @@
         }
     ],
     "holddown": 30,
-    "rabbitmq":{
-    	"master_ip": "10.0.0.200",
-    	"user": "philip",
-    	"password": "Passw0rd"
-    },
-    "pi_id": 1,
-    "project_path": "/Volumes/Data/fhstp/8_sem/99_alarmpi/dev",
     "sensors": [
         {
             "gpio": 12,
@@ -31,5 +30,5 @@
             "id": 124
         }
     ],
-    "state": "Not defined"
+    "active": false
 }
