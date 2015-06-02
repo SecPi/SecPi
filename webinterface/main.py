@@ -64,12 +64,15 @@ class Root(object):
 def run():
 	cherrypy.tools.db = SQLAlchemyTool()
 	
-	'''
+	
 	cherrypy.config.update({
+		'server.socket_host': '0.0.0.0',
+		'server.socket_port': 8080,
+	})
+	'''
 		'log.error_file': "./logs/error.log",
 		'log.access_file': "./logs/access.log",
 		'log.screen': False,
-		})
 	'''
 	
 	app_config = {
