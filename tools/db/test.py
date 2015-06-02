@@ -1,50 +1,59 @@
 from sqlalchemy.orm import sessionmaker
-import objects
+import database as db
 
-Session = sessionmaker(bind=objects.engine)
-session = Session()
 
-'''
-session.add_all([
-	objects.Sensor(name="door IR sensor", gpio_pin=15, description="this is the infrared sensor at the door"),
-	objects.Sensor(name="door contact sensor", gpio_pin=16, description="this is the contact sensor at the door"),
-	objects.Sensor(name="window contact sensor", gpio_pin=17, description="this is the contact sensor at the window")
+worker = db.objects.Worker(name="Philip's Pi", address="10.0.0.200")
+
+action_pic = db.objects.Action(name="Picture", cl="PictureAction", workers=[worker])
+
+db.session.add(worker)
+db.session.add(action_pic)
+db.session.add_all([
+	db.objects.Sensor(name="door IR sensor", gpio_pin=15, description="this is the infrared sensor at the door", worker=worker),
+	db.objects.Sensor(name="door contact sensor", gpio_pin=16, description="this is the contact sensor at the door", worker=worker),
+	db.objects.Sensor(name="window contact sensor", gpio_pin=17, description="this is the contact sensor at the window", worker=worker)
 	])
 
+db.session.commit()
 
-zone_door = objects.Zone(name="door")
-zone_window = objects.Zone(name="windows")
+zone_door = db.objects.Zone(name="door")
+zone_window = db.objects.Zone(name="windows")
 
-session.commit();
-
-doors = session.query(objects.Sensor).filter(objects.Sensor.name.like('%door%')).all()
+doors = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.name.like('%door%')).all()
 zone_door.sensors = doors
 
-windows = session.query(objects.Sensor).filter(objects.Sensor.name.like('%window%')).all()
+windows = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.name.like('%window%')).all()
 zone_window.sensors = windows
 
-session.commit()
 
-set_away = objects.Setup(name="away")
-set_home = objects.Setup(name="at home")
+set_away = db.objects.Setup(name="away")
+set_home = db.objects.Setup(name="at home")
 
 set_away.zones = [zone_door, zone_window]
 set_home.zones = [zone_window]
 
-session.commit();
-'''
 
-sensors = session.query(objects.Sensor).all()
+
+db.session.add(zone_door)
+db.session.add(zone_window)
+db.session.add(set_away)
+db.session.add(set_home)
+
+db.session.commit();
+
+
+
+sensors = db.session.query(db.objects.Sensor).all()
 print sensors
 
-zones = session.query(objects.Zone).all()
+zones = db.session.query(db.objects.Zone).all()
 print zones
 
-sets = session.query(objects.Setup).all()
+sets = db.session.query(db.objects.Setup).all()
 print sets
 
-#win_sensor = session.query(objects.Sensor).get(3)
+#win_sensor = db.session.query(db.objects.Sensor).get(3)
 #print win_sensor
 #win_sensor.gpio_pin = 17
 
-#session.commit()
+#db.session.commit()

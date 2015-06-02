@@ -23,6 +23,10 @@ from tools import config
 from sensors import SensorsPage
 from zones import ZonesPage
 from setups import SetupsPage
+from alarms import AlarmsPage
+from workers import WorkersPage
+from actions import ActionsPage
+from logs import LogEntriesPage
 
 lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
 
@@ -32,6 +36,10 @@ class Root(object):
 		self.sensors = SensorsPage()
 		self.zones = ZonesPage()
 		self.setups = SetupsPage()
+		self.alarms = AlarmsPage()
+		self.workers = WorkersPage()
+		self.actions = ActionsPage()
+		self.logs = LogEntriesPage()
 	
 	@property
 	def db(self):
@@ -42,16 +50,25 @@ class Root(object):
 	def index(self):
 		tmpl = lookup.get_template("index.mako")
 		return tmpl.render(page_title="Welcome")
+	
+	@cherrypy.expose
+	def mytest(self, param_1=None, param_2=None, *args, **kw):
+		return repr(dict(param_1=param_1,
+						 param_2=param_2,
+						 args=args,
+						 kw=kw))
 
 
 def run():
 	cherrypy.tools.db = SQLAlchemyTool()
 	
+	'''
 	cherrypy.config.update({
 		'log.error_file': "./logs/error.log",
 		'log.access_file': "./logs/access.log",
 		'log.screen': False,
 		})
+	'''
 	
 	app_config = {
 		'/': {
