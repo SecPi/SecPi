@@ -48,9 +48,12 @@ class Worker:
 		logging.info("setting up sensors and actors")
 		self.setup_sensors()
 		self.setup_actors()
-		self.channel.start_consuming()
 		
 		logging.info("setup done!")
+		
+		self.channel.start_consuming() # this is a blocking call!!
+		
+		
 		
 
 	def got_action(self, ch, method, properties, body):
