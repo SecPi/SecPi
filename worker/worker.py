@@ -120,6 +120,17 @@ class Worker:
 		self.channel.basic_publish(exchange='manager', routing_key='alarm',
 							body="%s" % sensor_id)
 		
+		
+	def get_ip(self):
+		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		s.connect((config.get("rabbitmq")["master_ip"],5672))
+		ip = s.getsockname()[0]
+		print(ip)
+		s.close()
+		
+		return ip
+
+
 
 if __name__ == '__main__':
 	w = Worker()

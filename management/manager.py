@@ -62,8 +62,10 @@ class Manager:
 		#define queues: data, alarm and action & config for every pi
 		self.channel.queue_declare(queue='data')
 		self.channel.queue_declare(queue='alarm')
+		self.channel.queue_declare(queue='register')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
+		self.channel.queue_bind(exchange='manager', queue='register')
 		
 		# todo from DB
 		for pi in self.list_of_pis:
@@ -74,6 +76,7 @@ class Manager:
 
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue='alarm', no_ack=True)
+		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		#self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
 
 		self.channel.start_consuming()
@@ -117,6 +120,9 @@ class Manager:
 		print(js)
 		
 
+	def cb_register(self, ch, method, properties, body):
+		'''Wait for new workers to register.'''
+	
 	def destroy(self):
 		self.connection.close()
 
