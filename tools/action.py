@@ -1,18 +1,15 @@
 import abc
 
-class Actor:
+class Action:
 	
-	def __init__(self, id):
+	def __init__(self, id, params):
 		self.id = id
+		self.params = params
 		
 	@abc.abstractmethod
-	def execute(self, params):
+	def execute(self):
 		"""Do some stuff.
 		Params is a dict with additional info for the executing actor."""
 		return
 	
-	
-	def finished(self):
-		# send callback to manager with id
-		return
 	 

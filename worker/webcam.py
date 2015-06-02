@@ -2,13 +2,16 @@ import pygame.camera
 import pygame.image
 import time
 
-class Webcam:
+from tools.action import Action
 
-	def __init__(self, path, resolution):
-		self.path = path
-		self.resolution = resolution
+class Webcam(Action):
+
+	def __init__(self, id, params):
+		super(Webcam, self).__init__(id, params)
+		self.path = params["path"]
+		self.resolution = (params["resolution_x"], params["resolution_y"])
 		pygame.camera.init()
-		self.cam = pygame.camera.Camera(path, resolution)
+		self.cam = pygame.camera.Camera(self.path, self.resolution)
 
 	def take_picture(self):
 		self.cam.start()
@@ -24,8 +27,11 @@ class Webcam:
 			time.sleep(seconds_between)
 		self.cam.stop()
 	
-	def execute(self, params):
-		self.take_adv_picture(5, 1)
+	def execute(self):
+		self.take_adv_picture(self.params["count"], self.params["interval"])
 		
-		self.finished()
+		# send pictures
+		# channel.basic_publish(exchange='manager', routing_key='data', body="BLOB")
+		
+		
 
