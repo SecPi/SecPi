@@ -8,16 +8,27 @@ import database as db
 
 db.connect()
 
-worker = db.objects.Worker(name="Philip's Pi", address="10.0.0.200")
+p_worker = db.objects.Worker(name="Philip's Pi", address="10.0.0.200")
+m_worker = db.objects.Worker(name="Martin's Pi", address="192.168.1.2")
 
-action_pic = db.objects.Action(name="Picture", cl="PictureAction", workers=[worker])
+cam_params = [
+	db.objects.ActionParam(key='path', value='/dev/video0', description='Path to webcam linux device.'),
+	db.objects.ActionParam(key='resolution_x', value='640', description='Width of the picture taken.'),
+	db.objects.ActionParam(key='resolution_y', value='480', description='Height of the picutre taken.'),
+	db.objects.ActionParam(key='count', value='2', description='Number of pictures taken.'),
+	db.objects.ActionParam(key='interval', value='1', description='Interval between pictures'),
+]
 
-db.session.add(worker)
+action_pic = db.objects.Action(name="Webcam", cl="Webcam", module="webcam", workers=[m_worker, p_worker], params=cam_params)
+
+db.session.add(p_worker)
+db.session.add(m_worker)
 db.session.add(action_pic)
+db.session.add_all(cam_params)
 db.session.add_all([
-	db.objects.Sensor(name="door IR sensor", gpio_pin=15, description="this is the infrared sensor at the door", worker=worker),
-	db.objects.Sensor(name="door contact sensor", gpio_pin=16, description="this is the contact sensor at the door", worker=worker),
-	db.objects.Sensor(name="window contact sensor", gpio_pin=17, description="this is the contact sensor at the window", worker=worker)
+	db.objects.Sensor(name="door IR sensor", gpio_pin=15, description="this is the infrared sensor at the door", worker=p_worker),
+	db.objects.Sensor(name="door contact sensor", gpio_pin=16, description="this is the contact sensor at the door", worker=p_worker),
+	db.objects.Sensor(name="window contact sensor", gpio_pin=17, description="this is the contact sensor at the window", worker=p_worker)
 	])
 
 db.session.commit()

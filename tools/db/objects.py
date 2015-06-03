@@ -101,6 +101,7 @@ class Worker(Base):
 	name = Column(String, nullable=False)
 	address = Column(String, nullable=False)
 	description = Column(String)
+	active_state = Column(Boolean, nullable=False, default=True)
 	
 	sensors = relationship("Sensor", backref="worker")
 	actions = relationship("Action", secondary=worker_action_table, backref="workers")
@@ -117,12 +118,27 @@ class Action(Base):
 	name = Column(String, nullable=False)
 	description = Column(String)
 	cl = Column(String, nullable=False)
+	module = Column(String, nullable=False)
+	
+	params = relationship("ActionParam", backref="action")
 	
 
 	def __repr__(self):
 		return "Action %s with class %s" % (self.name, self.cl)
 
+class ActionParam(Base):
+	__tablename__ = 'actionparams'
+	
+	id = Column(Integer, primary_key=True)
+	key = Column(String, nullable=False)
+	value = Column(String, nullable=False)
+	description = Column(String)
+	
+	action_id = Column(Integer, ForeignKey('actions.id'))
+	
 
+	def __repr__(self):
+		return "ActionParam %s:%s" % (self.key, self.value)	
 
 def setup(engine):
 	Base.metadata.create_all(engine)
