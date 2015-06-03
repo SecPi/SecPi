@@ -80,26 +80,18 @@ class Manager:
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		#self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
 
+	
+	def start(self):
 		self.channel.start_consuming()
-
 	
 
 
 	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
-		logging.info("Sending Action to rpi")
+		logging.info("Sending Action to %s"%to_queue)
 
 
 	def got_alarm(self, ch, method, properties, body):
-		'''
-			json:
-			{
-				"pi_id": 12,
-				"sensor_id": 123
-				"gpio": 16
-			}
-			then select from sensors s join workers w on s.worker_id = w.id where w.id = pi_id and s.gpio_pin = 16
-		'''
 		logging.info("received alarm: %s"%body)
 		
 		msg = json.loads(body)
@@ -118,12 +110,49 @@ class Manager:
 		db.session.commit()
 
 
-	# TODO send config
-	def send_actions(self, pi_id):
-		actions = db.session.query(db.objects.Action).join(db.objects.Worker).filter(Worker.id==pi_id).all()
+	
+	def send_config(self, pi_id):
+		conf = {
+			"pi_id": pi_id,
+			"rabbitmq": config.get("rabbitmq"),
+			"holddown": 30, # TODO: save somewhere? include for worker?
+			"active": True, # TODO: ??
+		}
 		
-		js = json.dumps(a.__dict__ for a in actions)
-		print(js)
+		sensors = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.worker_id == pi_id).all()
+		conf_sensors = []
+		for sen in sensors:
+			conf_sen = {
+				"id": sen.id,
+				"gpio": sen.gpio_pin,
+				"name": sen.name
+			}
+			conf_sensors.append(conf_sen)
+		
+		conf['sensors'] = conf_sensors
+		
+		actions = db.session.query(db.objects.Action).join((db.objects.Worker, db.objects.Action.workers)).filter(db.objects.Worker.id == pi_id).all()
+		conf_actions = []
+		# iterate over all actions
+		for act in actions:
+			# get params for action
+			params = db.session.query(db.objects.ActionParam).filter(db.objects.ActionParam.action_id == act.id).all()
+			para = {}
+			# create params array
+			for p in params:
+				para[p.key] = p.value
+				
+			conf_act = {
+				"id": act.id,
+				"module": act.module,
+				"class": act.cl,
+				"params": para
+			}
+			conf_actions.append(conf_act)
+		
+		conf['actions'] = conf_actions
+		
+		logging.info(json.dumps(conf))
 		
 
 	def cb_register(self, ch, method, properties, body):
@@ -142,3 +171,5 @@ class Manager:
 
 if __name__ == '__main__':
     mg = Manager()
+    # mg.send_config(1)
+    mg.start()
