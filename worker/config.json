@@ -5,7 +5,7 @@
     	"password": "S3cP1"
     },
     "pi_id": 1,
-    "actors": [
+    "actions": [
         {
             "id": 15,
             "module": "webcam",

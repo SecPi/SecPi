@@ -16,7 +16,7 @@ from webcam import Webcam
 class Worker:
 
 	def __init__(self):
-		self.actors = []
+		self.actions = []
 		self.active = True # start deactivated --> only for debug True
 		self.current_config_hash = None
 		
@@ -45,9 +45,9 @@ class Worker:
 		
 		self.channel.basic_consume(self.got_config, queue='%i_config' % config.get('pi_id'), no_ack=True)
 
-		logging.info("setting up sensors and actors")
+		logging.info("setting up sensors and actions")
 		self.setup_sensors()
-		self.setup_actors()
+		self.setup_actions()
 		
 		logging.info("setup done!")
 		
@@ -65,7 +65,7 @@ class Worker:
 			logging.info("received action from manager")
 			threads = []
 			
-			for act in self.actors:
+			for act in self.actions:
 				t = threading.Thread(name='thread-%s'%(act.id), target=act.execute)
 				threads.append(t)
 				t.start()
@@ -107,7 +107,7 @@ class Worker:
 			
 			if(config.get('active')):
 				self.setup_sensors()
-				self.setup_actors()
+				self.setup_actions()
 				# TODO: activate queues
 				self.active = True
 			
@@ -137,13 +137,13 @@ class Worker:
 		return c
 	
 	
-	# Initialize all the actors
-	def setup_actors(self):
-		for actor in config.get("actors"):
-			a = self.class_for_name(actor["module"], actor["class"])
-			act = a(actor["id"], actor["params"])
-			self.actors.append(act)
-			logging.info("set up actor %s" % actor['class'])
+	# Initialize all the actions
+	def setup_actions(self):
+		for action in config.get("actions"):
+			a = self.class_for_name(action["module"], action["class"])
+			act = a(action["id"], action["params"])
+			self.actions.append(act)
+			logging.info("set up action %s" % action['class'])
 					
 
 	# callback for the sensors
