@@ -158,7 +158,11 @@ class Manager:
 		
 		conf['actions'] = conf_actions
 		
-		logging.info(json.dumps(conf))
+		msg = json.dumps(conf)
+		logging.info("generated config: %s" % msg)
+		
+		properties = pika.BasicProperties(content_type='application/json')
+		self.channel.basic_publish(exchange='manager', routing_key='%i_config'%pi_id, body=msg, properties=properties)
 		
 
 	def cb_register(self, ch, method, properties, body):

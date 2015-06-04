@@ -17,7 +17,7 @@ class Worker:
 
 	def __init__(self):
 		self.actions = []
-		self.active = True # start deactivated --> only for debug True
+		self.active = False # start deactivated --> only for debug True
 		self.current_config_hash = None
 		
 		# setup gpio and logging
@@ -95,6 +95,7 @@ class Worker:
 			
 			# TODO: deactivate queues
 			self.cleanup_sensors()
+			self.cleanup_actions()
 			
 			# TODO: check valid config file?!
 			# write config to file
@@ -144,7 +145,10 @@ class Worker:
 			act = a(action["id"], action["params"])
 			self.actions.append(act)
 			logging.info("set up action %s" % action['class'])
-					
+	
+	def cleanup_actions(self):
+		# TODO: maybe manual del of all actions?
+		self.actions = []					
 
 	# callback for the sensors
 	def alarm(self, channel):
