@@ -91,7 +91,7 @@ class Worker:
 		# check if no hash exists (we don't have a config yet) or hash has changed (new config)
 		if(self.current_config_hash is None or self.current_config_hash != m.digest()):
 			# disable while loading config
-			self.active = false
+			self.active = False
 			
 			# TODO: deactivate queues
 			self.cleanup_sensors()
