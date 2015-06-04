@@ -116,10 +116,16 @@ class Manager:
 			"pi_id": pi_id,
 			"rabbitmq": config.get("rabbitmq"),
 			"holddown": 30, # TODO: save somewhere? include for worker?
-			"active": True, # TODO: ??
+			"active": False, # default to false, will be overriden if should be true
 		}
 		
-		sensors = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.worker_id == pi_id).all()
+		sensors = db.session.query(db.objects.Sensor).join(db.objects.Zone).join((db.objects.Setup, db.objects.Zone.setups)).filter(db.objects.Setup.active_state == True).filter(db.objects.Sensor.worker_id == pi_id).all()
+		
+		# if we have sensors we are active
+		if(len(sensors)>0):
+			conf['active'] = True
+		
+		
 		conf_sensors = []
 		for sen in sensors:
 			conf_sen = {
