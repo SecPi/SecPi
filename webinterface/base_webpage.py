@@ -5,6 +5,7 @@ import cherrypy
 from mako.lookup import TemplateLookup
 from collections import OrderedDict
 
+from tools import utils
 
 import urllib
 
@@ -61,6 +62,36 @@ class BaseWebPage(object):
 				
 		
 		return tmpl.render(page_title="Add", flash_message=flash_message, fields=self.fields)
+		
+		
+	@cherrypy.expose
+	def update(self, id=0, flash_message=None, **params):
+		tmpl = self.lookup.get_template("update.mako")
+		
+		# check for valid id
+		if(id and id > 0):
+			
+			if(params and len(params)>0):
+				cherrypy.log("update something %s"%params)
+				obj = self.db.query(self.baseclass).get(id)
+				
+				for k, v in params.iteritems():
+					if(v and not v == ""):
+						setattr(obj, k, utils.str_to_value(v))
+				
+				self.db.commit()
+				flash_message="Updated object with id %i"%obj.id
+				return tmpl.render(page_title="Update", flash_message=flash_message, fields=self.fields, data=obj)
+			else:
+				cherrypy.log("got id to update: %s"%id)
+				obj = self.db.query(self.baseclass).get(id)
+				cherrypy.log("got from db: %s"%obj)
+				return tmpl.render(page_title="Update", flash_message=flash_message, fields=self.fields, data=obj)
+		else:
+			flash_message = "Invalid ID!"		
+				
+		
+		return tmpl.render(page_title="Update", flash_message=flash_message, fields=self.fields, data=None)
 
 
 
