@@ -1,7 +1,7 @@
 <%page args="flash_message=''"/>
 <html>
 <head>
-	<title>${page_title}</title>
+	<title>SecPi - ${page_title}</title>
 	<link rel="stylesheet" type="text/css" href="/static/css/main.css">
 </head>
 <body>
