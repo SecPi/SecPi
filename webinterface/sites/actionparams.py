@@ -14,6 +14,7 @@ class ActionParamsPage(BaseWebPage):
 	def __init__(self):
 		super(ActionParamsPage, self).__init__(objects.ActionParam)
 		self.fields['id'] = {'name':'ID', 'visible':['list']}
+		self.fields['action_id'] = {'name':'Action ID', 'visible':['list', 'add', 'update']}
 		self.fields['key'] = {'name':'Key', 'visible':['list', 'add', 'update']}
 		self.fields['value'] = {'name':'Value', 'visible':['list', 'add', 'update']}
 		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
