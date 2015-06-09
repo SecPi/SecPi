@@ -118,10 +118,15 @@ class Worker:
 		
 	# Initialize all the sensors for operation and add callback method
 	def setup_sensors(self):
+		reg_sensors = []
 		for sensor in config.get("sensors"):
-			GPIO.setup(int(sensor["gpio"]), GPIO.IN)
-			GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=5000)		
-			logging.info("Registered sensor gpio: %s" % sensor["gpio"])
+			# TODO: try/catch
+			# check if we haven't registerd the pin before
+			if(int(sensor["gpio"]) not in reg_sensors):
+				GPIO.setup(int(sensor["gpio"]), GPIO.IN)
+				GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=5000)
+				reg_sensors.append(int(sensor["gpio"]))	
+				logging.info("Registered sensor gpio: %s" % sensor["gpio"])
 	
 	def cleanup_sensors(self):
 		# remove the callbacks
