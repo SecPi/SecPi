@@ -47,7 +47,7 @@ class Manager:
 	def __init__(self):
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)	# TODO make it nicer
 		
-		config.load("management")
+		config.load("manager")
 		db.connect()
 		
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])

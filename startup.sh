@@ -10,7 +10,7 @@ then
 
 	if [ $1 = "manager" ]
 	then
-		cd management
+		cd manager
 		python manager.py
 	elif [ $1 = "worker" ]
 	then

@@ -2,7 +2,7 @@ from sqlalchemy.orm import sessionmaker
 
 from tools import config
 
-config.load("management")
+config.load("manager")
 
 import database as db
 
