@@ -63,6 +63,8 @@ class Manager:
 		self.channel.queue_declare(queue='data')
 		self.channel.queue_declare(queue='alarm')
 		self.channel.queue_declare(queue='register')
+		self.channel.queue_declare(queue='on_off')
+		self.channel.queue_bind(exchange='manager', queue='on_off')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
 		self.channel.queue_bind(exchange='manager', queue='register')
@@ -78,13 +80,22 @@ class Manager:
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue='alarm', no_ack=True)
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
+		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
 		#self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
 
 	
 	def start(self):
 		self.channel.start_consuming()
 	
-
+	
+	def cb_on_off(self, ch, method, properties, body):
+		msg = json.loads(body)
+			
+		logging.info("Activating PIs!")
+		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
+		for pi in workers:
+			self.send_config(pi.id)
+			logging.info("Activated %s"%pi.name)
 
 	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
@@ -98,8 +109,8 @@ class Manager:
 		
 		# TODO: check if last alarm more then x seconds ago
 		# interate over workers and send "execute"
-		workers = db.session.query(db.objects.Worker).all()
-		for pi in workers:	
+		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
+		for pi in workers:
 			self.send_message("%i_action"%pi.id, "execute")
 		
 		

@@ -1,4 +1,5 @@
 import os
+import json
 
 # web framework
 import cherrypy
@@ -14,6 +15,9 @@ from cp_sqlalchemy import SQLAlchemyTool, SQLAlchemyPlugin
 # templating engine
 from mako.template import Template
 from mako.lookup import TemplateLookup
+
+# rabbitmq
+import pika
 
 # our stuff
 from tools.db import objects
@@ -44,11 +48,18 @@ class Root(object):
 		self.actions = ActionsPage()
 		self.actionparams = ActionParamsPage()
 		self.logs = LogEntriesPage()
+		
+		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
+		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip'])
+		connection = pika.BlockingConnection(parameters=parameters)
+		self.channel = connection.channel()
+		self.channel.queue_declare(queue='on_off')
+		self.channel.queue_bind(exchange='manager', queue='on_off')
 	
 	@property
 	def db(self):
 		return cherrypy.request.db
-
+	
 
 	@cherrypy.expose
 	def index(self):
@@ -64,6 +75,8 @@ class Root(object):
 			su = self.db.query(objects.Setup).get(int(activate_setup))
 			su.active_state = True
 			self.db.commit()
+			ooff = { 'active_state': True }
+			self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
 			msg="Activated setup %s!"%su.name
 		
 		# we got a setup, deactivate it
@@ -71,6 +84,8 @@ class Root(object):
 			su = self.db.query(objects.Setup).get(int(deactivate_setup))
 			su.active_state = False
 			self.db.commit()
+			ooff = { 'active_state': False }
+			self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
 			msg="Deactivated setup %s!"%su.name
 		
 		active_setups = self.db.query(objects.Setup).filter(objects.Setup.active_state == True).all()
