@@ -1,27 +1,8 @@
 {
-    "actors": [
-        {
-            "id": 15,
-            "path": "path/to/script.sh"
-        }
-    ],
-    "holddown": 30,
     "rabbitmq":{
-    	"master_ip": "10.0.0.200",
-    	"user": "philip",
-    	"password": "Passw0rd"
+        "master_ip": "10.0.0.200",
+        "user": "SecPi",
+        "password": "S3cP1"
     },
-    "pi_id": "rpi",
-    "project_path": "/Volumes/Data/fhstp/8_sem/99_alarmpi/dev",
-    "sensors": [
-        {
-            "gpio_port": 12,
-            "id": 123
-        },
-        {
-            "gpio_port": 13,
-            "id": 124
-        }
-    ],
-    "state": "Not defined"
+    "project_path": "/root/01_secpi/dev"
 }
