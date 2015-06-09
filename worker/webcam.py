@@ -21,10 +21,13 @@ class Webcam(Action):
 
 	def take_adv_picture(self, num_of_pic, seconds_between):
 		self.cam.start()
-		for i in range(0,num_of_pic):
-			img = self.cam.get_image()
-			pygame.image.save(img, "%s_%d.jpg" % (time.strftime("%Y%m%d_%H%M%S"), i))
-			time.sleep(seconds_between)
+		try:
+			for i in range(0,num_of_pic):
+				img = self.cam.get_image()
+				pygame.image.save(img, "%s_%d.jpg" % (time.strftime("%Y%m%d_%H%M%S"), i))
+				time.sleep(seconds_between)
+		except:
+			print("Error taking picture!")
 		self.cam.stop()
 	
 	def execute(self):
