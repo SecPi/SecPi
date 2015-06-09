@@ -9,7 +9,7 @@ class Webcam(Action):
 	def __init__(self, id, params):
 		super(Webcam, self).__init__(id, params)
 		self.path = params["path"]
-		self.resolution = (params["resolution_x"], params["resolution_y"])
+		self.resolution = (int(params["resolution_x"]), int(params["resolution_y"]))
 		pygame.camera.init()
 		self.cam = pygame.camera.Camera(self.path, self.resolution)
 
