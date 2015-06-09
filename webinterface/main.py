@@ -20,14 +20,14 @@ from tools.db import objects
 from tools import config
 
 # sub pages
-from sensors import SensorsPage
-from zones import ZonesPage
-from setups import SetupsPage
-from alarms import AlarmsPage
-from workers import WorkersPage
-from actions import ActionsPage
-from actionparams import ActionParamsPage
-from logs import LogEntriesPage
+from sites.sensors import SensorsPage
+from sites.zones import ZonesPage
+from sites.setups import SetupsPage
+from sites.alarms import AlarmsPage
+from sites.workers import WorkersPage
+from sites.actions import ActionsPage
+from sites.actionparams import ActionParamsPage
+from sites.logs import LogEntriesPage
 
 
 lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
