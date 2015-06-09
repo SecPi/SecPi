@@ -26,6 +26,7 @@ from setups import SetupsPage
 from alarms import AlarmsPage
 from workers import WorkersPage
 from actions import ActionsPage
+from actionparams import ActionParamsPage
 from logs import LogEntriesPage
 
 
@@ -41,6 +42,7 @@ class Root(object):
 		self.alarms = AlarmsPage()
 		self.workers = WorkersPage()
 		self.actions = ActionsPage()
+		self.actionparams = ActionParamsPage()
 		self.logs = LogEntriesPage()
 	
 	@property

@@ -26,11 +26,11 @@ body {
 
 #nav a:link {
 	display: block;
-    width: 80px;
+    min-width: 80px;
     height: 18px;
     background-color: #9fcc14;
     text-align: center;
-    padding: 3px;
+    padding: 3px 7px;
     color: #000;
     text-decoration: none;
     font-weight: bold;
@@ -106,15 +106,15 @@ tr.listheader {
 
 
 .icon_add {
-	background: url('/static/img/icons/plus.png') no-repeat 5px 3px transparent;
+	background: url('/static/img/icons/plus.png') no-repeat 13px 3px transparent;
 }
 .icon_delete {
-	background: url('/static/img/icons/minus.png') no-repeat 5px 3px transparent;	
+	background: url('/static/img/icons/minus.png') no-repeat 13px 3px transparent;	
 }
 .icon_edit {
-	background: url('/static/img/icons/edit.png') no-repeat 5px 3px transparent;
+	background: url('/static/img/icons/edit.png') no-repeat 13px 3px transparent;
 }
 
 .icon_list {
-	background: url('/static/img/icons/list.png') no-repeat 5px 3px transparent;
+	background: url('/static/img/icons/list.png') no-repeat 13px 3px transparent;
 }
