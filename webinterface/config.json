@@ -1,7 +1,7 @@
 {
     "rabbitmq":{
         "master_ip": "10.0.0.200",
-        "user": "SecPi",
+        "user": "secpi",
         "password": "S3cP1"
     },
     "project_path": "/root/01_secpi/dev"
