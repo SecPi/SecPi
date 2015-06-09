@@ -20,7 +20,6 @@ then
 	then
 		cd webinterface
 		python main.py
-	fi
 	elif [ $1 = "setup" ]
 	then
 		cd tools/db
