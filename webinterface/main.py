@@ -55,12 +55,28 @@ class Root(object):
 		tmpl = lookup.get_template("index.mako")
 		return tmpl.render(page_title="Welcome")
 	
+	
 	@cherrypy.expose
-	def mytest(self, param_1=None, param_2=None, *args, **kw):
-		return repr(dict(param_1=param_1,
-						 param_2=param_2,
-						 args=args,
-						 kw=kw))
+	def activate(self, activate_setup=None, deactivate_setup=None):
+		msg = None
+		# we got a setup, activate it
+		if(activate_setup):
+			su = self.db.query(objects.Setup).get(int(activate_setup))
+			su.active_state = True
+			self.db.commit()
+			msg="Activated setup %s!"%su.name
+		
+		# we got a setup, deactivate it
+		if(deactivate_setup):
+			su = self.db.query(objects.Setup).get(int(deactivate_setup))
+			su.active_state = False
+			self.db.commit()
+			msg="Deactivated setup %s!"%su.name
+		
+		active_setups = self.db.query(objects.Setup).filter(objects.Setup.active_state == True).all()
+		inactive_setups = self.db.query(objects.Setup).filter(objects.Setup.active_state == False).all()
+		tmpl = lookup.get_template("activate.mako")
+		return tmpl.render(page_title="Activate", active_setups=active_setups, inactive_setups=inactive_setups, flash_message=msg)
 
 
 def run():
