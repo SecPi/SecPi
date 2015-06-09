@@ -8,7 +8,6 @@ import logging
 import importlib
 import threading
 import json
-import hashlib
 
 from tools import config
 from webcam import Webcam
@@ -18,7 +17,6 @@ class Worker:
 	def __init__(self):
 		self.actions = []
 		self.active = False # start deactivated --> only for debug True
-		self.current_config_hash = None
 		
 		# setup gpio and logging
 		GPIO.setmode(GPIO.BCM)
@@ -83,13 +81,10 @@ class Worker:
 	def got_config(self, ch, method, properties, body):
 		logging.info("received config %r" % (body))
 		
-		# check hash of config to detect if new
-		m = hashlib.md5()
-		m.update(body)
-		# m.digest()
+		new_conf = json.loads(body)
 		
-		# check if no hash exists (we don't have a config yet) or hash has changed (new config)
-		if(self.current_config_hash is None or self.current_config_hash != m.digest()):
+		# check if new config changed
+		if(new_conf != config.getDict()):
 			# disable while loading config
 			self.active = False
 			
