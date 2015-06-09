@@ -21,8 +21,14 @@ then
 		cd webinterface
 		python main.py
 	fi
+	elif [ $1 = "setup" ]
+	then
+		cd tools/db
+		python setup.py
+		python test.py
+	fi
 
 else
-	echo "Usage: startup.sh <manager|worker|webui>"
+	echo "Usage: startup.sh <manager|worker|webui|setup>"
 
 fi
