@@ -13,8 +13,8 @@ def filter_fields(fields, filter):
 	
 def str_to_value(val):
 	if(val=="None"): return None
-	if(val=="True"): return True
-	if(val=="False"): return False
+	if(val.lower()=="true"): return True
+	if(val.lower()=="false"): return False
 	try:
 		return int(val)
 	except ValueError:
