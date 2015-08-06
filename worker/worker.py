@@ -9,6 +9,7 @@ import importlib
 import threading
 import json
 import os
+import shutil
 
 from tools import config
 from webcam import Webcam
@@ -55,6 +56,24 @@ class Worker:
 		
 		self.channel.start_consuming() # this is a blocking call!!
 		
+	# Create a zip of all the files which were collected while actions were executed
+	def prepare_data(self):
+		shutil.make_archive("/var/tmp/%s" % config.get('pi_id'), "zip", self.data_directory)
+		logging.info("Created ZIP file")
+
+	# Remove all the data that was created during the alarm, unlink == remove
+	def cleanup_data(self):
+		os.unlink("/var/tmp/%s.zip" % config.get('pi_id'))
+		for the_file in os.listdir(self.data_directory):
+			file_path = os.path.join(self.data_directory, the_file)
+			try:
+				if os.path.isfile(file_path):
+					os.unlink(file_path)
+				elif os.path.isdir(file_path): shutil.rmtree(file_path)
+			except Exception, e:
+				print e
+		logging.info("Cleaned up files")
+
 
 	def got_action(self, ch, method, properties, body):
 		if(self.active):
@@ -76,6 +95,8 @@ class Worker:
 				t.join()
 		
 			# TODO: get contents from alarm_data folder and send them over queue
+			self.prepare_data()
+			self.cleanup_data()
 			# TODO: send finished
 		else:
 			logging.debug("received action but wasn't active")
