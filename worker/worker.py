@@ -57,6 +57,9 @@ class Worker:
 	def got_action(self, ch, method, properties, body):
 		if(self.active):
 			# TODO: create/clear alarm_data folder
+			data_path = "/var/tmp/secpi_data"
+			if not os.path.isdir(data_path):
+				os.makedirs(data_path)
 			
 			# DONE: threading
 			#		http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
