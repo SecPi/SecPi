@@ -82,6 +82,7 @@ class Manager:
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
 		#self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
+		logging.info("setup done!")
 
 	
 	def start(self):
