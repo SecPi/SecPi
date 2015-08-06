@@ -17,9 +17,9 @@ class Worker:
 
 	def __init__(self):
 		self.actions = []
-		self.active = False # start deactivated --> only for debug True
+		self.active = True # start deactivated --> only for debug True
 		
-		prepare_directories()
+		self.prepare_directories()
 		# setup gpio and logging
 		GPIO.setmode(GPIO.BCM)
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)
@@ -54,7 +54,7 @@ class Worker:
 		self.channel.start_consuming() # this is a blocking call!!
 		
 		
-	def prepare_directories():
+	def prepare_directories(self):
 		data_path = "/var/tmp/secpi_data"
 		if not os.path.isdir(data_path):
 			os.makedirs(data_path)
