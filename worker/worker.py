@@ -8,6 +8,7 @@ import logging
 import importlib
 import threading
 import json
+import os
 
 from tools import config
 from webcam import Webcam
@@ -131,6 +132,7 @@ class Worker:
 		# remove the callbacks
 		for sensor in config.get("sensors"):
 			GPIO.remove_event_detect(int(sensor["gpio"]))
+			logging.debug("Removed sensor: %d" % int(sensor["gpio"]))
 	
 	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
 	def class_for_name(self, module_name, class_name):
