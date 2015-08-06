@@ -7,7 +7,7 @@ class Action(object):
 		self.params = params
 		
 	@abc.abstractmethod
-	def execute(self):
+	def execute(self, data_path):
 		"""Do some stuff.
 		Params is a dict with additional info for the executing actor."""
 		return
