@@ -19,6 +19,7 @@ class Worker:
 		self.actions = []
 		self.active = False # start deactivated --> only for debug True
 		
+		prepare_directories()
 		# setup gpio and logging
 		GPIO.setmode(GPIO.BCM)
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)
@@ -53,17 +54,18 @@ class Worker:
 		self.channel.start_consuming() # this is a blocking call!!
 		
 		
-		
+	def prepare_directories():
+		data_path = "/var/tmp/secpi_data"
+		if not os.path.isdir(data_path):
+			os.makedirs(data_path)
+			loggind.debug("created secpi data directory")
 
 	def got_action(self, ch, method, properties, body):
 		if(self.active):
-			# TODO: create/clear alarm_data folder
-			data_path = "/var/tmp/secpi_data"
-			if not os.path.isdir(data_path):
-				os.makedirs(data_path)
+			# TODO: create/clear alarm_data folder, maybe we should move this to init?
 			
 			# DONE: threading
-			#		http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
+			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
 			logging.info("received action from manager")
 			threads = []
 			
