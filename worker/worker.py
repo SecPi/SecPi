@@ -18,12 +18,14 @@ class Worker:
 	def __init__(self):
 		self.actions = []
 		self.active = True # start deactivated --> only for debug True
+		self.data_directory = "/var/tmp/secpi_data"
 		
-		self.prepare_directories()
 		# setup gpio and logging
 		GPIO.setmode(GPIO.BCM)
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)
-		
+		self.prepare_data_directory(self.data_directory)
+
+
 		logging.info("loading config...")
 		config.load("worker")
 		# TODO: generate md5 hash
@@ -53,16 +55,10 @@ class Worker:
 		
 		self.channel.start_consuming() # this is a blocking call!!
 		
-		
-	def prepare_directories(self):
-		data_path = "/var/tmp/secpi_data"
-		if not os.path.isdir(data_path):
-			os.makedirs(data_path)
-			loggind.debug("created secpi data directory")
 
 	def got_action(self, ch, method, properties, body):
 		if(self.active):
-			# TODO: create/clear alarm_data folder, maybe we should move this to init?
+			# TODO: create/clear alarm_data folder
 			
 			# DONE: threading
 			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
@@ -189,6 +185,11 @@ class Worker:
 		s.close()
 		
 		return ip
+
+	def prepare_data_directory(self, data_path):
+		if not os.path.isdir(data_path):
+			os.makedirs(data_path)
+			logging.debug("created secpi data directory")
 	
 	def __del__(self):
 		self.connection.close()
