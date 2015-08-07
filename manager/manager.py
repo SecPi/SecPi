@@ -81,14 +81,21 @@ class Manager:
 		self.channel.basic_consume(self.got_alarm, queue='alarm', no_ack=True)
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
-		#self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
+		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
 		logging.info("setup done!")
 
 	
 	def start(self):
 		self.channel.start_consuming()
 	
-	
+	def got_data(self, ch, method, properties, body):
+		logging.info("got data")
+		newFile_bytes = bytearray(body)
+		newFile = open("/var/tmp/manager/inc.zip", "wb")
+		newFile.write(newFile_bytes)
+		logging.info("data written")
+
+
 	def cb_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
 			
