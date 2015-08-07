@@ -95,7 +95,13 @@ class Worker:
 				t.join()
 		
 			# TODO: get contents from alarm_data folder and send them over queue
+			# TODO: implement check to see if there is any data available
 			self.prepare_data()
+			zip_file = open("/var/tmp/%s.zip" % config.get('pi_id'), "rb")
+			byte_stream = zip_file.read()
+			#logging.info("bytes: %s", byte_stream)
+			self.channel.basic_publish(exchange='manager', routing_key="data", body=byte_stream)
+			logging.info("sent data to manager")
 			self.cleanup_data()
 			# TODO: send finished
 		else:
