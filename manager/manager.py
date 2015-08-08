@@ -1,8 +1,9 @@
-import pika
-import time
-import sys
-import logging
+import hashlib
 import json
+import logging
+import pika
+import sys
+import time
 
 from tools.db import database as db
 from tools import config
@@ -91,7 +92,7 @@ class Manager:
 	def got_data(self, ch, method, properties, body):
 		logging.info("got data")
 		newFile_bytes = bytearray(body)
-		newFile = open("/var/tmp/manager/inc.zip", "wb")
+		newFile = open("/var/tmp/manager/%s.zip" % hashlib.md5(newFile_bytes).hexdigest(), "wb")
 		newFile.write(newFile_bytes)
 		logging.info("data written")
 
