@@ -58,8 +58,13 @@ class Worker:
 		
 	# Create a zip of all the files which were collected while actions were executed
 	def prepare_data(self):
-		shutil.make_archive("/var/tmp/%s" % config.get('pi_id'), "zip", self.data_directory)
-		logging.info("Created ZIP file")
+		if os.listdir(self.data_directory): # check if there are any files available
+			shutil.make_archive("/var/tmp/%s" % config.get('pi_id'), "zip", self.data_directory)
+			logging.info("Created ZIP file")
+			return True
+		else:
+			logging.info("no data to zip")
+			return False
 
 	# Remove all the data that was created during the alarm, unlink == remove
 	def cleanup_data(self):
@@ -94,15 +99,12 @@ class Worker:
 			for t in threads:
 				t.join()
 		
-			# TODO: get contents from alarm_data folder and send them over queue
-			# TODO: implement check to see if there is any data available
-			self.prepare_data()
-			zip_file = open("/var/tmp/%s.zip" % config.get('pi_id'), "rb")
-			byte_stream = zip_file.read()
-			#logging.info("bytes: %s", byte_stream)
-			self.channel.basic_publish(exchange='manager', routing_key="data", body=byte_stream)
-			logging.info("sent data to manager")
-			self.cleanup_data()
+			if self.prepare_data(): #check if there is any data to send
+				zip_file = open("/var/tmp/%s.zip" % config.get('pi_id'), "rb")
+				byte_stream = zip_file.read()
+				self.channel.basic_publish(exchange='manager', routing_key="data", body=byte_stream)
+				logging.info("sent data to manager")
+				self.cleanup_data()
 			# TODO: send finished
 		else:
 			logging.debug("received action but wasn't active")

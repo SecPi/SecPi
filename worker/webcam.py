@@ -32,9 +32,4 @@ class Webcam(Action):
 	
 	def execute(self, data_path):
 		self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]), data_path)
-		
-		# send pictures
-		# channel.basic_publish(exchange='manager', routing_key='data', body="BLOB")
-		
-		
-
+		#print "test"

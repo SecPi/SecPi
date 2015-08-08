@@ -11,5 +11,3 @@ class Action(object):
 		"""Do some stuff.
 		Params is a dict with additional info for the executing actor."""
 		return
-	
-	 
