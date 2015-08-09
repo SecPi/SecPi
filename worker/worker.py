@@ -90,7 +90,7 @@ class Worker:
 			threads = []
 			
 			for act in self.actions:
-				t = threading.Thread(name='thread-%s'%(act.id), target=act.execute(self.data_directory))
+				t = threading.Thread(name='thread-%s'%(act.id), target=act.execute)
 				threads.append(t)
 				t.start()
 				# act.execute()

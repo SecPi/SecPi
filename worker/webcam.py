@@ -10,6 +10,7 @@ class Webcam(Action):
 		super(Webcam, self).__init__(id, params)
 		self.path = params["path"]
 		self.resolution = (int(params["resolution_x"]), int(params["resolution_y"]))
+		self.data_path = params["data_path"]
 		pygame.camera.init()
 		self.cam = pygame.camera.Camera(self.path, self.resolution)
 
@@ -19,17 +20,17 @@ class Webcam(Action):
 	#	pygame.image.save(img, "/var/tmp/secpi_data/%s.jpg" % time.strftime("%Y%m%d_%H%M%S"))
 	#	self.cam.stop()
 
-	def take_adv_picture(self, num_of_pic, seconds_between, data_path):
+	def take_adv_picture(self, num_of_pic, seconds_between):
 		self.cam.start()
 		try:
 			for i in range(0,num_of_pic):
 				img = self.cam.get_image()
-				pygame.image.save(img, "%s/%s_%d.jpg" % (data_path, time.strftime("%Y%m%d_%H%M%S"), i))
+				pygame.image.save(img, "%s/%s_%d.jpg" % (self.data_path, time.strftime("%Y%m%d_%H%M%S"), i))
 				time.sleep(seconds_between)
 		except:
 			print("Error taking picture!")
 		self.cam.stop()
 	
-	def execute(self, data_path):
-		self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]), data_path)
+	def execute(self):
+		self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
 		#print "test"
