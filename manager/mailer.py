@@ -29,8 +29,6 @@ class Mailer:
 
 		logging.info("Mailer initialized")
 		
-
-
 	# TODO: include more details about which sensors signaled, etc.
 	# TODO: differentiate between NOSSL, SSL and STARTTLS
 	def send_mail(self):

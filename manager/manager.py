@@ -57,10 +57,11 @@ class Manager:
 		self.connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = self.connection.channel()
 
-		self.mailer = Mailer("from", "to","Alarm",
-		"Your SecPi raised an alarm. Please check the attached files",
-		"/var/tmp/manager", "server addr",
-		25, "email", "pw", "STARTTLS")
+		self.mailer = Mailer(config.get('mail')['sender'], config.get('mail')['recipient'],
+							 config.get('mail')['subject'], config.get('mail')['text'],
+							 config.get('mail')['data_dir'], config.get('mail')['smtp_address'],
+							 config.get('mail')['smtp_port'], config.get('mail')['smtp_user'],
+							 config.get('mail')['smtp_pass'], config.get('mail')['smtp_security'])
 
 		#define exchange
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
