@@ -83,18 +83,22 @@ class Manager:
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
 		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
-		logging.info("setup done!")
+		logging.info("Setup done!")
 
 	
 	def start(self):
 		self.channel.start_consuming()
 	
 	def got_data(self, ch, method, properties, body):
-		logging.info("got data")
+		logging.info("Got data")
 		newFile_bytes = bytearray(body)
 		newFile = open("/var/tmp/manager/%s.zip" % hashlib.md5(newFile_bytes).hexdigest(), "wb")
 		newFile.write(newFile_bytes)
-		logging.info("data written")
+		logging.info("Data written")
+
+		# JFT: move mail sending to got_alarm
+		#self.mailer.send_mail()
+		# TODO: data has to be moved somewhere else or deleted, after mail has been sent
 
 
 	def cb_on_off(self, ch, method, properties, body):
@@ -108,11 +112,11 @@ class Manager:
 
 	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
-		logging.info("Sending Action to %s"%to_queue)
+		logging.info("Sending action to %s"%to_queue)
 
 
 	def got_alarm(self, ch, method, properties, body):
-		logging.info("received alarm: %s"%body)
+		logging.info("Received alarm: %s"%body)
 		
 		msg = json.loads(body)
 		
@@ -179,7 +183,7 @@ class Manager:
 		conf['actions'] = conf_actions
 		
 		msg = json.dumps(conf)
-		logging.info("generated config: %s" % msg)
+		logging.info("Generated config: %s" % msg)
 		
 		properties = pika.BasicProperties(content_type='application/json')
 		self.channel.basic_publish(exchange='manager', routing_key='%i_config'%pi_id, body=msg, properties=properties)

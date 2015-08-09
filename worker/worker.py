@@ -27,11 +27,11 @@ class Worker:
 		self.prepare_data_directory(self.data_directory)
 
 
-		logging.info("loading config...")
+		logging.info("Loading config...")
 		config.load("worker")
 		# TODO: generate md5 hash
 		
-		logging.info("setting up queues")
+		logging.info("Setting up queues")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip']) #this will change because we need the ip initially
 		self.connection = pika.BlockingConnection(parameters=parameters) 
@@ -48,11 +48,11 @@ class Worker:
 		
 		self.channel.basic_consume(self.got_config, queue='%i_config' % config.get('pi_id'), no_ack=True)
 
-		logging.info("setting up sensors and actions")
+		logging.info("Setting up sensors and actions")
 		self.setup_sensors()
 		self.setup_actions()
 		
-		logging.info("setup done!")
+		logging.info("Setup done!")
 		
 		self.channel.start_consuming() # this is a blocking call!!
 		
@@ -63,7 +63,7 @@ class Worker:
 			logging.info("Created ZIP file")
 			return True
 		else:
-			logging.info("no data to zip")
+			logging.info("No data to zip")
 			return False
 
 	# Remove all the data that was created during the alarm, unlink == remove
@@ -86,7 +86,7 @@ class Worker:
 			
 			# DONE: threading
 			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
-			logging.info("received action from manager")
+			logging.info("Received action from manager")
 			threads = []
 			
 			for act in self.actions:
@@ -103,14 +103,14 @@ class Worker:
 				zip_file = open("/var/tmp/%s.zip" % config.get('pi_id'), "rb")
 				byte_stream = zip_file.read()
 				self.channel.basic_publish(exchange='manager', routing_key="data", body=byte_stream)
-				logging.info("sent data to manager")
+				logging.info("Sent data to manager")
 				self.cleanup_data()
 			# TODO: send finished
 		else:
-			logging.debug("received action but wasn't active")
+			logging.debug("Received action but wasn't active")
 
 	def got_config(self, ch, method, properties, body):
-		logging.info("received config %r" % (body))
+		logging.info("Received config %r" % (body))
 		
 		new_conf = json.loads(body)
 		
@@ -140,7 +140,7 @@ class Worker:
 			
 			logging.info("Config saved...")
 		else:
-			logging.info("config the same")
+			logging.info("Config the same")
 		
 	# Initialize all the sensors for operation and add callback method
 	def setup_sensors(self):
@@ -151,7 +151,7 @@ class Worker:
 			# check if we haven't registerd the pin before
 			if(int(sensor["gpio"]) not in reg_sensors):
 				GPIO.setup(int(sensor["gpio"]), GPIO.IN)
-				GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=5000)
+				GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=30000)
 				reg_sensors.append(int(sensor["gpio"]))	
 				logging.info("Registered!")
 	
@@ -177,7 +177,7 @@ class Worker:
 			a = self.class_for_name(action["module"], action["class"])
 			act = a(action["id"], action["params"])
 			self.actions.append(act)
-			logging.info("set up action %s" % action['class'])
+			logging.info("Set up action %s" % action['class'])
 	
 	def cleanup_actions(self):
 		# TODO: maybe manual del of all actions?
@@ -218,7 +218,7 @@ class Worker:
 	def prepare_data_directory(self, data_path):
 		if not os.path.isdir(data_path):
 			os.makedirs(data_path)
-			logging.debug("created secpi data directory")
+			logging.debug("Created SecPi data directory")
 	
 	def __del__(self):
 		self.connection.close()
