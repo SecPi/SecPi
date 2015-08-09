@@ -5,8 +5,9 @@ import pika
 import sys
 import time
 
-from tools.db import database as db
+from mailer import Mailer
 from tools import config
+from tools.db import database as db
 
 #state = False
 #
@@ -56,9 +57,13 @@ class Manager:
 		self.connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = self.connection.channel()
 
+		self.mailer = Mailer("from", "to","Alarm",
+		"Your SecPi raised an alarm. Please check the attached files",
+		"/var/tmp/manager", "server addr",
+		25, "email", "pw", "STARTTLS")
+
 		#define exchange
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
-
 
 		#define queues: data, alarm and action & config for every pi
 		self.channel.queue_declare(queue='data')
@@ -128,10 +133,11 @@ class Manager:
 		
 		
 		al = db.objects.Alarm(sensor_id=msg['sensor_id'])
-		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New Alarm from %s on Sensor %s (GPIO Pin %s)"%(msg['pi_id'], msg['sensor_id'], msg['gpio']))
+		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s (GPIO Pin %s)"%(msg['pi_id'], msg['sensor_id'], msg['gpio']))
 		db.session.add(al)
 		db.session.add(lo)
 		db.session.commit()
+		# TODO: wait until all workers finished with their actions then send mail etc
 
 
 	
