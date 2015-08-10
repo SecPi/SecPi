@@ -57,6 +57,7 @@ class Manager:
 		self.connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = self.connection.channel()
 
+		# TODO: read config from db or config file?
 		self.mailer = Mailer(config.get('mail')['sender'], config.get('mail')['recipient'],
 							 config.get('mail')['subject'], config.get('mail')['text'],
 							 config.get('mail')['data_dir'], config.get('mail')['smtp_address'],
@@ -131,7 +132,6 @@ class Manager:
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
 			self.send_message("%i_action"%pi.id, "execute")
-		
 		
 		al = db.objects.Alarm(sensor_id=msg['sensor_id'])
 		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s (GPIO Pin %s)"%(msg['pi_id'], msg['sensor_id'], msg['gpio']))
