@@ -29,9 +29,18 @@ class Mailer:
 
 		logging.info("Mailer initialized")
 		
-	# TODO: include more details about which sensors signaled, etc.
-	# TODO: differentiate between NOSSL, SSL and STARTTLS
+	# TODO: include more details about which sensors signaled, etc.???
 	def send_mail(self):
+		if self.smtp_security == "STARTTLS":
+			self.send_mail_starttls()
+		elif self.smtp_security == "SSL":
+			self.send_mail_ssl()
+		elif self.smtp_security == "NOSSL":
+			self.send_mail_nossl()
+		elif self.smtp_security == "NOAUTH":
+			self.send_mail_noauth()
+
+	def prepare_mail_attachments(self):
 		for file in os.listdir(self.data_dir): # iterate through files and attach them to the mail
 			# check if it really is a file
 			if os.path.isfile("%s/%s" % (self.data_dir, file)):
@@ -44,6 +53,9 @@ class Mailer:
 			else:
 				logging.debug("%s is not a file" % file)
 
+	def send_mail_starttls(self):
+		self.prepare_mail_attachments()
+		print "sending starttls"
 		try:
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
@@ -55,3 +67,19 @@ class Mailer:
 			smtp.quit()
 		except Exception, e:
 			print(e)
+
+	def send_mail_ssl(self):
+		self.prepare_mail_attachments()
+		print "send mail ssl"
+
+	def send_mail_nossl(self):
+		self.prepare_mail_attachments()
+		print "send mail no ssl"
+
+	def send_mail_noauth(self):
+		self.prepare_mail_attachments()
+		print "noauth"
+
+
+
+
