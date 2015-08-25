@@ -53,7 +53,7 @@ class BaseWebPage(object):
 			
 			for k, v in params.iteritems():
 				if(v and not v == ""):
-					setattr(newObj, k, v)
+					setattr(newObj, k, utils.str_to_value(v))
 			
 			self.db.add(newObj)
 			self.db.commit()
