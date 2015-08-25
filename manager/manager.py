@@ -169,6 +169,10 @@ class Manager:
 		conf['sensors'] = conf_sensors
 		
 		actions = db.session.query(db.objects.Action).join((db.objects.Worker, db.objects.Action.workers)).filter(db.objects.Worker.id == pi_id).all()
+		# if we have actions we are also active
+		if(len(actions)>0):
+			conf['active'] = True
+			
 		conf_actions = []
 		# iterate over all actions
 		for act in actions:
