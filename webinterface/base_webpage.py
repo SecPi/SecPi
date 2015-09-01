@@ -22,11 +22,11 @@ class BaseWebPage(object):
 		return cherrypy.request.db
 	
 	@cherrypy.expose
-	def list(self, flash_message=None):
+	def list(self, flash_message=None, flash_type='info'):
 		tmpl = self.lookup.get_template("list.mako")
 		objects = self.db.query(self.baseclass).all()
 		
-		return tmpl.render(data=objects, page_title="List", flash_message=flash_message, fields=self.fields)
+		return tmpl.render(data=objects, page_title="List", flash_message=flash_message, flash_type=flash_type, fields=self.fields)
 	
 	
 	@cherrypy.expose
@@ -37,14 +37,14 @@ class BaseWebPage(object):
 				self.db.delete(obj)
 				self.db.commit()
 			else:
-				raise cherrypy.HTTPRedirect("list?%s"% urllib.urlencode({'flash_message': 'ID not found!'}))
+				raise cherrypy.HTTPRedirect("list?%s"% urllib.urlencode({'flash_message': 'ID not found!', 'flash_type': 'error'}))
 				
 			
-		raise cherrypy.HTTPRedirect("list?%s"%urllib.urlencode({'flash_message': 'Object deleted!'}))
+		raise cherrypy.HTTPRedirect("list?%s"%urllib.urlencode({'flash_message': 'Object deleted!', 'flash_type': 'warn'}))
 		
 		
 	@cherrypy.expose
-	def add(self, flash_message=None, **params):
+	def add(self, flash_message=None, flash_type='info', **params):
 		tmpl = self.lookup.get_template("add.mako")
 		
 		if(params and len(params)>0):
@@ -58,14 +58,15 @@ class BaseWebPage(object):
 			self.db.add(newObj)
 			self.db.commit()
 			flash_message="Added new object with id %i"%newObj.id
+			flash_type='info'
 			
 				
 		
-		return tmpl.render(page_title="Add", flash_message=flash_message, fields=self.fields)
+		return tmpl.render(page_title="Add", flash_message=flash_message, flash_type=flash_type, fields=self.fields)
 		
 		
 	@cherrypy.expose
-	def update(self, id=0, flash_message=None, **params):
+	def update(self, id=0, flash_message=None, flash_type='info', **params):
 		tmpl = self.lookup.get_template("update.mako")
 		
 		# check for valid id
@@ -81,17 +82,18 @@ class BaseWebPage(object):
 				
 				self.db.commit()
 				flash_message="Updated object with id %i"%obj.id
-				return tmpl.render(page_title="Update", flash_message=flash_message, fields=self.fields, data=obj)
+				flash_type='info'
+				return tmpl.render(page_title="Update", flash_message=flash_message, flash_type=flash_type, fields=self.fields, data=obj)
 			else:
 				cherrypy.log("got id to update: %s"%id)
 				obj = self.db.query(self.baseclass).get(id)
 				cherrypy.log("got from db: %s"%obj)
-				return tmpl.render(page_title="Update", flash_message=flash_message, fields=self.fields, data=obj)
+				return tmpl.render(page_title="Update", flash_message=flash_message, flash_type=flash_type, fields=self.fields, data=obj)
 		else:
 			flash_message = "Invalid ID!"		
 				
 		
-		return tmpl.render(page_title="Update", flash_message=flash_message, fields=self.fields, data=None)
+		return tmpl.render(page_title="Update", flash_message=flash_message, flash_type=flash_type, fields=self.fields, data=None)
 
 
 
