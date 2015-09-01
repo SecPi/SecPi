@@ -29,7 +29,7 @@ class Worker:
 
 		logging.info("Loading config...")
 		config.load("worker")
-		# TODO: generate md5 hash
+		
 		
 		logging.info("Setting up queues")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])

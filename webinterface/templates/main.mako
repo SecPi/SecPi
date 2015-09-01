@@ -3,6 +3,7 @@
 <head>
 	<title>SecPi - ${page_title}</title>
 	<link rel="stylesheet" type="text/css" href="/static/css/main.css">
+	<script type="text/javascript" src="/static/js/angular.min.js"></script>
 </head>
 <body>
 	<div id="nav">
