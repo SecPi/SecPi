@@ -16,38 +16,74 @@ class BaseWebPage(object):
 		self.baseclass = baseclass
 		self.lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
 		self.fields = OrderedDict()
+	
+	
+	def objectToDict(self, obj):
+		data = {}
 		
+		for k, v in self.fields.iteritems():
+			cherrypy.log("k: %s, v: %s"%(k,v))
+			data[k] = obj.__dict__[k]
+			
+		return data;
+	
+	def objectsToList(self, objs):
+		data = []
+		
+		for o in objs:
+			data.append(self.objectToDict(o))
+			
+		return data;
+	
 	@property
 	def db(self):
 		return cherrypy.request.db
 	
 	@cherrypy.expose
-	def list(self, flash_message=None, flash_type='info'):
-		tmpl = self.lookup.get_template("list.mako")
+	@cherrypy.tools.json_out()
+	@cherrypy.tools.json_in()
+	def fieldList(self):
+		if(hasattr(cherrypy.request, 'json')):
+			filter = cherrypy.request.json['filter'];
+		
+			return {'status': 'success', 'data': utils.filter_fields(self.fields, filter)}
+		
+		return {'status': 'error', 'message': 'No filter set.'}
+	
+	@cherrypy.expose
+	@cherrypy.tools.json_out()
+	def list(self):
 		objects = self.db.query(self.baseclass).all()
 		
-		return tmpl.render(data=objects, page_title="List", flash_message=flash_message, flash_type=flash_type, fields=self.fields)
+		return {'status': 'success', 'data': self.objectsToList(objects)}
 	
 	
 	@cherrypy.expose
-	def delete(self, id):
-		if id:
-			obj = self.db.query(self.baseclass).get(id)
-			if(obj):
-				self.db.delete(obj)
-				self.db.commit()
-			else:
-				raise cherrypy.HTTPRedirect("list?%s"% urllib.urlencode({'flash_message': 'ID not found!', 'flash_type': 'error'}))
-				
+	@cherrypy.tools.json_out()
+	@cherrypy.tools.json_in()
+	def delete(self):
+		if(hasattr(cherrypy.request, 'json')):
+			id = cherrypy.request.json['id']
+			if id:
+				obj = self.db.query(self.baseclass).get(id)
+				if(obj):
+					self.db.delete(obj)
+					self.db.commit()
+					return {'status': 'success', 'message': 'Object deleted!'}
+		
+		return {'status': 'error', 'message': 'ID not found!'}
+		
+		
+	@cherrypy.expose
+	@cherrypy.tools.json_out()
+	@cherrypy.tools.json_in()
+	def add(self, **params):
+		if(not params):
+			data = cherrypy.request.json
+		else:
+			data = params
 			
-		raise cherrypy.HTTPRedirect("list?%s"%urllib.urlencode({'flash_message': 'Object deleted!', 'flash_type': 'warn'}))
-		
-		
-	@cherrypy.expose
-	def add(self, flash_message=None, flash_type='info', **params):
-		tmpl = self.lookup.get_template("add.mako")
-		
-		if(params and len(params)>0):
+		if(data and len(data)>0):
 			cherrypy.log("got something %s"%params)
 			newObj = self.baseclass()
 			
@@ -57,43 +93,45 @@ class BaseWebPage(object):
 			
 			self.db.add(newObj)
 			self.db.commit()
-			flash_message="Added new object with id %i"%newObj.id
-			flash_type='info'
-			
-				
+			return {'status': 'success','message':"Added new object with id %i"%newObj.id}	
 		
-		return tmpl.render(page_title="Add", flash_message=flash_message, flash_type=flash_type, fields=self.fields)
+		return {'status': 'error', 'message': 'No parameters recieved!'}
 		
 		
 	@cherrypy.expose
-	def update(self, id=0, flash_message=None, flash_type='info', **params):
-		tmpl = self.lookup.get_template("update.mako")
+	@cherrypy.tools.json_out()
+	@cherrypy.tools.json_in()
+	def update(self, id=0, **params):
+		
+		if(not params):
+			data = cherrypy.request.json
+		else:
+			data = params
+		
+		if(not id or id == 0):
+			id = cherrypy.request.json.id
 		
 		# check for valid id
 		if(id and id > 0):
 			
-			if(params and len(params)>0):
-				cherrypy.log("update something %s"%params)
+			if(data and len(data)>0):
+				cherrypy.log("update something %s"%data)
 				obj = self.db.query(self.baseclass).get(id)
 				
-				for k, v in params.iteritems():
+				for k, v in data.iteritems():
 					if(v and not v == ""):
 						setattr(obj, k, utils.str_to_value(v))
 				
 				self.db.commit()
-				flash_message="Updated object with id %i"%obj.id
-				flash_type='info'
-				return tmpl.render(page_title="Update", flash_message=flash_message, flash_type=flash_type, fields=self.fields, data=obj)
+				
+				return {'status': 'success', 'message': "Updated object with id %i"%obj.id}
 			else:
 				cherrypy.log("got id to update: %s"%id)
 				obj = self.db.query(self.baseclass).get(id)
 				cherrypy.log("got from db: %s"%obj)
-				return tmpl.render(page_title="Update", flash_message=flash_message, flash_type=flash_type, fields=self.fields, data=obj)
+				return {'status': 'success', 'data': obj}
 		else:
-			flash_message = "Invalid ID!"		
-				
-		
-		return tmpl.render(page_title="Update", flash_message=flash_message, flash_type=flash_type, fields=self.fields, data=None)
+			return {'status':'error', 'message': "Invalid ID!" }
 
 
 

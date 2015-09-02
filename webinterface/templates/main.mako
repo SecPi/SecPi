@@ -1,9 +1,10 @@
 <%page args="flash_message='',flash_type='info'"/>
-<html>
+<html ng-app="SecPi">
 <head>
 	<title>SecPi - ${page_title}</title>
 	<link rel="stylesheet" type="text/css" href="/static/css/main.css">
 	<script type="text/javascript" src="/static/js/angular.min.js"></script>
+	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
 <body >
 	<div id="nav">
