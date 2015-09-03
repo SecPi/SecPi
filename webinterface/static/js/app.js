@@ -130,7 +130,12 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 						self.cancelEdit();
 					}
 				}
-			})
+			});
+			
+			$( "#edit-form-div" ).on('dialogclose', function(event) {
+				self.cancelEdit();
+			});
+			
 		}, 100)
 		
 		self.fetchFields();
