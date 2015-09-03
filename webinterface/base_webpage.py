@@ -22,7 +22,6 @@ class BaseWebPage(object):
 		data = {}
 		
 		for k, v in self.fields.iteritems():
-			cherrypy.log("k: %s, v: %s"%(k,v))
 			data[k] = obj.__dict__[k]
 			
 		return data;
@@ -43,12 +42,8 @@ class BaseWebPage(object):
 	@cherrypy.tools.json_out()
 	@cherrypy.tools.json_in()
 	def fieldList(self):
-		if(hasattr(cherrypy.request, 'json')):
-			filter = cherrypy.request.json['filter'];
+		return {'status': 'success', 'data': self.fields}
 		
-			return {'status': 'success', 'data': utils.filter_fields(self.fields, filter)}
-		
-		return {'status': 'error', 'message': 'No filter set.'}
 	
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
@@ -77,11 +72,8 @@ class BaseWebPage(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
 	@cherrypy.tools.json_in()
-	def add(self, **params):
-		if(not params):
-			data = cherrypy.request.json
-		else:
-			data = params
+	def add(self):
+		data = cherrypy.request.json
 			
 		if(data and len(data)>0):
 			cherrypy.log("got something %s"%params)
@@ -95,21 +87,16 @@ class BaseWebPage(object):
 			self.db.commit()
 			return {'status': 'success','message':"Added new object with id %i"%newObj.id}	
 		
-		return {'status': 'error', 'message': 'No parameters recieved!'}
+		return {'status': 'error', 'message': 'No data recieved!'}
 		
 		
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
 	@cherrypy.tools.json_in()
-	def update(self, id=0, **params):
+	def update(self):
+		data = cherrypy.request.json
 		
-		if(not params):
-			data = cherrypy.request.json
-		else:
-			data = params
-		
-		if(not id or id == 0):
-			id = cherrypy.request.json.id
+		id = data['id']
 		
 		# check for valid id
 		if(id and id > 0):
@@ -119,7 +106,7 @@ class BaseWebPage(object):
 				obj = self.db.query(self.baseclass).get(id)
 				
 				for k, v in data.iteritems():
-					if(v and not v == ""):
+					if(not k == "id"): # and v is not None --> can be null!?
 						setattr(obj, k, utils.str_to_value(v))
 				
 				self.db.commit()
