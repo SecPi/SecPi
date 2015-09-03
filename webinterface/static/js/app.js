@@ -13,7 +13,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 		self.fields = {};
 		
 		self.edit_data = null;
-		self.edit_id = 0;
+		self.edit_id = -1;
 		self.orig_data = null;
 		
 		self.flash = function(message,type){
@@ -138,7 +138,10 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 			
 		}, 100)
 		
+		
+		
 		self.fetchFields();
+		self.getList();
 })
 
 
