@@ -94,6 +94,9 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 					// success
 					if(response.data['status'] == 'success'){
 						self.flash(response.data['message'], 'info')
+						self.orig_data = null;
+						self.edit_data = null;
+						self.edit_id = -1;
 						self.dialog.dialog( "close" );
 					}
 					else{
@@ -108,10 +111,11 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 		};
 		
 		self.cancelEdit = function(){
-			$log.log("cancel");
+			$log.log("cancel "+self.edit_id);
 			self.data[self.edit_id] = self.orig_data;
 			self.orig_data = null;
 			self.edit_data = null;
+			self.edit_id = -1;
 			$scope.$apply();
 			self.dialog.dialog( "close" );
 		};
@@ -131,11 +135,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 					}
 				}
 			});
-			
-			$( "#edit-form-div" ).on('dialogclose', function(event) {
-				self.cancelEdit();
-			});
-			
+			$(".ui-dialog-titlebar-close").remove();
 		}, 100)
 		
 		
