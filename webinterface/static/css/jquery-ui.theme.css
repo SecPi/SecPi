@@ -8,7 +8,7 @@
  *
  * http://api.jqueryui.com/category/theming/
  *
- * To view and modify this theme, visit http://jqueryui.com/themeroller/?ffDefault=Verdana%2CArial%2Csans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=4px&bgColorHeader=%23cccccc&bgTextureHeader=highlight_soft&bgImgOpacityHeader=75&borderColorHeader=%23aaaaaa&fcHeader=%23222222&iconColorHeader=%23222222&bgColorContent=%23ffffff&bgTextureContent=flat&bgImgOpacityContent=75&borderColorContent=%23aaaaaa&fcContent=%23222222&iconColorContent=%23222222&bgColorDefault=%23e6e6e6&bgTextureDefault=glass&bgImgOpacityDefault=75&borderColorDefault=%23d3d3d3&fcDefault=%236f6f6f&iconColorDefault=%23888888&bgColorHover=%23dadada&bgTextureHover=glass&bgImgOpacityHover=75&borderColorHover=%23999999&fcHover=%23212121&iconColorHover=%23454545&bgColorActive=%23ffffff&bgTextureActive=glass&bgImgOpacityActive=65&borderColorActive=%23aaaaaa&fcActive=%23212121&iconColorActive=%23454545&bgColorHighlight=%23fbf9ee&bgTextureHighlight=glass&bgImgOpacityHighlight=55&borderColorHighlight=%23fcefa1&fcHighlight=%23363636&iconColorHighlight=%232e83ff&bgColorError=%23fef1ec&bgTextureError=glass&bgImgOpacityError=95&borderColorError=%23cd0a0a&fcError=%23cd0a0a&iconColorError=%23cd0a0a&bgColorOverlay=%23aaaaaa&bgTextureOverlay=flat&bgImgOpacityOverlay=0&opacityOverlay=30&bgColorShadow=%23aaaaaa&bgTextureShadow=flat&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
+ * To view and modify this theme, visit http://jqueryui.com/themeroller/?ffDefault=Verdana%2CArial%2Csans-serif&fwDefault=normal&fsDefault=1.1em&cornerRadius=5px&bgColorHeader=2191c0&bgTextureHeader=gloss_wave&bgImgOpacityHeader=75&borderColorHeader=4297d7&fcHeader=eaf5f7&iconColorHeader=d8e7f3&bgColorContent=fcfdfd&bgTextureContent=inset_hard&bgImgOpacityContent=100&borderColorContent=a6c9e2&fcContent=222222&iconColorContent=0078ae&bgColorDefault=0078ae&bgTextureDefault=glass&bgImgOpacityDefault=45&borderColorDefault=77d5f7&fcDefault=ffffff&iconColorDefault=e0fdff&bgColorHover=79c9ec&bgTextureHover=glass&bgImgOpacityHover=75&borderColorHover=448dae&fcHover=026890&iconColorHover=056b93&bgColorActive=6eac2c&bgTextureActive=gloss_wave&bgImgOpacityActive=50&borderColorActive=acdd4a&fcActive=ffffff&iconColorActive=f5e175&bgColorHighlight=f8da4e&bgTextureHighlight=glass&bgImgOpacityHighlight=55&borderColorHighlight=fcd113&fcHighlight=915608&iconColorHighlight=f7a50d&bgColorError=e14f1c&bgTextureError=gloss_wave&bgImgOpacityError=45&borderColorError=cd0a0a&fcError=ffffff&iconColorError=fcd113&bgColorOverlay=aaaaaa&bgTextureOverlay=flat&bgImgOpacityOverlay=75&opacityOverlay=30&bgColorShadow=999999&bgTextureShadow=flat&bgImgOpacityShadow=55&opacityShadow=45&thicknessShadow=0px&offsetTopShadow=5px&offsetLeftShadow=5px&cornerRadiusShadow=5px
  */
 
 
@@ -29,21 +29,21 @@
 	font-size: 1em;
 }
 .ui-widget-content {
-	border: 1px solid #aaaaaa;
-	background: #ffffff url("/static/img/jquery-ui/ui-bg_flat_75_ffffff_40x100.png") 50% 50% repeat-x;
+	border: 1px solid #a6c9e2;
+	background: #fcfdfd url("/static/img/jquery-ui/ui-bg_inset-hard_100_fcfdfd_1x100.png") 50% bottom repeat-x;
 	color: #222222;
 }
 .ui-widget-content a {
 	color: #222222;
 }
 .ui-widget-header {
-	border: 1px solid #aaaaaa;
-	background: #cccccc url("/static/img/jquery-ui/ui-bg_highlight-soft_75_cccccc_1x100.png") 50% 50% repeat-x;
-	color: #222222;
+	border: 1px solid #4297d7;
+	background: #2191c0 url("/static/img/jquery-ui/ui-bg_gloss-wave_75_2191c0_500x100.png") 50% 50% repeat-x;
+	color: #eaf5f7;
 	font-weight: bold;
 }
 .ui-widget-header a {
-	color: #222222;
+	color: #eaf5f7;
 }
 
 /* Interaction states
@@ -51,15 +51,15 @@
 .ui-state-default,
 .ui-widget-content .ui-state-default,
 .ui-widget-header .ui-state-default {
-	border: 1px solid #d3d3d3;
-	background: #e6e6e6 url("/static/img/jquery-ui/ui-bg_glass_75_e6e6e6_1x400.png") 50% 50% repeat-x;
+	border: 1px solid #77d5f7;
+	background: #0078ae url("/static/img/jquery-ui/ui-bg_glass_45_0078ae_1x400.png") 50% 50% repeat-x;
 	font-weight: normal;
-	color: #6f6f6f;
+	color: #ffffff;
 }
 .ui-state-default a,
 .ui-state-default a:link,
 .ui-state-default a:visited {
-	color: #6f6f6f;
+	color: #ffffff;
 	text-decoration: none;
 }
 .ui-state-hover,
@@ -68,10 +68,10 @@
 .ui-state-focus,
 .ui-widget-content .ui-state-focus,
 .ui-widget-header .ui-state-focus {
-	border: 1px solid #999999;
-	background: #dadada url("/static/img/jquery-ui/ui-bg_glass_75_dadada_1x400.png") 50% 50% repeat-x;
+	border: 1px solid #448dae;
+	background: #79c9ec url("/static/img/jquery-ui/ui-bg_glass_75_79c9ec_1x400.png") 50% 50% repeat-x;
 	font-weight: normal;
-	color: #212121;
+	color: #026890;
 }
 .ui-state-hover a,
 .ui-state-hover a:hover,
@@ -81,21 +81,21 @@
 .ui-state-focus a:hover,
 .ui-state-focus a:link,
 .ui-state-focus a:visited {
-	color: #212121;
+	color: #026890;
 	text-decoration: none;
 }
 .ui-state-active,
 .ui-widget-content .ui-state-active,
 .ui-widget-header .ui-state-active {
-	border: 1px solid #aaaaaa;
-	background: #ffffff url("/static/img/jquery-ui/ui-bg_glass_65_ffffff_1x400.png") 50% 50% repeat-x;
+	border: 1px solid #acdd4a;
+	background: #6eac2c url("/static/img/jquery-ui/ui-bg_gloss-wave_50_6eac2c_500x100.png") 50% 50% repeat-x;
 	font-weight: normal;
-	color: #212121;
+	color: #ffffff;
 }
 .ui-state-active a,
 .ui-state-active a:link,
 .ui-state-active a:visited {
-	color: #212121;
+	color: #ffffff;
 	text-decoration: none;
 }
 
@@ -104,31 +104,31 @@
 .ui-state-highlight,
 .ui-widget-content .ui-state-highlight,
 .ui-widget-header .ui-state-highlight {
-	border: 1px solid #fcefa1;
-	background: #fbf9ee url("/static/img/jquery-ui/ui-bg_glass_55_fbf9ee_1x400.png") 50% 50% repeat-x;
-	color: #363636;
+	border: 1px solid #fcd113;
+	background: #f8da4e url("/static/img/jquery-ui/ui-bg_glass_55_f8da4e_1x400.png") 50% 50% repeat-x;
+	color: #915608;
 }
 .ui-state-highlight a,
 .ui-widget-content .ui-state-highlight a,
 .ui-widget-header .ui-state-highlight a {
-	color: #363636;
+	color: #915608;
 }
 .ui-state-error,
 .ui-widget-content .ui-state-error,
 .ui-widget-header .ui-state-error {
 	border: 1px solid #cd0a0a;
-	background: #fef1ec url("/static/img/jquery-ui/ui-bg_glass_95_fef1ec_1x400.png") 50% 50% repeat-x;
-	color: #cd0a0a;
+	background: #e14f1c url("/static/img/jquery-ui/ui-bg_gloss-wave_45_e14f1c_500x100.png") 50% top repeat-x;
+	color: #ffffff;
 }
 .ui-state-error a,
 .ui-widget-content .ui-state-error a,
 .ui-widget-header .ui-state-error a {
-	color: #cd0a0a;
+	color: #ffffff;
 }
 .ui-state-error-text,
 .ui-widget-content .ui-state-error-text,
 .ui-widget-header .ui-state-error-text {
-	color: #cd0a0a;
+	color: #ffffff;
 }
 .ui-priority-primary,
 .ui-widget-content .ui-priority-primary,
@@ -163,27 +163,27 @@
 }
 .ui-icon,
 .ui-widget-content .ui-icon {
-	background-image: url("/static/img/jquery-ui/ui-icons_222222_256x240.png");
+	background-image: url("/static/img/jquery-ui/ui-icons_0078ae_256x240.png");
 }
 .ui-widget-header .ui-icon {
-	background-image: url("/static/img/jquery-ui/ui-icons_222222_256x240.png");
+	background-image: url("/static/img/jquery-ui/ui-icons_d8e7f3_256x240.png");
 }
 .ui-state-default .ui-icon {
-	background-image: url("/static/img/jquery-ui/ui-icons_888888_256x240.png");
+	background-image: url("/static/img/jquery-ui/ui-icons_e0fdff_256x240.png");
 }
 .ui-state-hover .ui-icon,
 .ui-state-focus .ui-icon {
-	background-image: url("/static/img/jquery-ui/ui-icons_454545_256x240.png");
+	background-image: url("/static/img/jquery-ui/ui-icons_056b93_256x240.png");
 }
 .ui-state-active .ui-icon {
-	background-image: url("/static/img/jquery-ui/ui-icons_454545_256x240.png");
+	background-image: url("/static/img/jquery-ui/ui-icons_f5e175_256x240.png");
 }
 .ui-state-highlight .ui-icon {
-	background-image: url("/static/img/jquery-ui/ui-icons_2e83ff_256x240.png");
+	background-image: url("/static/img/jquery-ui/ui-icons_f7a50d_256x240.png");
 }
 .ui-state-error .ui-icon,
 .ui-state-error-text .ui-icon {
-	background-image: url("/static/img/jquery-ui/ui-icons_cd0a0a_256x240.png");
+	background-image: url("/static/img/jquery-ui/ui-icons_fcd113_256x240.png");
 }
 
 /* positioning */
@@ -373,38 +373,38 @@
 .ui-corner-top,
 .ui-corner-left,
 .ui-corner-tl {
-	border-top-left-radius: 4px;
+	border-top-left-radius: 5px;
 }
 .ui-corner-all,
 .ui-corner-top,
 .ui-corner-right,
 .ui-corner-tr {
-	border-top-right-radius: 4px;
+	border-top-right-radius: 5px;
 }
 .ui-corner-all,
 .ui-corner-bottom,
 .ui-corner-left,
 .ui-corner-bl {
-	border-bottom-left-radius: 4px;
+	border-bottom-left-radius: 5px;
 }
 .ui-corner-all,
 .ui-corner-bottom,
 .ui-corner-right,
 .ui-corner-br {
-	border-bottom-right-radius: 4px;
+	border-bottom-right-radius: 5px;
 }
 
 /* Overlays */
 .ui-widget-overlay {
-	background: #aaaaaa url("/static/img/jquery-ui/ui-bg_flat_0_aaaaaa_40x100.png") 50% 50% repeat-x;
+	background: #aaaaaa url("/static/img/jquery-ui/ui-bg_flat_75_aaaaaa_40x100.png") 50% 50% repeat-x;
 	opacity: .3;
 	filter: Alpha(Opacity=30); /* support: IE8 */
 }
 .ui-widget-shadow {
-	margin: -8px 0 0 -8px;
-	padding: 8px;
-	background: #aaaaaa url("/static/img/jquery-ui/ui-bg_flat_0_aaaaaa_40x100.png") 50% 50% repeat-x;
-	opacity: .3;
-	filter: Alpha(Opacity=30); /* support: IE8 */
-	border-radius: 8px;
+	margin: 5px 0 0 5px;
+	padding: 0px;
+	background: #999999 url("/static/img/jquery-ui/ui-bg_flat_55_999999_40x100.png") 50% 50% repeat-x;
+	opacity: .45;
+	filter: Alpha(Opacity=45); /* support: IE8 */
+	border-radius: 5px;
 }
