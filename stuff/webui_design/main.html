@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>SecPi</title>
+	<!--<link rel="stylesheet" type="text/css" href="/static/css/main.css">-->
+	<meta charset="UTF-8">
+</head>
+<body>
+	<div id="nav">
+		<span>SecPi</span>
+		<ul class="tabrow">
+			<li><a href="/">Home</a></li>
+			<li><a href="/activate">Activate</a></li>
+			<li class="selected"><a href="/sensors">Sensors</a></li>
+			<li><a href="/zones">Zones</a></li>
+			<li><a href="/setups">Setups</a></li>
+			<li><a href="/alarms">Alarms</a></li>
+			<li><a href="/workers">Workers</a></li>
+			<li><a href="/actions">Actions</a></li>
+			<li><a href="/actionparams">Action Params</a></li>
+			<li><a href="/logs">Logs</a></li>
+		</ul>
+	</div>
+	
+	<div id="main">
+		<h1>Sensors</h1>
+		<table>
+			<tr>
+				<th>ID</th>
+				<th>Description</th>
+				<th>GPIO PIN</th>
+				<th><input type="image" src="plus-button.png" alt="Add"></th>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>PIR kitchen</td>
+				<td>12</td>
+				<td><input type="image" src="minus-button.png" alt="Delete">	<input type="image" src="edit.png" alt="Edit"></td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td>PIR entrance</td>
+				<td>17</td>
+				<td><input type="image" src="minus-button.png" alt="Delete">	<input type="image" src="edit.png" alt="Edit"></td>
+			</tr>
+			</tr>
+		</table> 
+	</div>
+
+	<footer>
+		<p>SecPi, a project by Martin Liebl and Philip W&ouml;lfel</p>
+	</footer>
+</body>
+</html>
