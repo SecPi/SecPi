@@ -73,9 +73,6 @@ body {
 }
 
 #flash_message {
-	background-color: #FFA3A3;
-	color: #C70000;
-	border-color: #C70000;
 	border-style: solid;
 	border-width: 2px;
 	
@@ -86,6 +83,24 @@ body {
 	margin: 10px;
 	
 	text-align: center;
+}
+
+#flash_message.info {
+	background-color: #B6FAC4;
+	color: #1BCF3F;
+	border-color: #1BCF3F;
+}
+
+#flash_message.warn {
+	background-color: #FCF6B1;
+	color: #BAAB07;
+	border-color: #E3D107;
+}
+
+#flash_message.error {
+	background-color: #FFA3A3;
+	color: #C70000;
+	border-color: #C70000;
 }
 
 .list {
