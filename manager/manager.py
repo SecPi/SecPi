@@ -104,7 +104,7 @@ class Manager:
 		logging.info("Data written")
 
 		# JFT: move mail sending to got_alarm
-		#self.mailer.send_mail()
+		self.mailer.send_mail()
 		# TODO: data has to be moved somewhere else or deleted, after mail has been sent
 
 
@@ -138,7 +138,7 @@ class Manager:
 		db.session.add(al)
 		db.session.add(lo)
 		db.session.commit()
-		# TODO: wait until all workers finished with their actions then send mail etc
+		# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
 
 
 	

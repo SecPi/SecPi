@@ -45,7 +45,6 @@ class Worker:
 
 		#specify the queues we want to listen to, including the callback
 		self.channel.basic_consume(self.got_action, queue='%i_action' % config.get('pi_id'), no_ack=True)
-		
 		self.channel.basic_consume(self.got_config, queue='%i_config' % config.get('pi_id'), no_ack=True)
 
 		logging.info("Setting up sensors and actions")
@@ -67,6 +66,7 @@ class Worker:
 			return False
 
 	# Remove all the data that was created during the alarm, unlink == remove
+	# TODO: implement checks to see if files/directories exist before deleting them
 	def cleanup_data(self):
 		os.unlink("/var/tmp/%s.zip" % config.get('pi_id'))
 		for the_file in os.listdir(self.data_directory):
@@ -81,9 +81,7 @@ class Worker:
 
 
 	def got_action(self, ch, method, properties, body):
-		if(self.active):
-			# TODO: create/clear alarm_data folder
-			
+		if(self.active):			
 			# DONE: threading
 			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
 			logging.info("Received action from manager")
@@ -95,7 +93,8 @@ class Worker:
 				t.start()
 				# act.execute()
 		
-			# wait for threads to finish	
+			# wait for threads to finish
+			#TODO: think about timeout, also regarding speakers	
 			for t in threads:
 				t.join()
 		
@@ -151,7 +150,7 @@ class Worker:
 			# check if we haven't registerd the pin before
 			if(int(sensor["gpio"]) not in reg_sensors):
 				GPIO.setup(int(sensor["gpio"]), GPIO.IN)
-				GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=30000)
+				GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=60000)
 				reg_sensors.append(int(sensor["gpio"]))	
 				logging.info("Registered!")
 	
@@ -216,7 +215,7 @@ class Worker:
 		return ip
 
 	def prepare_data_directory(self, data_path):
-		if not os.path.isdir(data_path):
+		if not os.path.isdir(data_path): #check if directory structure already exists
 			os.makedirs(data_path)
 			logging.debug("Created SecPi data directory")
 	

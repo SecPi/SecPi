@@ -55,7 +55,7 @@ class Mailer:
 
 	def send_mail_starttls(self):
 		self.prepare_mail_attachments()
-		print "sending starttls"
+		logging.debug("Trying to send mail with STARTTLS")
 		try:
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
@@ -70,15 +70,15 @@ class Mailer:
 
 	def send_mail_ssl(self):
 		self.prepare_mail_attachments()
-		print "send mail ssl"
+		logging.debug("Trying to send mail with SSL")
 
 	def send_mail_nossl(self):
 		self.prepare_mail_attachments()
-		print "send mail no ssl"
+		logging.debug("Trying to send mail without SSL")
 
 	def send_mail_noauth(self):
 		self.prepare_mail_attachments()
-		print "noauth"
+		logging.debug("Trying to send mail without authentication")
 
 
 
