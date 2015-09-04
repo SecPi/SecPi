@@ -3,13 +3,16 @@
 	<div id="flash_message" ng-class="dataCtrl.flash_type" ng-show="dataCtrl.flash_message != null">
 		{{dataCtrl.flash_message}}
 	</div>
-
+<!--
+	<pre>
+	{{dataCtrl.edit_data}}
+	</pre>
 	<pre>
 	{{dataCtrl.data}}
 	</pre>
+-->
 
-
-	<input type="button" ng-click="dataCtrl.getList()" value="get list" /> <br />
+	<input type="button" ng-click="dataCtrl.getList()" value="Refresh data" /> <input type="button" ng-click="dataCtrl.showNew()" value="add new" /><br />
 
 	<table class="list" ng-show="dataCtrl.data.length > 0">
 		<tr class="listheader">
@@ -18,7 +21,7 @@
 		</tr>
 		<tr ng-repeat="obj in dataCtrl.data">
 			<td ng-repeat="(k, v) in dataCtrl.fields">{{obj[k]}}</td>
-			<td><a href="delete?id={{obj.id}}" onclick="return confirm('Are you sure?')"><img src="/static/img/icons/minus.png" alt="delete" title="delete" /></a><img src="/static/img/icons/edit.png" alt="edit" title="edit" ng-click="dataCtrl.showEdit($index)" /></td>
+			<td><img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="dataCtrl.delete($index)" /><img src="/static/img/icons/edit.png" alt="edit" title="edit" ng-click="dataCtrl.showEdit($index)" /></td>
 		</tr>
 	</table>
 

@@ -87,17 +87,83 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 		};
 		
 		self.saveEdit = function(){ 
-			$log.log("adding stuff")
-			
-			$http.post(BASE_LINK+'/update', self.edit_data).then(
+			$log.log("saving stuff")
+			if(self.edit_id == -1){ // if edit id is -1 we are adding a new one
+				
+				$http.post(BASE_LINK+'/add', self.edit_data).then(
+					function (response) {
+						// success
+						if(response.data['status'] == 'success'){
+							self.flash(response.data['message'], 'info')
+							
+							
+							// self.data.push(self.edit_data); // won't get id of saved element
+							self.getList();
+							
+							self.orig_data = null;
+							self.edit_data = null;
+							self.edit_id = -1;
+							
+							
+							self.dialog.dialog( "close" );
+						}
+						else{
+							sself.flash(response.data['message'], 'error');
+						}
+					},
+					function (response) {
+						// error
+						self.flash('Error saving data!', 'error');
+					}
+				);
+			}
+			else{
+				$http.post(BASE_LINK+'/update', self.edit_data).then(
+					function (response) {
+						// success
+						if(response.data['status'] == 'success'){
+							self.flash(response.data['message'], 'info')
+							self.orig_data = null;
+							self.edit_data = null;
+							self.edit_id = -1;
+							self.dialog.dialog( "close" );
+						}
+						else{
+							sself.flash(response.data['message'], 'error');
+						}
+					},
+					function (response) {
+						// error
+						self.flash('Error saving data!', 'error');
+					}
+				)
+			}
+		};
+		
+		self.cancelEdit = function(){
+			$log.log("cancel "+self.edit_id);
+			self.data[self.edit_id] = self.orig_data;
+			self.orig_data = null;
+			self.edit_data = null;
+			self.edit_id = -1;
+			$scope.$apply();
+			self.dialog.dialog( "close" );
+		};
+		
+		self.showNew = function(){
+			self.edit_data = {};
+			self.edit_id = -1;
+			self.dialog.dialog("open");
+		};
+		
+		self.delete = function(delId){
+			// TODO: confirm
+			$http.post(BASE_LINK+'/delete', {id: self.data[delId]["id"]}).then(
 				function (response) {
 					// success
 					if(response.data['status'] == 'success'){
 						self.flash(response.data['message'], 'info')
-						self.orig_data = null;
-						self.edit_data = null;
-						self.edit_id = -1;
-						self.dialog.dialog( "close" );
+						self.data.splice(delId, delId);
 					}
 					else{
 						sself.flash(response.data['message'], 'error');
@@ -110,15 +176,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 			)
 		};
 		
-		self.cancelEdit = function(){
-			$log.log("cancel "+self.edit_id);
-			self.data[self.edit_id] = self.orig_data;
-			self.orig_data = null;
-			self.edit_data = null;
-			self.edit_id = -1;
-			$scope.$apply();
-			self.dialog.dialog( "close" );
-		};
+		
 		
 		$timeout(function(){
 			self.dialog = $( "#edit-form-div" ).dialog({

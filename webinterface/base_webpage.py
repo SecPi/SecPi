@@ -76,11 +76,11 @@ class BaseWebPage(object):
 		data = cherrypy.request.json
 			
 		if(data and len(data)>0):
-			cherrypy.log("got something %s"%params)
+			cherrypy.log("got something %s"%data)
 			newObj = self.baseclass()
 			
-			for k, v in params.iteritems():
-				if(v and not v == ""):
+			for k, v in data.iteritems():
+				if(not k == "id"):
 					setattr(newObj, k, utils.str_to_value(v))
 			
 			self.db.add(newObj)
