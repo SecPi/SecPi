@@ -4,6 +4,7 @@ import logging
 import pika
 import sys
 import time
+import os
 
 from mailer import Mailer
 from tools import config
@@ -52,6 +53,9 @@ class Manager:
 		config.load("manager")
 		db.connect()
 		
+		self.received_data_counter = 0
+		self.current_alarm_dir = "/var/tmp/manager/"
+
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip'])
 		self.connection = pika.BlockingConnection(parameters=parameters)
@@ -98,13 +102,14 @@ class Manager:
 	
 	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
+		self.received_data_counter += 1
 		newFile_bytes = bytearray(body)
-		newFile = open("/var/tmp/manager/%s.zip" % hashlib.md5(newFile_bytes).hexdigest(), "wb")
+		newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
 		newFile.write(newFile_bytes)
 		logging.info("Data written")
 
 		# JFT: move mail sending to got_alarm
-		self.mailer.send_mail()
+		#self.mailer.send_mail()
 		# TODO: data has to be moved somewhere else or deleted, after mail has been sent
 
 
@@ -124,10 +129,13 @@ class Manager:
 
 	def got_alarm(self, ch, method, properties, body):
 		logging.info("Received alarm: %s"%body)
-		
 		msg = json.loads(body)
-		
-		# TODO: check if last alarm more then x seconds ago
+		# TODO: adapt dir for current alarm
+		self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
+		os.makedirs(self.current_alarm_dir)
+		logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+		self.mailer.data_dir = self.current_alarm_dir
+
 		# interate over workers and send "execute"
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
@@ -139,7 +147,7 @@ class Manager:
 		db.session.add(lo)
 		db.session.commit()
 		# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
-
+		self.received_data_counter = 0 #has to be at the end of got_alarm
 
 	
 	def send_config(self, pi_id):
