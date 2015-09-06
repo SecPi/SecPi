@@ -1,22 +1,16 @@
 <%page args="baseclass,basetitle" />
-<script type="text/javascript">
-	var BASE_LINK = '/${baseclass}';
-	var OBJ_TITLE = '${basetitle}'
-</script>
 
-<div ng-controller="DataController as dataCtrl">
+
+<div ng-controller="DataController as dataCtrl" baseclass="${baseclass}" basetitle="${basetitle}">
 
 	<div id="flash_message" ng-class="dataCtrl.flash_type" ng-show="dataCtrl.flash_message != null">
 		{{dataCtrl.flash_message}}
 	</div>
-<!--
-	<pre>
-	{{dataCtrl.edit_data}}
-	</pre>
-	<pre>
-	{{dataCtrl.data}}
-	</pre>
--->
+
+	## <pre>
+	## {{dataCtrl.baseclass}}
+	## </pre>
+
 
 	<input type="button" ng-click="dataCtrl.getList()" value="Refresh data" /> <input type="button" ng-click="dataCtrl.showNew()" value="add new" /><br />
 

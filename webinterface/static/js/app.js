@@ -3,8 +3,15 @@
 
 var app = angular.module("SecPi", []);
 
-app.controller('DataController', function($http, $log, $scope, $timeout){
+app.controller('DataController', function($http, $log, $scope, $timeout, $attrs){
 		var self = this;
+		
+		if (!$attrs.baseclass) throw new Error("No class defined!");
+		if (!$attrs.basetitle) throw new Error("No title defined!");
+		
+		self.baseclass = "/"+$attrs.baseclass;
+		self.basetitle = "/"+$attrs.basetitle;
+		
 		
 		self.flash_message = null;
 		self.flash_type = 'info';
@@ -25,7 +32,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 		
 		
 		self.fetchFields = function(){
-			$http.post(BASE_LINK+'/fieldList', {}).then(
+			$http.post(self.baseclass+'/fieldList', {}).then(
 				function (response) {
 					// success
 					if(response.data['status'] == 'success'){
@@ -63,7 +70,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 		
 		self.getList = function(){
 			$log.log('fetching list')
-			$http.get(BASE_LINK+'/list').then(
+			$http.get(self.baseclass+'/list').then(
 				function (response) {
 					// success
 					if(response.data['status'] == 'success'){
@@ -90,7 +97,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 			$log.log("saving stuff")
 			if(self.edit_id == -1){ // if edit id is -1 we are adding a new one
 				
-				$http.post(BASE_LINK+'/add', self.edit_data).then(
+				$http.post(self.baseclass+'/add', self.edit_data).then(
 					function (response) {
 						// success
 						if(response.data['status'] == 'success'){
@@ -118,7 +125,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 				);
 			}
 			else{
-				$http.post(BASE_LINK+'/update', self.edit_data).then(
+				$http.post(self.baseclass+'/update', self.edit_data).then(
 					function (response) {
 						// success
 						if(response.data['status'] == 'success'){
@@ -158,7 +165,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout){
 		
 		self.delete = function(delId){
 			// TODO: confirm
-			$http.post(BASE_LINK+'/delete', {id: self.data[delId]["id"]}).then(
+			$http.post(self.baseclass+'/delete', {id: self.data[delId]["id"]}).then(
 				function (response) {
 					// success
 					if(response.data['status'] == 'success'){
