@@ -10,7 +10,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		if (!$attrs.basetitle) throw new Error("No title defined!");
 		
 		self.baseclass = "/"+$attrs.baseclass;
-		self.basetitle = "/"+$attrs.basetitle;
+		self.basetitle = $attrs.basetitle;
 		
 		
 		self.flash_message = null;
@@ -87,6 +87,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		};
 		
 		self.showEdit = function(id){
+			self.dialog.dialog('option', 'title', 'Edit '+self.basetitle);
 			self.edit_data = self.data[id];
 			self.edit_id = id;
 			self.orig_data = jQuery.extend(true, {}, self.data[id])
@@ -158,6 +159,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		};
 		
 		self.showNew = function(){
+			self.dialog.dialog('option', 'title', 'Add '+self.basetitle);
 			self.edit_data = {};
 			self.edit_id = -1;
 			self.dialog.dialog("open");
