@@ -1,3 +1,9 @@
+<%page args="baseclass,basetitle" />
+<script type="text/javascript">
+	var BASE_LINK = '/${baseclass}';
+	var OBJ_TITLE = '${basetitle}'
+</script>
+
 <div ng-controller="DataController as dataCtrl">
 
 	<div id="flash_message" ng-class="dataCtrl.flash_type" ng-show="dataCtrl.flash_message != null">
