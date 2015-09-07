@@ -1,5 +1,6 @@
 <%inherit file="main.mako"/>
 
+<%def name="active_tab()"><% return "workers" %></%def>
 
 
 <h1>Workers</h1>

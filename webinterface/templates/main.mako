@@ -1,4 +1,7 @@
 <%page args="flash_message='',flash_type='info'"/>
+<%
+	active_tab = self.active_tab()
+%>
 <html ng-app="SecPi">
 <head>
 	<title>SecPi - ${page_title}</title>
@@ -12,7 +15,7 @@
 </head>
 <body >
 	<div id="nav">
-		<%include file="nav.mako" />
+		<%include file="nav.mako" args="active_tab=active_tab"/>
 		<%block name="subnav" />
 	</div>
 	

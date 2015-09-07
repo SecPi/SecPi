@@ -1,5 +1,7 @@
 <%inherit file="main.mako"/>
 
+<%def name="active_tab()"><% return "actions" %></%def>
+
 <h1>Actions</h1>
 
 An action is something a worker does, reacting on an alarm.

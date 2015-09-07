@@ -1,5 +1,7 @@
 <%inherit file="main.mako"/>
 
+<%def name="active_tab()"><% return "alarms" %></%def>
+
 <h1>Alarms</h1>
 All the alarms that occur.
 

@@ -1,5 +1,6 @@
 <%inherit file="main.mako"/>
 
+<%def name="active_tab()"><% return "actionparams" %></%def>
 
 <h1>Action Parameters</h1>
 
