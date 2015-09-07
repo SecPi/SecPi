@@ -105,19 +105,29 @@ body {
 
 .list {
 	border-collapse: collapse;
+	border-spacing: 0;
+	width: 600px;
+	margin: 5px;
 }
 
 .list td, th{
 	padding: 5px;
+	border: 1px solid transparent;
+	height: 30px;
+	transition: all 0.3s;
+	text-align: center;
 }
 
-.list tr {
-	background-color: #ccc;
-	border-bottom: 1px solid #fff;
+.list th {
+	background: #DFDFDF;
+	font-weight: bold;
+	height: 35px;
 }
-tr.listheader {
-	background-color: #aaa;
-}
+
+
+
+.list tr:nth-child(even) td { background: #FEFEFE; }
+.list tr:nth-child(odd) td { background: #F1F1F1; }
 
 
 .icon_add {

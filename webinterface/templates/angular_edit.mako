@@ -12,12 +12,12 @@
 	## </pre>
 
 
-	<input type="button" ng-click="dataCtrl.getList()" value="Refresh data" /> <input type="button" ng-click="dataCtrl.showNew()" value="add new" /><br />
+	<input type="button" ng-click="dataCtrl.getList()" value="Refresh data" ng-hide="dataCtrl.data.length > 0" /><br />
 
 	<table class="list" ng-show="dataCtrl.data.length > 0">
-		<tr class="listheader">
+		<tr>
 			<th ng-repeat="(k, v) in dataCtrl.getFields('list')">{{v['name']}}</th>
-			<th>&nbsp;</th><!-- for delete button -->
+			<th><img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" /></th>
 		</tr>
 		<tr ng-repeat="obj in dataCtrl.data">
 			<td ng-repeat="(k, v) in dataCtrl.fields">{{obj[k]}}</td>

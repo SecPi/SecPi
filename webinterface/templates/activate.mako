@@ -28,3 +28,4 @@
 %else:
 	No setups found, please configure your SecPi first!
 %endif
+
