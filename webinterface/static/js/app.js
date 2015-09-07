@@ -12,9 +12,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		self.baseclass = "/"+$attrs.baseclass;
 		self.basetitle = $attrs.basetitle;
 		
-		
-		self.flash_message = null;
-		self.flash_type = 'info';
+		self.flash_messages = [];
 		
 		self.data = [];
 		self.fields = {};
@@ -24,12 +22,17 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		self.orig_data = null;
 		
 		self.flash = function(message,type){
-			self.flash_message = message;
-			self.flash_type = type;
+			msg = {message: message, type: type}
+			self.flash_messages.push(msg);
 			
-			$timeout(function(){self.flash_message = null}, 5000)
-		}
+			$timeout(self.removeFlash, 5000)
+		};
 		
+		self.removeFlash = function(){
+			if(self.flash_messages.length > 0){
+				self.flash_messages.splice(0,1); // remove first element from array
+			}
+		};
 		
 		self.fetchFields = function(){
 			$http.post(self.baseclass+'/fieldList', {}).then(

@@ -3,8 +3,8 @@
 
 <div ng-controller="DataController as dataCtrl" baseclass="${baseclass}" basetitle="${basetitle}">
 
-	<div id="flash_message" ng-class="dataCtrl.flash_type" ng-show="dataCtrl.flash_message != null">
-		{{dataCtrl.flash_message}}
+	<div id="flash_message" ng-repeat="msg in dataCtrl.flash_messages" ng-class="msg.type" ng-show="msg.message != null">
+		{{msg.message}}
 	</div>
 
 	## <pre>
