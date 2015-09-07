@@ -172,7 +172,7 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 					// success
 					if(response.data['status'] == 'success'){
 						self.flash(response.data['message'], 'info')
-						self.data.splice(delId, delId);
+						self.data.splice(delId, 1);
 					}
 					else{
 						sself.flash(response.data['message'], 'error');
