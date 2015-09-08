@@ -15,6 +15,14 @@ body {
 	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
 }
 
+h1.header {
+	color: white;
+	font-size: 50px;
+	font-style: italic;
+	position: absolute;
+	margin-top: 6px;
+	margin-left: 20px;
+}
 
 #main {
 	padding: 0px 40px;

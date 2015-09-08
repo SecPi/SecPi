@@ -15,6 +15,7 @@
 </head>
 <body >
 	<div id="nav">
+		<h1 class="header">SecPi</h1>
 		<%include file="nav.mako" args="active_tab=active_tab"/>
 		<%block name="subnav" />
 	</div>
