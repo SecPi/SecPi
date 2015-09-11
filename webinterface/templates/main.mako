@@ -1,13 +1,22 @@
 <%page args="flash_message='',flash_type='info'"/>
-<html>
+<%
+	active_tab = self.active_tab()
+%>
+<html ng-app="SecPi">
 <head>
 	<title>SecPi - ${page_title}</title>
-	<link rel="stylesheet" type="text/css" href="/static/css/main.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/main.css" />
+	<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.min.css" />
+	<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.theme.min.css" />
+	<script src="/static/js/jquery.min.js"></script>
+	<script src="/static/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular.min.js"></script>
+	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
 <body >
 	<div id="nav">
-		<%include file="nav.mako" />
+		<h1 class="header">SecPi</h1>
+		<%include file="nav.mako" args="active_tab=active_tab"/>
 		<%block name="subnav" />
 	</div>
 	

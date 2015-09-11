@@ -1,5 +1,7 @@
 <%inherit file="main.mako"/>
 
+<%def name="active_tab()"><% return "activate" %></%def>
+
 <h1> Activate SecPi</h1>
 
 
@@ -28,3 +30,4 @@
 %else:
 	No setups found, please configure your SecPi first!
 %endif
+
