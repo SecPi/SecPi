@@ -5,6 +5,7 @@ import pika
 import sys
 import time
 import os
+import threading
 
 from mailer import Mailer
 from tools import config
@@ -55,6 +56,9 @@ class Manager:
 		
 		self.received_data_counter = 0
 		self.current_alarm_dir = "/var/tmp/manager/"
+		self.data_timeout = 10
+		self.num_of_workers = 0
+		self.mail_enabled = False
 
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip'])
@@ -108,10 +112,6 @@ class Manager:
 		newFile.write(newFile_bytes)
 		logging.info("Data written")
 
-		# JFT: move mail sending to got_alarm
-		#self.mailer.send_mail()
-		# TODO: data has to be moved somewhere else or deleted, after mail has been sent
-
 
 	def cb_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
@@ -135,9 +135,11 @@ class Manager:
 		os.makedirs(self.current_alarm_dir)
 		logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
 		self.mailer.data_dir = self.current_alarm_dir
+		self.received_data_counter = 0
 
 		# interate over workers and send "execute"
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
+		self.num_of_workers = len(workers)
 		for pi in workers:
 			self.send_message("%i_action"%pi.id, "execute")
 		
@@ -147,9 +149,26 @@ class Manager:
 		db.session.add(lo)
 		db.session.commit()
 		# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
-		self.received_data_counter = 0 #has to be at the end of got_alarm
+		timeout_thread = threading.Thread(name="thead-timeout", target=self.notify)
+		timeout_thread.start()
 
 	
+	def notify(self):
+		timeout = 30 # TODO: make this configurable
+		for i in range(0, timeout):
+			if self.received_data_counter < self.num_of_workers: #not all data here yet
+				logging.debug("Waiting for data from workers: data counter: %d, #worker: %d" % (self.received_data_counter, self.num_of_workers))
+				time.sleep(1)
+			else:
+				logging.debug("Received all data from workers, canceling the timeout")
+				break
+		# continue code execution
+		if self.received_data_counter < self.num_of_workers:
+			logging.info("TIMEOUT: Only %d out of %d workers replied with data" % (self.received_data_counter, self.num_of_workers))
+		if self.mail_enabled:
+			self.mailer.send_mail()
+
+
 	def send_config(self, pi_id):
 		conf = {
 			"pi_id": pi_id,
