@@ -26,10 +26,8 @@ class Worker:
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)
 		self.prepare_data_directory(self.data_directory)
 
-
 		logging.info("Loading config...")
-		config.load("worker")
-		
+		config.load("worker")		
 		
 		logging.info("Setting up queues")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
@@ -79,7 +77,7 @@ class Worker:
 				print e
 		logging.info("Cleaned up files")
 
-
+	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
 		if(self.active):			
 			# DONE: threading
@@ -182,7 +180,7 @@ class Worker:
 		# TODO: maybe manual del of all actions?
 		self.actions = []					
 
-	# callback for the sensors
+	# callback for the sensors, raises an alarm
 	def alarm(self, channel):
 		if(self.active):
 			logging.info("Sensor at gpio %s detected something" % channel)

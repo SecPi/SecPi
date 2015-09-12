@@ -1,11 +1,11 @@
 import hashlib
 import json
 import logging
+import os
 import pika
 import sys
-import time
-import os
 import threading
+import time
 
 from mailer import Mailer
 from tools import config
@@ -104,6 +104,7 @@ class Manager:
 	def start(self):
 		self.channel.start_consuming()
 	
+	# callback method for when the manager recieves data after a worker executed its actions
 	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
 		self.received_data_counter += 1
@@ -122,11 +123,12 @@ class Manager:
 			self.send_config(pi.id)
 			logging.info("Activated %s"%pi.name)
 
+	# this method is used to send execute messages to the action queues
 	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
 		logging.info("Sending action to %s"%to_queue)
 
-
+	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
 		logging.info("Received alarm: %s"%body)
 		msg = json.loads(body)
@@ -149,15 +151,15 @@ class Manager:
 		db.session.add(lo)
 		db.session.commit()
 		# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
-		timeout_thread = threading.Thread(name="thead-timeout", target=self.notify)
+		timeout_thread = threading.Thread(name="thread-timeout", target=self.notify)
 		timeout_thread.start()
 
-	
+	# timeout thread which sends the received data from workers
 	def notify(self):
 		timeout = 30 # TODO: make this configurable
 		for i in range(0, timeout):
 			if self.received_data_counter < self.num_of_workers: #not all data here yet
-				logging.debug("Waiting for data from workers: data counter: %d, #worker: %d" % (self.received_data_counter, self.num_of_workers))
+				logging.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
 				time.sleep(1)
 			else:
 				logging.debug("Received all data from workers, canceling the timeout")

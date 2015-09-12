@@ -9,7 +9,6 @@ class Speaker(Action):
 		self.path_to_audio = params["path_to_audio"]
 		self.repetitions = params["repetitions"] #TODO: change
 
-
 	def play_audio(self):
 		print "playing audio"
 		pygame.mixer.init()
