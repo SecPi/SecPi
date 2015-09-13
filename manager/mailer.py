@@ -5,30 +5,34 @@ import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from tools.notifier import Notifier
 
-class Mailer:
+class Mailer(Notifier):
 
-	def __init__(self, sender, recipient, subject, text, data_dir,
-				 smtp_address, smtp_port, smtp_user, smtp_pass, smtp_security):
+	def __init__(self, id, params):
+		super(Mailer, self).__init__(id, params)
 		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.DEBUG)
 
 		# Mail setup
 		self.message = MIMEMultipart()
-		self.message["From"] = sender
-		self.message["To"] = recipient
-		self.message["Subject"] = subject
-		self.message.attach(MIMEText(text, "plain"))
+		self.message["From"] = params["sender"]
+		self.message["To"] = params["recipient"]
+		self.message["Subject"] = params["subject"]
+		self.message.attach(MIMEText(params["text"], "plain"))
 		
 		# SMTP Server config + data dir
-		self.data_dir = data_dir
-		self.smtp_address = smtp_address
-		self.smtp_port = smtp_port
-		self.smtp_user = smtp_user
-		self.smtp_pass = smtp_pass
-		self.smtp_security = smtp_security # not used yet
+		self.data_dir = params["data_dir"]
+		self.smtp_address = params["smtp_address"]
+		self.smtp_port = int(params["smtp_port"])
+		self.smtp_user = params["smtp_user"]
+		self.smtp_pass = params["smtp_pass"]
+		self.smtp_security = params["smtp_security"] # not used yet
 
 		logging.info("Mailer initialized")
-		
+	
+	def notify(self):
+		self.send_mail()
+
 	# TODO: include more details about which sensors signaled, etc.???
 	def send_mail(self):
 		if self.smtp_security == "STARTTLS":

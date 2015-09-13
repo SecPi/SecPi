@@ -1,4 +1,5 @@
 import hashlib
+import importlib
 import json
 import logging
 import os
@@ -54,6 +55,7 @@ class Manager:
 		config.load("manager")
 		db.connect()
 		
+		self.notifiers = []
 		self.received_data_counter = 0
 		self.current_alarm_dir = "/var/tmp/manager/"
 		self.data_timeout = 10
@@ -66,11 +68,11 @@ class Manager:
 		self.channel = self.connection.channel()
 
 		# TODO: read config from db or config file?
-		self.mailer = Mailer(config.get('mail')['sender'], config.get('mail')['recipient'],
-							 config.get('mail')['subject'], config.get('mail')['text'],
-							 config.get('mail')['data_dir'], config.get('mail')['smtp_address'],
-							 config.get('mail')['smtp_port'], config.get('mail')['smtp_user'],
-							 config.get('mail')['smtp_pass'], config.get('mail')['smtp_security'])
+		for notifier in config.get("notifications"):
+			n = self.class_for_name(notifier["module"], notifier["class"])
+			noti = n(notifier["id"], notifier["params"])
+			self.notifiers.append(noti)
+			logging.info("Set up notifier %s" % notifier["class"])
 
 		#define exchange
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
@@ -107,11 +109,11 @@ class Manager:
 	# callback method for when the manager recieves data after a worker executed its actions
 	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
-		self.received_data_counter += 1
 		newFile_bytes = bytearray(body)
 		newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
 		newFile.write(newFile_bytes)
 		logging.info("Data written")
+		self.received_data_counter += 1
 
 
 	def cb_on_off(self, ch, method, properties, body):
@@ -136,7 +138,6 @@ class Manager:
 		self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
 		os.makedirs(self.current_alarm_dir)
 		logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
-		self.mailer.data_dir = self.current_alarm_dir
 		self.received_data_counter = 0
 
 		# interate over workers and send "execute"
@@ -167,8 +168,8 @@ class Manager:
 		# continue code execution
 		if self.received_data_counter < self.num_of_workers:
 			logging.info("TIMEOUT: Only %d out of %d workers replied with data" % (self.received_data_counter, self.num_of_workers))
-		if self.mail_enabled:
-			self.mailer.send_mail()
+		for notifier in self.notifiers:
+			notifier.notify()
 
 
 	def send_config(self, pi_id):
@@ -232,6 +233,15 @@ class Manager:
 	def cb_register(self, ch, method, properties, body):
 		'''Wait for new workers to register.'''
 	
+	# copypasta from worker.py:
+	def class_for_name(self, module_name, class_name):
+		# TODO: try/catch
+		# load the module, will raise ImportError if module cannot be loaded
+		m = importlib.import_module(module_name)
+		# get the class, will raise AttributeError if class cannot be found
+		c = getattr(m, class_name)
+		return c
+
 	def __del__(self):
 		self.connection.close()
 
