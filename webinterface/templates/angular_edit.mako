@@ -20,7 +20,7 @@
 			<th><img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" /></th>
 		</tr>
 		<tr ng-repeat="obj in dataCtrl.data">
-			<td ng-repeat="(k, v) in dataCtrl.fields">{{obj[k]}}</td>
+			<td ng-repeat="(k, v) in dataCtrl.getFields('list')">{{obj[k]}}</td>
 			<td><img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="dataCtrl.delete($index)" /><img src="/static/img/icons/edit.png" alt="edit" title="edit" ng-click="dataCtrl.showEdit($index)" /></td>
 		</tr>
 	</table>
