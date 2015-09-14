@@ -33,4 +33,3 @@ class Webcam(Action):
 	
 	def execute(self):
 		self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
-		#print "test"

@@ -61,6 +61,7 @@ class Mailer:
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
 			smtp.starttls()
+			logging.debug("Logging in...")
 			smtp.login(self.smtp_user, self.smtp_pass)
 			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
 			logging.info("Mail sent")

@@ -1,10 +1,11 @@
 import hashlib
 import json
 import logging
+import os
 import pika
 import sys
+import threading
 import time
-import os
 
 from mailer import Mailer
 from tools import config
@@ -55,6 +56,9 @@ class Manager:
 		
 		self.received_data_counter = 0
 		self.current_alarm_dir = "/var/tmp/manager/"
+		self.data_timeout = 10
+		self.num_of_workers = 0
+		self.mail_enabled = False
 
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip'])
@@ -100,6 +104,7 @@ class Manager:
 	def start(self):
 		self.channel.start_consuming()
 	
+	# callback method for when the manager recieves data after a worker executed its actions
 	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
 		self.received_data_counter += 1
@@ -107,10 +112,6 @@ class Manager:
 		newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
 		newFile.write(newFile_bytes)
 		logging.info("Data written")
-
-		# JFT: move mail sending to got_alarm
-		#self.mailer.send_mail()
-		# TODO: data has to be moved somewhere else or deleted, after mail has been sent
 
 
 	def cb_on_off(self, ch, method, properties, body):
@@ -122,11 +123,12 @@ class Manager:
 			self.send_config(pi.id)
 			logging.info("Activated %s"%pi.name)
 
+	# this method is used to send execute messages to the action queues
 	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
 		logging.info("Sending action to %s"%to_queue)
 
-
+	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
 		logging.info("Received alarm: %s"%body)
 		msg = json.loads(body)
@@ -135,9 +137,11 @@ class Manager:
 		os.makedirs(self.current_alarm_dir)
 		logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
 		self.mailer.data_dir = self.current_alarm_dir
+		self.received_data_counter = 0
 
 		# interate over workers and send "execute"
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
+		self.num_of_workers = len(workers)
 		for pi in workers:
 			self.send_message("%i_action"%pi.id, "execute")
 		
@@ -147,9 +151,26 @@ class Manager:
 		db.session.add(lo)
 		db.session.commit()
 		# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
-		self.received_data_counter = 0 #has to be at the end of got_alarm
+		timeout_thread = threading.Thread(name="thread-timeout", target=self.notify)
+		timeout_thread.start()
 
-	
+	# timeout thread which sends the received data from workers
+	def notify(self):
+		timeout = 30 # TODO: make this configurable
+		for i in range(0, timeout):
+			if self.received_data_counter < self.num_of_workers: #not all data here yet
+				logging.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
+				time.sleep(1)
+			else:
+				logging.debug("Received all data from workers, canceling the timeout")
+				break
+		# continue code execution
+		if self.received_data_counter < self.num_of_workers:
+			logging.info("TIMEOUT: Only %d out of %d workers replied with data" % (self.received_data_counter, self.num_of_workers))
+		if self.mail_enabled:
+			self.mailer.send_mail()
+
+
 	def send_config(self, pi_id):
 		conf = {
 			"pi_id": pi_id,
