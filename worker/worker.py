@@ -9,7 +9,6 @@ import socket
 import sys
 import threading
 import time
-sys.path.append('/root/SecPi/tools')
 
 from tools import config
 from webcam import Webcam
