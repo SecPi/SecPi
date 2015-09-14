@@ -44,11 +44,22 @@ class Mailer(Notifier):
 		elif self.smtp_security == "NOAUTH":
 			self.send_mail_noauth()
 
+	# Search for the latest alarm folder and attach all files within it to the mail
 	def prepare_mail_attachments(self):
-		for file in os.listdir(self.data_dir): # iterate through files and attach them to the mail
+		# first find the latest alarm folder
+		subdirs = []
+		for directory in os.listdir(self.data_dir):
+			full_path = os.path.join(self.data_dir, directory)
+			if os.path.isdir(full_path):
+				subdirs.append(full_path)
+		# TODO: check if subdirs is empty
+		latest_subdir = max(subdirs, key=os.path.getmtime)
+		logging.debug("Will look into %s for data" % latest_subdir)
+		#then iterate through it and attach all the files to the mail
+		for file in os.listdir(latest_subdir):
 			# check if it really is a file
-			if os.path.isfile("%s/%s" % (self.data_dir, file)):
-				f = open("%s/%s" % (self.data_dir, file), "rb")
+			if os.path.isfile("%s/%s" % (latest_subdir, file)):
+				f = open("%s/%s" % (latest_subdir, file), "rb")
 				att = MIMEApplication(f.read())
 				att.add_header('Content-Disposition','attachment; filename="%s"' % file)
 				f.close()
@@ -56,6 +67,7 @@ class Mailer(Notifier):
 				logging.debug("Attached file '%s' to message" % file)
 			else:
 				logging.debug("%s is not a file" % file)
+		# TODO: maybe log something if there are no files?
 
 	def send_mail_starttls(self):
 		self.prepare_mail_attachments()
