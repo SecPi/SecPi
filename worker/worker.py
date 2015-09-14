@@ -183,20 +183,13 @@ class Worker:
 		self.actions = []					
 
 	# callback for the sensors
-	def alarm(self, channel):
+	def alarm(self, sensor_id, message):
 		if(self.active):
-			logging.info("Sensor at gpio %s detected something" % channel)
+			logging.info("Sensor with id %s detected something" % sensor_id)
 
-			# determine the id of the sensor which signaled
-			sensor_id = ""
-			for sensor in config.get("sensors"):
-				if int(sensor["gpio"]) == channel:
-					sensor_id = sensor["id"]
-					break
-			
 			msg = {	"pi_id":config.get("pi_id"),
 					"sensor_id": sensor_id,
-					"gpio": channel}
+					"message": message}
 			
 			msg_string = json.dumps(msg)
 			

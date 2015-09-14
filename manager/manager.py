@@ -142,7 +142,7 @@ class Manager:
 			self.send_message("%i_action"%pi.id, "execute")
 		
 		al = db.objects.Alarm(sensor_id=msg['sensor_id'])
-		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s (GPIO Pin %s)"%(msg['pi_id'], msg['sensor_id'], msg['gpio']))
+		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
 		db.session.add(al)
 		db.session.add(lo)
 		db.session.commit()
