@@ -169,23 +169,24 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		};
 		
 		self.delete = function(delId){
-			// TODO: confirm
-			$http.post(self.baseclass+'/delete', {id: self.data[delId]["id"]}).then(
-				function (response) {
-					// success
-					if(response.data['status'] == 'success'){
-						self.flash(response.data['message'], 'info')
-						self.data.splice(delId, 1);
+			if(confirm("Do you really want to delete the Object with id "+ delId +"?")){
+				$http.post(self.baseclass+'/delete', {id: self.data[delId]["id"]}).then(
+					function (response) {
+						// success
+						if(response.data['status'] == 'success'){
+							self.flash(response.data['message'], 'info')
+							self.data.splice(delId, 1);
+						}
+						else{
+							sself.flash(response.data['message'], 'error');
+						}
+					},
+					function (response) {
+						// error
+						self.flash('Error saving data!', 'error');
 					}
-					else{
-						sself.flash(response.data['message'], 'error');
-					}
-				},
-				function (response) {
-					// error
-					self.flash('Error saving data!', 'error');
-				}
-			)
+				)
+			}
 		};
 		
 		
