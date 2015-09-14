@@ -1,7 +1,7 @@
 
 
 
-var app = angular.module("SecPi", []);
+var app = angular.module("SecPi", ['ngAnimate']);
 
 app.controller('DataController', function($http, $log, $scope, $timeout, $attrs){
 		var self = this;

@@ -11,6 +11,7 @@
 	<script src="/static/js/jquery.min.js"></script>
 	<script src="/static/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular.min.js"></script>
+	<script type="text/javascript" src="/static/js/angular-animate.js"></script>
 	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
 <body >

@@ -59,6 +59,24 @@ h1.header {
 	border-color: #C70000;
 }
 
+#flash_message.ng-enter {
+	transition:0.5s linear all;
+	opacity:0;
+}
+
+#flash_message.ng-enter.ng-enter-active {
+	opacity:1;	
+}
+
+#flash_message.ng-leave {
+	transition:0.5s linear all;
+	opacity:1;
+}
+
+#flash_message.ng-leave.ng-leave-active {
+	opacity:0;
+}
+
 .list {
 	border-collapse: collapse;
 	border-spacing: 0;
