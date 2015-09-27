@@ -6,3 +6,7 @@
 All the alarms that occur.
 
 <%include file="angular_edit.mako" args="baseclass='alarms', basetitle='Alam'" />
+
+<h1>Logs</h1>
+
+<%include file="angular_edit.mako" args="baseclass='logs', basetitle='Log Entry'" />
