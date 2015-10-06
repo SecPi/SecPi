@@ -43,7 +43,7 @@ sensor1_params = [
 ]
 
 sensor2_params = [
-	db.objects.Param(key='gpio', value='16', description='GPIO pin.', object_type="sensor"),
+	db.objects.Param(key='gpio', value='17', description='GPIO pin.', object_type="sensor"),
 	db.objects.Param(key='bouncetime', value='60000', description='Bouncetime for GPIO pin.', object_type="sensor")
 ]
 
