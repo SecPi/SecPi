@@ -67,12 +67,6 @@ class Manager:
 		self.connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = self.connection.channel()
 
-		# TODO: read config from db or config file?
-		for notifier in config.get("notifications"):
-			n = self.class_for_name(notifier["module"], notifier["class"])
-			noti = n(notifier["id"], notifier["params"])
-			self.notifiers.append(noti)
-			logging.info("Set up notifier %s" % notifier["class"])
 
 		#define exchange
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
@@ -118,7 +112,22 @@ class Manager:
 
 	def cb_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
-			
+		
+		# TODO: destructor for notifier?
+		self.notifiers = []
+		
+		if(msg['active_state'] == True):
+			notifiers = db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
+			for notifier in notifiers:
+				params = {}
+				for p in notifier.params:
+					params[p.key] = p.value
+					
+				n = self.class_for_name(notifier.module, notifier.cl)
+				noti = n(notifier.id, params)
+				self.notifiers.append(noti)
+				logging.info("Set up notifier %s" % notifier.cl)
+		
 		logging.info("Activating PIs!")
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
