@@ -1,5 +1,7 @@
 from tools.sensor import Sensor
 
+import RPi.GPIO as GPIO
+
 class GPIOSensor(Sensor):
 	
 	def __init__(self, id, params, worker):
@@ -9,12 +11,12 @@ class GPIOSensor(Sensor):
 	def setup_sensor(self):
 		if(int(self.params["gpio"])>=0):
 			GPIO.setup(int(self.params["gpio"]), GPIO.IN)
-			GPIO.add_event_detect(int(self.params["gpio"]), GPIO.RISING, callback=self.cb_alarm, bouncetime=self.params['bouncetime'])
-			logging.info("Registered sensor at pin %s!"%(self.params["gpio"]))
+			GPIO.add_event_detect(int(self.params["gpio"]), GPIO.RISING, callback=self.cb_alarm, bouncetime=int(self.params['bouncetime']))
+#			logging.info("Registered sensor at pin %s!"%(self.params["gpio"]))
 	
 	def cleanup_sensor(self):
 		GPIO.remove_event_detect(int(self.params["gpio"]))
-		logging.debug("Removed sensor at pin %s!" % self.params["gpio"])
+#		logging.debug("Removed sensor at pin %s!" % self.params["gpio"])
 	
 	# callback for alarm
 	def cb_alarm(self, channel):
