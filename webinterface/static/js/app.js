@@ -236,18 +236,20 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 
 
 
-app.controller('LogController', ['$http', '$log', '$scope', '$timeout', '$attrs', 'FlashService', function($http, $log, $scope, $timeout, $attrs, FlashService){
+app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', function($http, $log, $interval, FlashService){
 	var self = this;
 	
 	self.log_entries = [];
 	
 	self.fetchLog = function(){
-		$log.log('fetching log')
 		$http.post('/logs/list', {"filter":"ack==0"}).then(
 			function (response) {
 				// success
 				if(response.data['status'] == 'success'){
-					self.log_entries = response.data['data'];
+					var logs = response.data['data'];
+					if(angular.toJson(logs) != angular.toJson(self.log_entries)){
+						self.log_entries = logs;
+					}
 				}
 				else{
 					FlashService.flash(response.data['message'], 'error');
@@ -274,7 +276,13 @@ app.controller('LogController', ['$http', '$log', '$scope', '$timeout', '$attrs'
 		);
 	}
 	
+	self.refresh = function(){
+		self.fetchLog();
+	}
+	
 	self.fetchLog();
+	// refresh list every 5 seconds 
+	self.refresh_inter = $interval(self.refresh, 5000);
 }]);
 
 app.controller('ActivateController', function($http, $log, $scope, $timeout, $attrs){
