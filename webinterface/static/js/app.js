@@ -22,7 +22,7 @@ app.service('FlashService', function($log, $timeout){
 	};
 	
 	self.handle_error = function(response){
-		self.flash('Error with status %s while retrieving data: %s' %(response.status, response.data), 'error');
+		self.flash(('Error with status ' +response.status +' while retrieving data!'), 'error');
 	}
 });
 
