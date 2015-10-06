@@ -3,16 +3,22 @@ html {
 }
 
 body {
+	margin: 0;
+}
+
+#container {
 	font-family: sans-serif;
 	width: 70%;
 	margin: 0 auto;  
 	font-family: Helvetica, Arial, sans-serif;
 	background: white;
-	box-shadow: -5px 0 5px -5px, 5px 0 5px -5px;
+	box-shadow: 0px 0px 20px 0px black;
 }
 
 #nav {
 	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+	position: fixed;
+	width: 70%;
 }
 
 h1.header {
@@ -25,25 +31,21 @@ h1.header {
 }
 
 #main {
-	padding: 20px 40px;
+	padding: 90px 40px 50px;
 }
 
 footer {
 	font-size: 12px;
-	/*  background-color: green;*/
-	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
-	height: 20px;
-	bottom: 0;
-	position: relative;
-	width: 100%; /*same as body width*/
-	text-align: center;
+    background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+    bottom: 0;
+    position: fixed;
+    width: 70%;
+    text-align: center;
+    color: white;
+    vertical-align: middle;
+    padding: 5px 0px;
 }
 
-footer p{
-	color: white;
-	/*  border: 1px solid black;*/
-	padding: 3px;
-}
 
 #flash_message {
 	border-style: solid;
@@ -110,15 +112,15 @@ footer p{
 }
 
 .list th {
-	background: #DFDFDF;
+	background: #bbb;
 	font-weight: bold;
 	height: 35px;
 }
 
 
 
-.list tr:nth-child(even) td { background: #FEFEFE; }
-.list tr:nth-child(odd) td { background: #F1F1F1; }
+.list tr:nth-child(odd) td { background: #DFDFDF; }
+.list tr:nth-child(even) td { background: #F1F1F1; }
 
 
 .icon_add {

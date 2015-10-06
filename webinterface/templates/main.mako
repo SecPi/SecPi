@@ -14,7 +14,8 @@
 	<script type="text/javascript" src="/static/js/angular-animate.js"></script>
 	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
-<body >
+<body>
+<div id="container">
 	<div id="nav">
 		<h1 class="header">SecPi</h1>
 		<%include file="nav.mako" args="active_tab=active_tab"/>
@@ -30,7 +31,8 @@
 		${self.body()}
 	</div>
 	<footer>
-		<p>SecPi, a project by Martin Liebl and Philip W&ouml;lfel</p>
+		SecPi, a project by Martin Liebl and Philip W&ouml;lfel
 	</footer>
+</div>
 </body>
 </html>
