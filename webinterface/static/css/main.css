@@ -25,7 +25,24 @@ h1.header {
 }
 
 #main {
-	padding: 0px 40px;
+	padding: 20px 40px;
+}
+
+footer {
+	font-size: 12px;
+	/*  background-color: green;*/
+	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+	height: 20px;
+	bottom: 0;
+	position: relative;
+	width: 100%; /*same as body width*/
+	text-align: center;
+}
+
+footer p{
+	color: white;
+	/*  border: 1px solid black;*/
+	padding: 3px;
 }
 
 #flash_message {
@@ -80,7 +97,7 @@ h1.header {
 .list {
 	border-collapse: collapse;
 	border-spacing: 0;
-	width: 600px;
+	width: 80%;
 	margin: 5px;
 }
 

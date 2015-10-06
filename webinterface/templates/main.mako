@@ -29,5 +29,8 @@
 		% endif
 		${self.body()}
 	</div>
+	<footer>
+		<p>SecPi, a project by Martin Liebl and Philip W&ouml;lfel</p>
+	</footer>
 </body>
 </html>
