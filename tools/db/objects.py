@@ -139,6 +139,7 @@ class Notifier(Base):
 	description = Column(String)
 	cl = Column(String, nullable=False)
 	module = Column(String, nullable=False)
+	active_state = Column(Boolean, nullable=False, default=True)
 	
 	params = relationship("Param", primaryjoin="and_(Param.object_id == Notifier.id, Param.object_type=='notifier')")
 	

@@ -18,6 +18,7 @@ class NotifiersPage(BaseWebPage):
 		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
 		self.fields['cl'] = {'name':'Class', 'visible':['list', 'add', 'update']}
 		self.fields['module'] = {'name':'Module', 'visible':['list', 'add', 'update']}
+		self.fields['active_state'] = {'name':'Active', 'visible':['list', 'add', 'update']}
 
 
 	@cherrypy.expose
