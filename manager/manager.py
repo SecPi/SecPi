@@ -168,6 +168,10 @@ class Manager:
 		# continue code execution
 		if self.received_data_counter < self.num_of_workers:
 			logging.info("TIMEOUT: Only %d out of %d workers replied with data" % (self.received_data_counter, self.num_of_workers))
+			lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers))
+			db.session.add(lo)
+			db.session.commit()
+			
 		for notifier in self.notifiers:
 			notifier.notify()
 
