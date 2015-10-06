@@ -1,6 +1,11 @@
 
 from collections import OrderedDict
+import dateutil.parser
 
+import json
+import datetime
+
+import cherrypy
 
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()
@@ -24,6 +29,23 @@ def str_to_value(val):
 			try:
 				return float(val)
 			except ValueError:
-				return val
+				try:
+					return dateutil.parser.parse(val)
+				except:
+					return val
 	
 	return val
+
+class SpecialJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        return json.JSONEncoder.default(obj)
+
+
+json_encoder = SpecialJSONEncoder()
+
+def json_handler(*args, **kwargs):
+    # Adapted from cherrypy/lib/jsontools.py
+    value = cherrypy.serving.request._json_inner_handler(*args, **kwargs)
+    return json_encoder.iterencode(value)

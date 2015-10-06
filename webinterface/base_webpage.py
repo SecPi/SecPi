@@ -12,6 +12,7 @@ from tools import utils
 
 import urllib
 
+
 class BaseWebPage(object):
 	"""A baseclass for a CherryPy web page."""
 	
@@ -42,15 +43,15 @@ class BaseWebPage(object):
 		return cherrypy.request.db
 	
 	@cherrypy.expose
-	@cherrypy.tools.json_out()
 	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def fieldList(self):
 		return {'status': 'success', 'data': self.fields}
 		
 	
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
-	@cherrypy.tools.json_out()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def list(self):
 		if(hasattr(cherrypy.request, 'json') and 'filter' in cherrypy.request.json and cherrypy.request.json['filter']!=''):
 			objects = self.db.query(self.baseclass).filter(text(cherrypy.request.json['filter'])).all()
@@ -61,8 +62,8 @@ class BaseWebPage(object):
 	
 	
 	@cherrypy.expose
-	@cherrypy.tools.json_out()
 	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def delete(self):
 		if(hasattr(cherrypy.request, 'json')):
 			id = cherrypy.request.json['id']
@@ -77,8 +78,8 @@ class BaseWebPage(object):
 		
 		
 	@cherrypy.expose
-	@cherrypy.tools.json_out()
 	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def add(self):
 		data = cherrypy.request.json
 			
@@ -98,8 +99,8 @@ class BaseWebPage(object):
 		
 		
 	@cherrypy.expose
-	@cherrypy.tools.json_out()
 	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def update(self):
 		data = cherrypy.request.json
 		
