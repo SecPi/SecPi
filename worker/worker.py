@@ -18,6 +18,7 @@ class Worker:
 
 	def __init__(self):
 		self.actions = []
+		self.sensors = []
 		self.active = True # start deactivated --> only for debug True
 		self.data_directory = "/var/tmp/secpi_data"
 		
@@ -143,22 +144,23 @@ class Worker:
 		
 	# Initialize all the sensors for operation and add callback method
 	def setup_sensors(self):
-		reg_sensors = []
+		# self.sensors = []
 		for sensor in config.get("sensors"):
 			# TODO: try/catch
-			logging.info("Trying to register sensor: %s" % sensor["gpio"])
-			# check if we haven't registerd the pin before
-			if(int(sensor["gpio"]) not in reg_sensors):
-				GPIO.setup(int(sensor["gpio"]), GPIO.IN)
-				GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=60000)
-				reg_sensors.append(int(sensor["gpio"]))	
-				logging.info("Registered!")
+			logging.info("Trying to register sensor: %s" % sensor["id"])
+			s = self.class_for_name(sensor["module"], sensor["class"])
+			sen = s(sensor["id"], sensor["params"], self)
+			self.sensors.append(sen)
+			sen.activate()
+			logging.info("Registered!")
 	
 	def cleanup_sensors(self):
 		# remove the callbacks
-		for sensor in config.get("sensors"):
-			GPIO.remove_event_detect(int(sensor["gpio"]))
-			logging.debug("Removed sensor: %d" % int(sensor["gpio"]))
+		for sensor in self.sensors:
+			sensor.deactivate()
+			logging.debug("Removed sensor: %d" % int(sensor.id))
+		
+		self.sensors = []
 	
 	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
 	def class_for_name(self, module_name, class_name):

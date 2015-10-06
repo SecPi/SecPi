@@ -45,7 +45,10 @@ class Sensor(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String, nullable=False)
 	description = Column(String)
-	gpio_pin = Column(Integer, nullable=False)
+	
+	cl = Column(String, nullable=False)
+	module = Column(String, nullable=False)
+	params = relationship("Param", primaryjoin="Param.type=='sensor' and Param.object_id == Sensor.id")
 	
 	zone_id = Column(Integer, ForeignKey('zones.id'))
 	worker_id = Column(Integer, ForeignKey('workers.id'))
@@ -120,26 +123,43 @@ class Action(Base):
 	description = Column(String)
 	cl = Column(String, nullable=False)
 	module = Column(String, nullable=False)
+	active_state = Column(Boolean, nullable=False, default=True)
 	
-	params = relationship("ActionParam", backref="action")
+	params = relationship("Param", primaryjoin="Param.type=='action' and Param.object_id == Action.id")
 	
 
 	def __repr__(self):
 		return "Action %s with class %s" % (self.name, self.cl)
 
-class ActionParam(Base):
-	__tablename__ = 'actionparams'
+class Notifier(Base):
+	__tablename__ = 'notifier'
+
+	id = Column(Integer, primary_key=True)
+	name = Column(String, nullable=False)
+	description = Column(String)
+	cl = Column(String, nullable=False)
+	module = Column(String, nullable=False)
+	
+	params = relationship("Param", primaryjoin="Param.type=='notifier' and Param.object_id == Notifier.id")
+	
+
+	def __repr__(self):
+		return "Notifier %s with class %s" % (self.name, self.cl)
+
+class Param(Base):
+	__tablename__ = 'params'
 	
 	id = Column(Integer, primary_key=True)
 	key = Column(String, nullable=False)
 	value = Column(String, nullable=False)
 	description = Column(String)
+	object_type = Column(String, nullable=False)
 	
-	action_id = Column(Integer, ForeignKey('actions.id'))
+	object_id = Column(Integer)
 	
 
 	def __repr__(self):
-		return "ActionParam %s:%s" % (self.key, self.value)	
+		return "Param %s:%s" % (self.key, self.value)	
 
 def setup(engine):
 	Base.metadata.create_all(engine)

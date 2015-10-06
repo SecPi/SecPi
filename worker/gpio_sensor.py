@@ -9,7 +9,7 @@ class GPIOSensor(Sensor):
 	def setup_sensor(self):
 		if(int(params["gpio"])>=0):
 			GPIO.setup(int(params["gpio"]), GPIO.IN)
-			GPIO.add_event_detect(int(params["gpio"]), GPIO.RISING, callback=self.cb_alarm, bouncetime=60000)
+			GPIO.add_event_detect(int(params["gpio"]), GPIO.RISING, callback=self.cb_alarm, bouncetime=params['bouncetime'])
 			logging.info("Registered sensor at pin %s!"%(params["gpio"]))
 	
 	def cleanup_sensor(self):

@@ -167,16 +167,23 @@ class Manager:
 		
 		conf_sensors = []
 		for sen in sensors:
+			para = {}
+			# create params array
+			for p in sen.params:
+				para[p.key] = p.value
+			
 			conf_sen = {
 				"id": sen.id,
-				"gpio": sen.gpio_pin,
-				"name": sen.name
+				"name": sen.name,
+				"module": sen.module,
+				"class": sen.cl,
+				"params": para
 			}
 			conf_sensors.append(conf_sen)
 		
 		conf['sensors'] = conf_sensors
 		
-		actions = db.session.query(db.objects.Action).join((db.objects.Worker, db.objects.Action.workers)).filter(db.objects.Worker.id == pi_id).all()
+		actions = db.session.query(db.objects.Action).join((db.objects.Worker, db.objects.Action.workers)).filter(db.objects.Worker.id == pi_id).filter(db.objects.Action.active_state == True).all()
 		# if we have actions we are also active
 		if(len(actions)>0):
 			conf['active'] = True
@@ -184,11 +191,9 @@ class Manager:
 		conf_actions = []
 		# iterate over all actions
 		for act in actions:
-			# get params for action
-			params = db.session.query(db.objects.ActionParam).filter(db.objects.ActionParam.action_id == act.id).all()
 			para = {}
 			# create params array
-			for p in params:
+			for p in action.params:
 				para[p.key] = p.value
 				
 			conf_act = {
