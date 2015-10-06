@@ -7,6 +7,7 @@
 	<li id="alarms"><a href="/alarms">Alarms</a></li>
 	<li id="workers"><a href="/workers">Workers</a></li>
 	<li id="actions"><a href="/actions">Actions</a></li>
+	<li id="notifiers"><a href="/notifiers">Notifiers</a></li>
 </ul>
 
 

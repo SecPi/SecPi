@@ -9,19 +9,21 @@ from base_webpage import BaseWebPage
 
 
 
-class SensorsPage(BaseWebPage):
+class NotifiersPage(BaseWebPage):
 	
 	def __init__(self):
-		super(SensorsPage, self).__init__(objects.Sensor)
+		super(NotifiersPage, self).__init__(objects.Notifier)
 		self.fields['id'] = {'name':'ID', 'visible':['list']}
 		self.fields['name'] = {'name':'Name', 'visible':['list', 'add', 'update']}
 		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
-		self.fields['zone_id'] = {'name':'Zone ID', 'visible':['list', 'add', 'update']}
-		self.fields['worker_id'] = {'name':'Worker ID', 'visible':['list', 'add', 'update']}
 		self.fields['cl'] = {'name':'Class', 'visible':['list', 'add', 'update']}
 		self.fields['module'] = {'name':'Module', 'visible':['list', 'add', 'update']}
 
 
+	@cherrypy.expose
+	def index(self, flash_message=None):
+		tmpl = self.lookup.get_template("notifiers.mako")
+		return tmpl.render(page_title="Notifiers", flash_message=flash_message)
 
 
 

@@ -30,7 +30,8 @@ from sites.setups import SetupsPage
 from sites.alarms import AlarmsPage
 from sites.workers import WorkersPage
 from sites.actions import ActionsPage
-from sites.actionparams import ActionParamsPage
+from sites.notifiers import NotifiersPage
+from sites.params import ParamsPage
 from sites.logs import LogEntriesPage
 
 
@@ -46,7 +47,8 @@ class Root(object):
 		self.alarms = AlarmsPage()
 		self.workers = WorkersPage()
 		self.actions = ActionsPage()
-		self.actionparams = ActionParamsPage()
+		self.notifiers = NotifiersPage()
+		self.params = ParamsPage()
 		self.logs = LogEntriesPage()
 		
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])

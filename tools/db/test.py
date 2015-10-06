@@ -21,10 +21,27 @@ cam_params = [
 
 action_pic = db.objects.Action(name="Webcam", cl="Webcam", module="webcam", workers=[m_worker, p_worker], params=cam_params)
 
+email_params = [
+	db.objects.Param(key='sender', value='secpi@gmx.at', description='Sender of the mail.', object_type="notifier"),
+	db.objects.Param(key='recipient', value='martin.liebl@hotmail.com', description='Recipient of the mail.', object_type="notifier"),
+	db.objects.Param(key='subject', value='SecPi Alarm', description='Subject of the mail.', object_type="notifier"),
+	db.objects.Param(key='text', value='Your SecPi raised an alarm. Please check the attached files.', description='Text for the mail.', object_type="notifier"),
+	db.objects.Param(key='data_dir', value='/var/tmp/manager', description='Directory to fetch the files from.', object_type="notifier"),
+	db.objects.Param(key='smtp_address', value='mail.gmx.com', description='SMTP Server to send mails from.', object_type="notifier"),
+	db.objects.Param(key='smtp_port', value='587', description='Port of the SMTP Server.', object_type="notifier"),
+	db.objects.Param(key='smtp_user', value='secpi@gmx.at', description='User for the SMTP Server.', object_type="notifier"),
+	db.objects.Param(key='smtp_pass', value='TOBESET', description='Password for the SMTP Server.', object_type="notifier"),
+	db.objects.Param(key='smtp_security', value='STARTTLS', description='Security setting for SMTP Server (can be STARTTLS, SSL, NOSSL, NOAUTH).', object_type="notifier")
+]
+
+notifier_email = db.objects.Notifier(name="E-Mail", cl="Mailer", module="mailer", params=email_params)
+
 db.session.add(p_worker)
 db.session.add(m_worker)
 db.session.add(action_pic)
 db.session.add_all(cam_params)
+db.session.add(notifier_email)
+db.session.add_all(email_params)
 db.session.add_all([
 	db.objects.Sensor(name="door IR sensor", description="this is the infrared sensor at the door", module="gpio_sensor", cl="GPIOSensor", worker=p_worker),
 	db.objects.Sensor(name="door contact sensor", description="this is the contact sensor at the door", module="gpio_sensor", cl="GPIOSensor", worker=p_worker),

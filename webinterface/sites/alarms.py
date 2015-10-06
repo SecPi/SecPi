@@ -14,7 +14,9 @@ class AlarmsPage(BaseWebPage):
 		super(AlarmsPage, self).__init__(objects.Alarm)
 		self.fields['id'] = {'name':'ID', 'visible':['list']}
 		self.fields['alarmtime'] = {'name':'Alarm Time', 'visible':['list']}
-		self.fields['sensor_id'] = {'name':'Sensor ID', 'visible':['list', 'add', 'update']}
+		self.fields['sensor_id'] = {'name':'Sensor ID', 'visible':['list', 'add']}
+		self.fields['ack'] = {'name':'Ack.', 'visible':['list', 'add']}
+		self.fields['message'] = {'name':'Message', 'visible':['list', 'add']}
 		#self.fields['active'] = {'name':'Active', 'visible':['list', 'add', 'update']}
 
 
