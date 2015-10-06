@@ -215,7 +215,7 @@ class Manager:
 		for act in actions:
 			para = {}
 			# create params array
-			for p in action.params:
+			for p in act.params:
 				para[p.key] = p.value
 				
 			conf_act = {
