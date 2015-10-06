@@ -48,7 +48,7 @@ class Sensor(Base):
 	
 	cl = Column(String, nullable=False)
 	module = Column(String, nullable=False)
-	params = relationship("Param", primaryjoin="Param.type=='sensor' and Param.object_id == Sensor.id")
+	params = relationship("Param", primaryjoin="and_(Param.object_id==Sensor.id, Param.object_type=='sensor')")
 	
 	zone_id = Column(Integer, ForeignKey('zones.id'))
 	worker_id = Column(Integer, ForeignKey('workers.id'))
@@ -57,7 +57,7 @@ class Sensor(Base):
 
 
 	def __repr__(self):
-		return "Sensor: %s (pin: %i) in Zone %s on Worker %s" % (self.name, self.gpio_pin, self.zone, self.worker.name)
+		return "Sensor: %s in Zone %s on Worker %s" % (self.name, self.zone, self.worker.name)
 		
 
 class Alarm(Base):
@@ -125,14 +125,14 @@ class Action(Base):
 	module = Column(String, nullable=False)
 	active_state = Column(Boolean, nullable=False, default=True)
 	
-	params = relationship("Param", primaryjoin="Param.type=='action' and Param.object_id == Action.id")
+	params = relationship("Param", primaryjoin="and_(Param.object_id==Action.id, Param.object_type=='action')")
 	
 
 	def __repr__(self):
 		return "Action %s with class %s" % (self.name, self.cl)
 
 class Notifier(Base):
-	__tablename__ = 'notifier'
+	__tablename__ = 'notifiers'
 
 	id = Column(Integer, primary_key=True)
 	name = Column(String, nullable=False)
@@ -140,7 +140,7 @@ class Notifier(Base):
 	cl = Column(String, nullable=False)
 	module = Column(String, nullable=False)
 	
-	params = relationship("Param", primaryjoin="Param.type=='notifier' and Param.object_id == Notifier.id")
+	params = relationship("Param", primaryjoin="and_(Param.object_id == Notifier.id, Param.object_type=='notifier')")
 	
 
 	def __repr__(self):
@@ -155,7 +155,7 @@ class Param(Base):
 	description = Column(String)
 	object_type = Column(String, nullable=False)
 	
-	object_id = Column(Integer)
+	object_id = Column(Integer, ForeignKey("actions.id"), ForeignKey("notifiers.id"), ForeignKey("sensors.id"))
 	
 
 	def __repr__(self):
