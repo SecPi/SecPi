@@ -17,6 +17,7 @@ class Worker:
 
 	def __init__(self):
 		self.actions = []
+		self.sensors = []
 		self.active = True # start deactivated --> only for debug True
 		self.data_directory = "/var/tmp/secpi_data"
 		
@@ -140,22 +141,23 @@ class Worker:
 		
 	# Initialize all the sensors for operation and add callback method
 	def setup_sensors(self):
-		reg_sensors = []
+		# self.sensors = []
 		for sensor in config.get("sensors"):
 			# TODO: try/catch
-			logging.info("Trying to register sensor: %s" % sensor["gpio"])
-			# check if we haven't registerd the pin before
-			if(int(sensor["gpio"]) not in reg_sensors):
-				GPIO.setup(int(sensor["gpio"]), GPIO.IN)
-				GPIO.add_event_detect(int(sensor["gpio"]), GPIO.RISING, callback=self.alarm, bouncetime=60000)
-				reg_sensors.append(int(sensor["gpio"]))	
-				logging.info("Registered!")
+			logging.info("Trying to register sensor: %s" % sensor["id"])
+			s = self.class_for_name(sensor["module"], sensor["class"])
+			sen = s(sensor["id"], sensor["params"], self)
+			self.sensors.append(sen)
+			sen.activate()
+			logging.info("Registered!")
 	
 	def cleanup_sensors(self):
 		# remove the callbacks
-		for sensor in config.get("sensors"):
-			GPIO.remove_event_detect(int(sensor["gpio"]))
-			logging.debug("Removed sensor: %d" % int(sensor["gpio"]))
+		for sensor in self.sensors:
+			sensor.deactivate()
+			logging.debug("Removed sensor: %d" % int(sensor.id))
+		
+		self.sensors = []
 	
 	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
 	def class_for_name(self, module_name, class_name):
@@ -179,21 +181,15 @@ class Worker:
 		# TODO: maybe manual del of all actions?
 		self.actions = []					
 
-	# callback for the sensors, raises an alarm
-	def alarm(self, channel):
-		if(self.active):
-			logging.info("Sensor at gpio %s detected something" % channel)
 
-			# determine the id of the sensor which signaled
-			sensor_id = ""
-			for sensor in config.get("sensors"):
-				if int(sensor["gpio"]) == channel:
-					sensor_id = sensor["id"]
-					break
-			
+	# callback for the sensors
+	def alarm(self, sensor_id, message):
+		if(self.active):
+			logging.info("Sensor with id %s detected something" % sensor_id)
+
 			msg = {	"pi_id":config.get("pi_id"),
 					"sensor_id": sensor_id,
-					"gpio": channel}
+					"message": message}
 			
 			msg_string = json.dumps(msg)
 			
