@@ -8,8 +8,8 @@ import database as db
 
 db.connect()
 
-p_worker = db.objects.Worker(name="Philip's Pi", address="10.0.0.200")
-m_worker = db.objects.Worker(name="Martin's Pi", address="192.168.1.2")
+p_worker = db.objects.Worker(name="Philip's Pi", address="10.0.0.200", active_state=True)
+m_worker = db.objects.Worker(name="Martin's Pi", address="192.168.1.2", active_state=False)
 
 cam_params = [
 	db.objects.Param(key='path', value='/dev/video0', description='Path to webcam linux device.', object_type="action"),
@@ -17,6 +17,7 @@ cam_params = [
 	db.objects.Param(key='resolution_y', value='480', description='Height of the picutre taken.', object_type="action"),
 	db.objects.Param(key='count', value='2', description='Number of pictures taken.', object_type="action"),
 	db.objects.Param(key='interval', value='1', description='Interval between pictures', object_type="action"),
+	db.objects.Param(key='data_path', value='/tmp/secpi/worker', description='Path to store the images.', object_type="action"),
 ]
 
 action_pic = db.objects.Action(name="Webcam", cl="Webcam", module="webcam", workers=[m_worker, p_worker], params=cam_params)
@@ -36,17 +37,39 @@ email_params = [
 
 notifier_email = db.objects.Notifier(name="E-Mail", cl="Mailer", module="mailer", params=email_params)
 
+sensor1_params = [
+	db.objects.Param(key='gpio', value='15', description='GPIO pin.', object_type="sensor"),
+	db.objects.Param(key='bouncetime', value='60000', description='Bouncetime for GPIO pin.', object_type="sensor")
+]
+
+sensor2_params = [
+	db.objects.Param(key='gpio', value='16', description='GPIO pin.', object_type="sensor"),
+	db.objects.Param(key='bouncetime', value='60000', description='Bouncetime for GPIO pin.', object_type="sensor")
+]
+
+sensor3_params = [
+	db.objects.Param(key='gpio', value='18', description='GPIO pin.', object_type="sensor"),
+	db.objects.Param(key='bouncetime', value='60000', description='Bouncetime for GPIO pin.', object_type="sensor")
+]
+
+
+sensors = [
+	db.objects.Sensor(name="door IR sensor", description="this is the infrared sensor at the door", module="gpio_sensor", cl="GPIOSensor", worker=p_worker, params=sensor1_params),
+	db.objects.Sensor(name="door contact sensor", description="this is the contact sensor at the door", module="gpio_sensor", cl="GPIOSensor", worker=p_worker, params=sensor2_params),
+	db.objects.Sensor(name="window contact sensor", description="this is the contact sensor at the window", module="gpio_sensor", cl="GPIOSensor", worker=p_worker, params=sensor3_params)
+]
+
+
 db.session.add(p_worker)
 db.session.add(m_worker)
 db.session.add(action_pic)
 db.session.add_all(cam_params)
 db.session.add(notifier_email)
 db.session.add_all(email_params)
-db.session.add_all([
-	db.objects.Sensor(name="door IR sensor", description="this is the infrared sensor at the door", module="gpio_sensor", cl="GPIOSensor", worker=p_worker),
-	db.objects.Sensor(name="door contact sensor", description="this is the contact sensor at the door", module="gpio_sensor", cl="GPIOSensor", worker=p_worker),
-	db.objects.Sensor(name="window contact sensor", description="this is the contact sensor at the window", module="gpio_sensor", cl="GPIOSensor", worker=p_worker)
-	])
+db.session.add_all(sensors)
+db.session.add_all(sensor1_params)
+db.session.add_all(sensor2_params)
+db.session.add_all(sensor3_params)
 
 db.session.commit()
 
