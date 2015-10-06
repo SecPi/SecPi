@@ -2,11 +2,7 @@
 
 
 <div ng-controller="DataController as dataCtrl" baseclass="${baseclass}" basetitle="${basetitle}" queryfilter="${query_filter}">
-
-	<div id="flash_message" ng-repeat="msg in dataCtrl.flash_messages" ng-class="msg.type" ng-show="msg.message != null">
-		{{msg.message}}
-	</div>
-
+	
 	## <pre>
 	## {{dataCtrl.baseclass}}
 	## </pre>
@@ -28,7 +24,7 @@
 	<div id="edit-form-div" ng-show="dataCtrl.edit_data" title="Edit ${basetitle}">
 	<form id="edit-form" ng-submit="dataCtrl.saveEdit()">
 		<table>
-			<tr ng-repeat="(k, v) in dataCtrl.getFields('update')">
+			<tr ng-repeat="(k, v) in dataCtrl.form_fields">
 				<td>{{v['name']}}</td>
 				<td><input type="text" name="k" id="k" ng-model="dataCtrl.edit_data[k]" /></td>
 			</tr>

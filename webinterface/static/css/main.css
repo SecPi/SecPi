@@ -48,7 +48,18 @@ footer {
 }
 
 
-#flash_message {
+
+/*
+	######### Flash Messages #########
+*/
+#flash_container {
+	position: fixed;
+	top: 100px;
+	left: 50%;
+	margin-left: -250px;
+}
+
+.flash_message {
 	border-style: solid;
 	border-width: 2px;
 	
@@ -58,45 +69,114 @@ footer {
 	padding: 10px;
 	margin: 10px;
 	
+
 	text-align: center;
 }
 
-#flash_message.info {
+.flash_message.info {
 	background-color: #B6FAC4;
 	color: #1BCF3F;
 	border-color: #1BCF3F;
 }
 
-#flash_message.warn {
+.flash_message.warn {
 	background-color: #FCF6B1;
 	color: #BAAB07;
 	border-color: #E3D107;
 }
 
-#flash_message.error {
+.flash_message.error {
 	background-color: #FFA3A3;
 	color: #C70000;
 	border-color: #C70000;
 }
 
-#flash_message.ng-enter {
+.flash_message.ng-enter {
 	transition:0.5s linear all;
 	opacity:0;
 }
 
-#flash_message.ng-enter.ng-enter-active {
+.flash_message.ng-enter.ng-enter-active {
 	opacity:1;	
 }
 
-#flash_message.ng-leave {
+.flash_message.ng-leave {
 	transition:0.5s linear all;
 	opacity:1;
 }
 
-#flash_message.ng-leave.ng-leave-active {
+.flash_message.ng-leave.ng-leave-active {
 	opacity:0;
 }
 
+
+/*
+	######### Log Entries #########
+*/
+.log_entry {
+	border-style: solid;
+	border-width: 2px;
+	
+	display: block;
+	width: 500px;
+	height: 20px;
+	padding: 10px;
+	margin: 10px;
+}
+
+.log_ack {
+	float: right;
+	cursor: pointer;
+}
+
+/* Level DEBUG */
+.log_entry.lvl0 {
+	
+}
+
+/* Level INFO */
+.log_entry.lvl50 {
+	background-color: #B6FAC4;
+	color: #1BCF3F;
+	border-color: #1BCF3F;
+}
+
+/* Level WARN */
+.log_entry.lvl75 {
+	background-color: #FCF6B1;
+	color: #BAAB07;
+	border-color: #E3D107;
+}
+
+/* Level ERR */
+.log_entry.lvl100 {
+	background-color: #FFA3A3;
+	color: #C70000;
+	border-color: #C70000;
+}
+
+.log_entry.ng-enter {
+	transition:0.5s linear all;
+	opacity:0;
+}
+
+.log_entry.ng-enter.ng-enter-active {
+	opacity:1;	
+}
+
+.log_entry.ng-leave {
+	transition:0.5s linear all;
+	opacity:1;
+}
+
+.log_entry.ng-leave.ng-leave-active {
+	opacity:0;
+}
+
+
+/*
+	######### Data Table #########
+*/
 .list {
 	border-collapse: collapse;
 	border-spacing: 0;
@@ -110,6 +190,7 @@ footer {
 	height: 30px;
 	transition: all 0.3s;
 	text-align: center;
+	/*border-left: 2px solid black;*/
 }
 
 .list th {
@@ -118,12 +199,13 @@ footer {
 	height: 35px;
 }
 
-
-
 .list tr:nth-child(odd) td { background: #DFDFDF; }
 .list tr:nth-child(even) td { background: #F1F1F1; }
 
 
+/*
+	######### Icons #########
+*/
 .icon_add {
 	background: url('/static/img/icons/plus.png') no-repeat 13px 3px transparent;
 }
@@ -140,7 +222,9 @@ footer {
 
 
 
-
+/*
+	######### Tab Interface #########
+*/
 .tabrow {
 	text-align: center;
 	list-style: none;
