@@ -64,9 +64,10 @@ class Alarm(Base):
 	alarmtime = Column(DateTime, nullable=False, default=datetime.datetime.now)
 	ack = Column(Boolean, default=False)
 	sensor_id = Column(Integer, ForeignKey('sensors.id'))
+	message = Column(String)
 
 	def __repr__(self):
-		return "Alarm@%s for sensor %s (ack: %s)" % (self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.sensor_id, self.ack)
+		return "Alarm@%s for sensor %s (ack: %s): %s" % (self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.sensor_id, self.ack, self.message)
 
 
 class LogEntry(Base):
