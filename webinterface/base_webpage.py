@@ -5,6 +5,9 @@ import cherrypy
 from mako.lookup import TemplateLookup
 from collections import OrderedDict
 
+# db stuff
+from sqlalchemy import text
+
 from tools import utils
 
 import urllib
@@ -46,9 +49,13 @@ class BaseWebPage(object):
 		
 	
 	@cherrypy.expose
+	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
 	def list(self):
-		objects = self.db.query(self.baseclass).all()
+		if(hasattr(cherrypy.request, 'json') and 'filter' in cherrypy.request.json and cherrypy.request.json['filter']!=''):
+			objects = self.db.query(self.baseclass).filter(text(cherrypy.request.json['filter'])).all()
+		else:	
+			objects = self.db.query(self.baseclass).all()
 		
 		return {'status': 'success', 'data': self.objectsToList(objects)}
 	

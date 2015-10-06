@@ -21,3 +21,6 @@ A sensor is a sensor attached to the Raspberry PIs GPIO Pins.
 <%include file="angular_edit.mako" args="baseclass='sensors', basetitle='Sensor'" />
 
 
+<h2>Parameters</h2>
+
+<%include file="angular_edit.mako" args="baseclass='params', basetitle='Params', query_filter='object_type==\'sensor\''" />

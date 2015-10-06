@@ -11,5 +11,5 @@ An action is something a worker does, reacting on an alarm.
 
 <h2>Parameters</h2>
 
-<%include file="angular_edit.mako" args="baseclass='actionparams', basetitle='ActionParams'" />
+<%include file="angular_edit.mako" args="baseclass='params', basetitle='Params', query_filter='object_type==\'action\''" />
 

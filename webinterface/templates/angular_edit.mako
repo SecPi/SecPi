@@ -1,7 +1,7 @@
-<%page args="baseclass,basetitle" />
+<%page args="baseclass,basetitle,query_filter=''" />
 
 
-<div ng-controller="DataController as dataCtrl" baseclass="${baseclass}" basetitle="${basetitle}">
+<div ng-controller="DataController as dataCtrl" baseclass="${baseclass}" basetitle="${basetitle}" queryfilter="${query_filter}">
 
 	<div id="flash_message" ng-repeat="msg in dataCtrl.flash_messages" ng-class="msg.type" ng-show="msg.message != null">
 		{{msg.message}}
@@ -14,7 +14,7 @@
 
 	<input type="button" ng-click="dataCtrl.getList()" value="Refresh data" ng-hide="dataCtrl.data.length > 0" /><br />
 
-	<table class="list" ng-show="dataCtrl.data.length > 0">
+	<table class="list">
 		<tr>
 			<th ng-repeat="(k, v) in dataCtrl.getFields('list')">{{v['name']}}</th>
 			<th><img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" /></th>

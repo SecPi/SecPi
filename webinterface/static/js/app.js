@@ -12,6 +12,10 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		self.baseclass = "/"+$attrs.baseclass;
 		self.basetitle = $attrs.basetitle;
 		
+		if ($attrs.queryfilter){
+			self.query_filter = $attrs.queryfilter;
+		}
+		
 		self.flash_messages = [];
 		
 		self.data = [];
@@ -73,7 +77,11 @@ app.controller('DataController', function($http, $log, $scope, $timeout, $attrs)
 		
 		self.getList = function(){
 			$log.log('fetching list')
-			$http.get(self.baseclass+'/list').then(
+			var list_data = {}
+			if(self.query_filter){
+				list_data = {"filter": self.query_filter}
+			}
+			$http.post(self.baseclass+'/list', list_data).then(
 				function (response) {
 					// success
 					if(response.data['status'] == 'success'){
