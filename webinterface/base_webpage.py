@@ -112,11 +112,7 @@ class BaseWebPage(object):
 				self.db.commit()
 				
 				return {'status': 'success', 'message': "Updated object with id %i"%obj.id}
-			else:
-				cherrypy.log("got id to update: %s"%id)
-				obj = self.db.query(self.baseclass).get(id)
-				cherrypy.log("got from db: %s"%obj)
-				return {'status': 'success', 'data': obj}
+				
 		else:
 			return {'status':'error', 'message': "Invalid ID!" }
 
