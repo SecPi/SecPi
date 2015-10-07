@@ -35,8 +35,6 @@ from sites.notifiers import NotifiersPage
 from sites.params import ParamsPage
 from sites.logs import LogEntriesPage
 
-site_users = {'philip': 'P@ssw0rd', 'martin': 'P@ssw0rd'}
-
 lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
 config.load("webinterface")
 
@@ -123,8 +121,8 @@ def run():
 			'tools.db.on': True,
 			'tools.staticdir.root': os.path.join(config.get("project_path"), "webinterface"),
 			'tools.auth_digest.on': True,
-	        'tools.auth_digest.realm': 'localhost',
-	        'tools.auth_digest.get_ha1': auth_digest.get_ha1_dict_plain(site_users),
+	        'tools.auth_digest.realm': 'secpi',
+	        'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('.htdigest'),
 	        'tools.auth_digest.key': 'ae41349f9413b13c'
 		},
 		'/static': {
