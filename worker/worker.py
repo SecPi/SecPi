@@ -228,6 +228,14 @@ class Worker:
 
 
 if __name__ == '__main__':
-	w = Worker()
+	try:
+		w = Worker()
+	except KeyboardInterrupt:
+		logging.info('Shutting down worker!')
+		# TODO: cleanup?
+		try:
+			sys.exit(0)
+		except SystemExit:
+			os._exit(0)
 
 

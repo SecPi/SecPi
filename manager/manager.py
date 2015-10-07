@@ -282,6 +282,14 @@ class Manager:
 	# 	send deactivate
 
 if __name__ == '__main__':
-    mg = Manager()
-    # mg.send_config(1)
-    mg.start()
+	try:
+		mg = Manager()
+		# mg.send_config(1)
+		mg.start()
+	except KeyboardInterrupt:
+		logging.info("Shutting down manager!")
+		# TODO: cleanup?
+		try:
+			sys.exit(0)
+		except SystemExit:
+			os._exit(0)
