@@ -1,6 +1,7 @@
 import importlib
 import json
 import logging
+import logging.config
 import os
 import pika
 import RPi.GPIO as GPIO
@@ -21,13 +22,14 @@ class Worker:
 		self.active = True # start deactivated --> only for debug True
 		self.data_directory = "/var/tmp/secpi_data"
 		
+		config.load("worker")
+		
 		# setup gpio and logging
 		GPIO.setmode(GPIO.BCM)
-		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)
+		logging.config.fileConfig(os.path.join(config.get('project_path'), 'logging.conf'), defaults={'logfilename': os.path.join(config.get('project_path'),'logs/worker.log')})
+		
 		self.prepare_data_directory(self.data_directory)
 
-		logging.info("Loading config...")
-		config.load("worker")		
 		
 		logging.info("Setting up queues")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])

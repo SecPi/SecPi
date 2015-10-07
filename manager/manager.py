@@ -2,6 +2,7 @@ import hashlib
 import importlib
 import json
 import logging
+import logging.config
 import os
 import pika
 import sys
@@ -50,9 +51,10 @@ from tools.db import database as db
 class Manager:
 
 	def __init__(self):
-		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)	# TODO make it nicer
-		
 		config.load("manager")
+		
+		logging.config.fileConfig(os.path.join(config.get('project_path'), 'logging.conf'), defaults={'logfilename': os.path.join(config.get('project_path'),'logs/manager.log')})
+		
 		db.connect()
 		
 		self.notifiers = []

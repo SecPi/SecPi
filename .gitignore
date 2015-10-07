@@ -3,3 +3,4 @@ webinterface/logs/*
 worker/*.jpg
 data.db
 certs/*
+logs/*
