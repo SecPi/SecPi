@@ -40,6 +40,7 @@ class Worker:
 		self.channel.queue_declare(queue='%i_config' % config.get('pi_id'))
 		self.channel.queue_declare(queue='data')
 		self.channel.queue_declare(queue='alarm')
+		self.channel.queue_declare(queue='error')
 
 		#specify the queues we want to listen to, including the callback
 		self.channel.basic_consume(self.got_action, queue='%i_action' % config.get('pi_id'), no_ack=True)
@@ -143,13 +144,20 @@ class Worker:
 	def setup_sensors(self):
 		# self.sensors = []
 		for sensor in config.get("sensors"):
-			# TODO: try/catch
-			logging.info("Trying to register sensor: %s" % sensor["id"])
-			s = self.class_for_name(sensor["module"], sensor["class"])
-			sen = s(sensor["id"], sensor["params"], self)
-			self.sensors.append(sen)
-			sen.activate()
-			logging.info("Registered!")
+			try:
+				logging.info("Trying to register sensor: %s" % sensor["id"])
+				s = self.class_for_name(sensor["module"], sensor["class"])
+				sen = s(sensor["id"], sensor["params"], self)
+				sen.activate()
+			except Exception, e:
+				logging.exception("Wasn't able to add sensor %r" % sensor)
+				error_data = {}
+				error_data['pi_id'] = config.get('pi_id')
+				self.channel.basic_publish(exchange='manager', routing_key="error", body=json.dumps(error_data))
+				#print str(e)
+			else:
+				self.sensors.append(sen)
+				logging.info("Registered!")
 	
 	def cleanup_sensors(self):
 		# remove the callbacks
