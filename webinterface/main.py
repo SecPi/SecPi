@@ -54,7 +54,15 @@ class Root(object):
 		self.logs = LogEntriesPage()
 		
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-		parameters = pika.ConnectionParameters(credentials=credentials, host=config.get('rabbitmq')['master_ip'])
+		parameters = pika.ConnectionParameters(credentials=credentials,
+			host=config.get('rabbitmq')['master_ip'],
+			port=5671,
+			ssl=True,
+			ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
+				"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
+				"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
+			}
+		)
 		connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = connection.channel()
 		self.channel.queue_declare(queue='on_off')

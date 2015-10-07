@@ -1,8 +1,12 @@
 {
 	"rabbitmq":{
-    	"master_ip": "10.0.0.200",
-    	"user": "secpi",
-    	"password": "S3cP1"
+        "master_ip": "10.0.0.9",
+        "master_port": 5671,
+        "user": "secpi",
+        "password": "S3cP1",
+        "cacert": "/certs/ca/cacert.pem",
+        "certfile": "/certs/client/worker1.secpi.local.cert.pem",
+        "keyfile": "/certs/client/worker1.secpi.local.key.pem"
     },
     "pi_id": 1,
     "actions": [
