@@ -76,10 +76,12 @@ class Manager:
 		self.channel.queue_declare(queue='alarm')
 		self.channel.queue_declare(queue='register')
 		self.channel.queue_declare(queue='on_off')
+		self.channel.queue_declare(queue='error')
 		self.channel.queue_bind(exchange='manager', queue='on_off')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
 		self.channel.queue_bind(exchange='manager', queue='register')
+		self.channel.queue_bind(exchange='manager', queue='error')
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
@@ -94,6 +96,7 @@ class Manager:
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
 		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
+		self.channel.basic_consume(self.got_error, queue='error', no_ack=True)
 		logging.info("Setup done!")
 
 	
@@ -109,6 +112,9 @@ class Manager:
 		logging.info("Data written")
 		self.received_data_counter += 1
 
+	def got_error(self, ch, method, properties, body):
+		logging.info("Got error")
+		print "%r" % body
 
 	def cb_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
