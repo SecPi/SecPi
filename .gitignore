@@ -4,3 +4,4 @@ worker/*.jpg
 data.db
 certs/*
 logs/*
+webinterface/.htdigest
