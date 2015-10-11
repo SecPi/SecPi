@@ -54,24 +54,22 @@ footer {
 */
 #flash_container {
 	position: fixed;
-	top: 100px;
-	left: 50%;
-	margin-left: -250px;
+	bottom: 0%;
+	right: 0%;
+	z-index: 100;
 }
 
 .flash_message {
 	border-style: solid;
 	border-width: 2px;
+	border-radius: 10px;
 	
 	display: block;
-	width: 500px;
-	height: 20px;
-	padding: 10px;
+	max-width: 500px;
+	padding: 10px 10px 10px 30px;
 	margin: 10px;
 	
 	box-shadow: 5px 5px 25px -5px black;
-
-	text-align: center;
 }
 
 .flash_message.info {
