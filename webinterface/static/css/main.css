@@ -117,8 +117,7 @@ footer {
 	border-width: 2px;
 	
 	display: block;
-	width: 500px;
-	height: 20px;
+	max-width: 500px;
 	padding: 10px 10px 10px 30px;
 	margin: 10px;
 }
