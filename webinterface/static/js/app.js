@@ -26,6 +26,27 @@ app.service('FlashService', function($log, $timeout){
 	}
 });
 
+
+app.service('HTTPService', ['$http', 'FlashService', function($http, FlashService){
+	var self = this;
+	
+	self.post = function(path, data, success_func){
+		$http.post(path, data).then(
+			function (response) {
+				// success
+				if(response.data['status'] == 'success'){
+					success_func(response.data['data'], response.data['message']);
+				}
+				else{
+					FlashService.flash(response.data['message'], 'error');
+				}
+			},
+			FlashService.handle_error
+		);
+	}
+	
+}]);
+
 app.controller('FlashController', ['FlashService', function(FlashService){
 	var self = this;
 	
@@ -36,7 +57,7 @@ app.controller('FlashController', ['FlashService', function(FlashService){
 	}
 }])
 
-app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs', 'FlashService', function($http, $log, $scope, $timeout, $attrs, FlashService){
+app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($http, $log, $scope, $timeout, $attrs, FlashService, HTTPService){
 	var self = this;
 	
 	if (!$attrs.baseclass) throw new Error("No class defined!");
@@ -58,20 +79,11 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	self.edit_id = -1;
 	self.orig_data = null;
 	
-	
-	
 	self.fetchFields = function(){
-		$http.post(self.baseclass+'/fieldList', {}).then(
-			function (response) {
-				// success
-				if(response.data['status'] == 'success'){
-					self.fields = response.data['data'];
-				}
-				else{
-					FlashService.flash(response.data['message'], 'error');
-				}
-			},
-			FlashService.handle_error
+		HTTPService.post(self.baseclass+'/fieldList', {},
+			function(data, msg){
+				self.fields = data;
+			}
 		);
 	}
 	
@@ -100,17 +112,11 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 		if(self.query_filter){
 			list_data = {"filter": self.query_filter}
 		}
-		$http.post(self.baseclass+'/list', list_data).then(
-			function (response) {
-				// success
-				if(response.data['status'] == 'success'){
-					self.data = response.data['data'];
-				}
-				else{
-					FlashService.flash(response.data['message'], 'error');
-				}
-			},
-			FlashService.handle_error
+		
+		HTTPService.post(self.baseclass+'/list', list_data,
+			function(data, msg){
+				self.data = data;
+			}
 		);
 	};
 	
@@ -126,47 +132,30 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	self.saveEdit = function(){ 
 		$log.log("saving stuff")
 		if(self.edit_id == -1){ // if edit id is -1 we are adding a new one
-			
-			$http.post(self.baseclass+'/add', self.edit_data).then(
-				function (response) {
-					// success
-					if(response.data['status'] == 'success'){
-						FlashService.flash(response.data['message'], 'info')
-						
-						
-						// self.data.push(self.edit_data); // won't get id of saved element
-						self.getList();
-						
-						self.orig_data = null;
-						self.edit_data = null;
-						self.edit_id = -1;
-						
-						
-						self.dialog.dialog( "close" );
-					}
-					else{
-						FlashService.flash(response.data['message'], 'error');
-					}
-				},
-				FlashService.handle_error
+			HTTPService.post(self.baseclass+'/add', self.edit_data,
+				function(data, msg){
+					FlashService.flash(msg, 'info')
+					
+					// self.data.push(self.edit_data); // won't get id of saved element
+					self.getList();
+					
+					self.orig_data = null;
+					self.edit_data = null;
+					self.edit_id = -1;
+					
+					self.dialog.dialog( "close" );
+				}
 			);
 		}
 		else{
-			$http.post(self.baseclass+'/update', self.edit_data).then(
-				function (response) {
-					// success
-					if(response.data['status'] == 'success'){
-						FlashService.flash(response.data['message'], 'info')
-						self.orig_data = null;
-						self.edit_data = null;
-						self.edit_id = -1;
-						self.dialog.dialog( "close" );
-					}
-					else{
-						FlashService.flash(response.data['message'], 'error');
-					}
-				},
-				FlashService.handle_error
+			HTTPService.post(self.baseclass+'/update', self.edit_data,
+				function(data, msg){
+					FlashService.flash(msg, 'info')
+					self.orig_data = null;
+					self.edit_data = null;
+					self.edit_id = -1;
+					self.dialog.dialog( "close" );
+				}
 			);
 		}
 	};
@@ -191,18 +180,11 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	
 	self.delete = function(delId){
 		if(confirm("Do you really want to delete the Object with id "+ delId +"?")){
-			$http.post(self.baseclass+'/delete', {id: self.data[delId]["id"]}).then(
-				function (response) {
-					// success
-					if(response.data['status'] == 'success'){
-						FlashService.flash(response.data['message'], 'info')
-						self.data.splice(delId, 1);
-					}
-					else{
-						FlashService.flash(response.data['message'], 'error');
-					}
-				},
-				FlashService.handle_error
+			HTTPService.post(self.baseclass+'/delete', {id: self.data[delId]["id"]},
+				function(data, msg){
+					FlashService.flash(msg, 'info')
+					self.data.splice(delId, 1);
+				}
 			);
 		}
 	};
@@ -236,43 +218,27 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 
 
 
-app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', function($http, $log, $interval, FlashService){
+app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', 'HTTPService', function($http, $log, $interval, FlashService, HTTPService){
 	var self = this;
 	
 	self.log_entries = [];
 	
 	self.fetchLog = function(){
-		$http.post('/logs/list', {"filter":"ack==0"}).then(
-			function (response) {
-				// success
-				if(response.data['status'] == 'success'){
-					var logs = response.data['data'];
-					if(angular.toJson(logs) != angular.toJson(self.log_entries)){
-						self.log_entries = logs;
-					}
+		HTTPService.post('/logs/list', {"filter":"ack==0"},
+			function(data, msg){
+				if(angular.toJson(data) != angular.toJson(self.log_entries)){
+					self.log_entries = data;
 				}
-				else{
-					FlashService.flash(response.data['message'], 'error');
-				}
-			},
-			FlashService.handle_error
+			}
 		);
 	};
 	
 	self.ack = function(log_id){
-		
-		$http.post('/logs/ack', {"id":self.log_entries[log_id].id}).then(
-			function (response) {
-				// success
-				if(response.data['status'] == 'success'){
-					FlashService.flash(response.data['message'], 'info');
-					self.log_entries.splice(log_id, 1);
-				}
-				else{
-					FlashService.flash(response.data['message'], 'error');
-				}
-			},
-			FlashService.handle_error
+		HTTPService.post('/logs/ack', {"id":self.log_entries[log_id].id},
+			function(data, msg){
+				FlashService.flash(msg, 'info');
+				self.log_entries.splice(log_id, 1);
+			}
 		);
 	}
 	
