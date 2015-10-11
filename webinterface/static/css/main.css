@@ -75,21 +75,21 @@ footer {
 }
 
 .flash_message.info {
-	background-color: #B6FAC4;
 	color: #1BCF3F;
 	border-color: #1BCF3F;
+	background: #B6FAC4 url('/static/img/icons/tick.png') no-repeat 10px 10px;
 }
 
 .flash_message.warn {
-	background-color: #FCF6B1;
 	color: #BAAB07;
 	border-color: #E3D107;
+	background: #FCF6B1 url('/static/img/icons/warning.png') no-repeat 10px 10px;
 }
 
 .flash_message.error {
-	background-color: #FFA3A3;
 	color: #C70000;
 	border-color: #C70000;
+	background: #FFA3A3 url('/static/img/icons/error.png') no-repeat 10px 10px;
 }
 
 .flash_message.ng-enter {
@@ -121,7 +121,7 @@ footer {
 	display: block;
 	width: 500px;
 	height: 20px;
-	padding: 10px;
+	padding: 10px 10px 10px 30px;
 	margin: 10px;
 }
 
@@ -132,28 +132,28 @@ footer {
 
 /* Level DEBUG */
 .log_entry.lvl0 {
-	
+	background: #ffffff url('/static/img/icons/debug.png') no-repeat 10px 10px;
 }
 
 /* Level INFO */
 .log_entry.lvl50 {
-	background-color: #B6FAC4;
 	color: #1BCF3F;
 	border-color: #1BCF3F;
+	background: #B6FAC4 url('/static/img/icons/tick.png') no-repeat 10px 10px;
 }
 
 /* Level WARN */
 .log_entry.lvl75 {
-	background-color: #FCF6B1;
 	color: #BAAB07;
 	border-color: #E3D107;
+	background: #FCF6B1 url('/static/img/icons/warning.png') no-repeat 10px 10px;
 }
 
 /* Level ERR */
 .log_entry.lvl100 {
-	background-color: #FFA3A3;
 	color: #C70000;
 	border-color: #C70000;
+	background: #FFA3A3 url('/static/img/icons/error.png') no-repeat 10px 10px;
 }
 
 .log_entry.ng-enter {

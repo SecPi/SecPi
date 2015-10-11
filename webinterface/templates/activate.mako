@@ -35,6 +35,6 @@
 <div ng-controller="LogController as logCtrl">
 	<div class="log_entry" ng-repeat="log in logCtrl.log_entries" ng-show="log.message != null" ng-class="'lvl'+log.level">
 		{{log.logtime}} {{log.message}}
-		<span class="log_ack"><img src="/static/img/icons/tick.png" title="acknowledge" ng-click="logCtrl.ack($index)" /></span>
+		<span class="log_ack"><img src="/static/img/icons/ack.png" title="acknowledge" ng-click="logCtrl.ack($index)" /></span>
 	</div>
 </div>
