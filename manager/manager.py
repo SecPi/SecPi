@@ -113,10 +113,15 @@ class Manager:
 			logging.info("Data written")
 		self.received_data_counter += 1
 
+	# callback for when a worker reports an error
 	def got_error(self, ch, method, properties, body):
 		logging.info("Got error")
-		print "%r" % body
+		print "%s" % body
+		error_log_entry = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_ERROR, message=body)
+		db.session.add(error_log_entry)
+		db.session.commit()
 
+	# callback for when a setup gets activated/deactivated
 	def cb_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
 		
