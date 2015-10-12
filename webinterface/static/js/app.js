@@ -83,6 +83,18 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	self.edit_id = -1;
 	self.orig_data = null;
 	
+	self.edit_active = true;
+	
+	HTTPService.post('/setups/list', {"filter":"active_state==1"},
+		function(data, msg){
+			// FlashService.flash("got data: "+ angular.toJson(data), FlashService.TYPE_INFO);
+			if(data.length > 0){ // we got an active setup, disable edit
+				self.edit_active = false;
+			}
+		}
+	);
+	
+	
 	self.fetchFields = function(){
 		HTTPService.post(self.baseclass+'/fieldList', {},
 			function(data, msg){
