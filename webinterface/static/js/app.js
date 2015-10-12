@@ -83,8 +83,8 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	self.edit_id = -1;
 	self.orig_data = null;
 	
-	self.edit_active = true;
 	
+	self.edit_active = true;
 	HTTPService.post('/setups/list', {"filter":"active_state==1"},
 		function(data, msg){
 			// FlashService.flash("got data: "+ angular.toJson(data), FlashService.TYPE_INFO);
@@ -310,6 +310,89 @@ app.controller('ActivateController', ['$http', '$log', '$interval', 'FlashServic
 	
 	self.fetch_active();
 	self.fetch_inactive();
+}]);
+
+
+app.controller('SetupsZonesController', ['$log', '$timeout', 'FlashService', 'HTTPService', function($log, $timeout, FlashService, HTTPService){
+	var self = this;
+	
+	self.setups_zones = [];
+	self.setups = [];
+	self.zones = [];
+	
+	
+	self.fetchData = function(){
+		HTTPService.post('/setupszones/list', {},
+			function(data,msg){
+				self.setups_zones = data;		
+			}
+		);
+		
+		HTTPService.post('/setups/list', {},
+			function(data,msg){
+				self.setups = data;		
+			}
+		);
+		
+		HTTPService.post('/zones/list', {},
+			function(data,msg){
+				self.zones = data;		
+			}
+		);
+	}
+	
+	self.showAdd = function(){
+		self.dialog.dialog("open");
+	}
+	
+	self.save = function(){
+		HTTPService.post('/setupszones/add', {"setup_id": self.setup.id, "zone_id": self.zone.id},
+			function(data, msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO);
+				self.fetchData();
+				self.dialog.dialog( "close" );
+			}
+		);
+		
+		
+	}
+	
+	self.cancel = function(){
+		self.dialog.dialog( "close" );
+		
+	}
+	
+	self.delete = function(setup_id, zone_id){
+		if(confirm("Do you really want to delete this association?")){
+			HTTPService.post('/setupszones/delete', {"setup_id": setup_id, "zone_id": zone_id},
+				function(data, msg){
+					FlashService.flash(msg, FlashService.TYPE_INFO);
+					self.fetchData();
+				}
+			);
+		}
+	}
+	
+	
+	$timeout(function(){
+		self.dialog = $( "#sz-form" ).dialog({
+			autoOpen: false,
+			height: 300,
+			width: 350,
+			modal: true,
+			buttons: {
+				"Save": function(){
+					self.save();
+				},
+				Cancel: function() {
+					self.cancel();
+				}
+			}
+		});
+		$(".ui-dialog-titlebar-close").remove();
+	}, 100)
+	
+	self.fetchData();
 }]);
 
 
