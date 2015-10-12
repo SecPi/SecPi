@@ -6,6 +6,10 @@ var app = angular.module("SecPi", ['ngAnimate']);
 app.service('FlashService', function($log, $timeout){
 	var self = this;
 	
+	self.TYPE_INFO = 'info';
+	self.TYPE_WARN = 'warn';
+	self.TYPE_ERR = 'error';
+	
 	self.flash_messages = [];
 	
 	self.flash = function(message,type){
@@ -22,7 +26,7 @@ app.service('FlashService', function($log, $timeout){
 	};
 	
 	self.handle_error = function(response){
-		self.flash(('Error with status ' +response.status +' while retrieving data!'), 'error');
+		self.flash(('Error with status ' +response.status +' while retrieving data!'), FlashService.TYPE_ERR);
 	}
 });
 
@@ -38,7 +42,7 @@ app.service('HTTPService', ['$http', 'FlashService', function($http, FlashServic
 					success_func(response.data['data'], response.data['message']);
 				}
 				else{
-					FlashService.flash(response.data['message'], 'error');
+					FlashService.flash(response.data['message'], FlashService.TYPE_ERR);
 				}
 			},
 			FlashService.handle_error
@@ -134,7 +138,7 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 		if(self.edit_id == -1){ // if edit id is -1 we are adding a new one
 			HTTPService.post(self.baseclass+'/add', self.edit_data,
 				function(data, msg){
-					FlashService.flash(msg, 'info')
+					FlashService.flash(msg, FlashService.TYPE_INFO)
 					
 					// self.data.push(self.edit_data); // won't get id of saved element
 					self.getList();
@@ -150,7 +154,7 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 		else{
 			HTTPService.post(self.baseclass+'/update', self.edit_data,
 				function(data, msg){
-					FlashService.flash(msg, 'info')
+					FlashService.flash(msg, FlashService.TYPE_INFO)
 					self.orig_data = null;
 					self.edit_data = null;
 					self.edit_id = -1;
@@ -182,7 +186,7 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 		if(confirm("Do you really want to delete the Object with id "+ delId +"?")){
 			HTTPService.post(self.baseclass+'/delete', {id: self.data[delId]["id"]},
 				function(data, msg){
-					FlashService.flash(msg, 'info')
+					FlashService.flash(msg, FlashService.TYPE_INFO)
 					self.data.splice(delId, 1);
 				}
 			);
@@ -236,7 +240,7 @@ app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', '
 	self.ack = function(log_id){
 		HTTPService.post('/logs/ack', {"id":self.log_entries[log_id].id},
 			function(data, msg){
-				FlashService.flash(msg, 'info');
+				FlashService.flash(msg, FlashService.TYPE_INFO);
 				self.log_entries.splice(log_id, 1);
 			}
 		);
