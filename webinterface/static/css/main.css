@@ -115,6 +115,7 @@ footer {
 .log_entry {
 	border-style: solid;
 	border-width: 2px;
+	border-radius: 10px;
 	
 	display: block;
 	max-width: 500px;
