@@ -26,7 +26,7 @@ app.service('FlashService', function($log, $timeout){
 	};
 	
 	self.handle_error = function(response){
-		self.flash(('Error with status ' +response.status +' while retrieving data!'), FlashService.TYPE_ERR);
+		self.flash(('Error with status ' +response.status +' while retrieving data!'), self.TYPE_ERR);
 	}
 });
 
