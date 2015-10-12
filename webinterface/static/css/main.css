@@ -233,59 +233,13 @@ footer {
 	position: relative;
 }
 
-.tabrow:after {
-	position: absolute;
-	content: "";
-	width: 100%;
-	bottom: 0;
-	left: 0;
-	border-bottom: 1px solid #e0e0e0; /*Bottom line   */
-	z-index: 1;
-}
-
-.tabrow:before {
-	z-index: 1;
-}
-
-.tabrow li:before,
-.tabrow li:after {
-	position: absolute;
-	bottom: 1px;
-	width: 6px;
-	height: 6px;
-	content: "";
-}
-
-.tabrow li:before {
-	left: -6px;
-	border-bottom-right-radius: 6px;
-	border-width: 0 1px 1px 0;
-	box-shadow: 2px 2px 0 #e0e0e0;
-}
-.tabrow li:after {
-	right: -6px;
-	border-bottom-left-radius: 6px;
-	border-width: 0 0 1px 1px;
-	box-shadow: -2px 2px 0 #e0e0e0;
-}
-.tabrow li.selected:before {
-	box-shadow: 2px 2px 0 #ffffff;
-}
-.tabrow li.selected:after {
-	box-shadow: -2px 2px 0 #ffffff;
-}
-
-/*.tabrow li:after, .tabrow li:before {
-  border: 1px solid #000000
-  }*/
 
 .tabrow li {
-	margin: 60 0 0 0px;
-	padding: 3 11px;
+	margin: 60px 0px 0px 0px;
+	padding: 3px 11px;
 	border: 1px solid #AAA;
 	background: #e0e0e0;
-	/*background: linear-gradient(to bottom, #e0e0e0 80%, #606060 100%);*/
-	/*  text-shadow: 0 1px #22; /* dunkelgrauer schatten beim text */
+	
 	display: inline-block;
 	position: relative;
 	z-index: 0;
