@@ -50,6 +50,7 @@ class Worker:
 		self.channel.queue_declare(queue='%i_config' % config.get('pi_id'))
 		self.channel.queue_declare(queue='data')
 		self.channel.queue_declare(queue='alarm')
+		self.channel.queue_declare(queue='error')
 
 		#specify the queues we want to listen to, including the callback
 		self.channel.basic_consume(self.got_action, queue='%i_action' % config.get('pi_id'), no_ack=True)
@@ -112,6 +113,10 @@ class Worker:
 				self.channel.basic_publish(exchange='manager', routing_key="data", body=byte_stream)
 				logging.info("Sent data to manager")
 				self.cleanup_data()
+			else:
+				logging.info("No data to send")
+				# Send empty message which acts like a finished
+				self.channel.basic_publish(exchange='manager', routing_key="data", body="")
 			# TODO: send finished
 		else:
 			logging.debug("Received action but wasn't active")
@@ -119,7 +124,10 @@ class Worker:
 	def got_config(self, ch, method, properties, body):
 		logging.info("Received config %r" % (body))
 		
-		new_conf = json.loads(body)
+		try:
+			new_conf = json.loads(body)
+		except Exception, e:
+			logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
 		
 		# check if new config changed
 		if(new_conf != config.getDict()):
@@ -132,9 +140,12 @@ class Worker:
 			
 			# TODO: check valid config file?!
 			# write config to file
-			f = open('config.json','w') # TODO: pfad
-			f.write(body)
-			f.close()
+			try:
+				f = open('config.json','w') # TODO: pfad
+				f.write(body)
+				f.close()
+			except Exception, e:
+				logging.exception("Wasn't able to write config file:\n%s" % e)
 			
 			# set new config
 			config.load("worker")
@@ -147,19 +158,26 @@ class Worker:
 			
 			logging.info("Config saved...")
 		else:
-			logging.info("Config the same")
+			logging.info("Config didn't change")
 		
 	# Initialize all the sensors for operation and add callback method
+	# TODO: check for duplicated sensors
 	def setup_sensors(self):
 		# self.sensors = []
 		for sensor in config.get("sensors"):
-			# TODO: try/catch
-			logging.info("Trying to register sensor: %s" % sensor["id"])
-			s = self.class_for_name(sensor["module"], sensor["class"])
-			sen = s(sensor["id"], sensor["params"], self)
-			self.sensors.append(sen)
-			sen.activate()
-			logging.info("Registered!")
+			try:
+				logging.info("Trying to register sensor: %s" % sensor["id"])
+				s = self.class_for_name(sensor["module"], sensor["class"])
+				sen = s(sensor["id"], sensor["params"], self)
+				sen.activate()
+			except Exception, e:
+				logging.exception("Wasn't able to add sensor %r" % sensor)
+				# prepare full message here, manager shouldn't have to deal with this
+				error_string = "Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (config.get('pi_id'), sensor["class"],e)
+				self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
+			else:
+				self.sensors.append(sen)
+				logging.info("Registered!")
 	
 	def cleanup_sensors(self):
 		# remove the callbacks
@@ -182,17 +200,24 @@ class Worker:
 	# Initialize all the actions
 	def setup_actions(self):
 		for action in config.get("actions"):
-			a = self.class_for_name(action["module"], action["class"])
-			act = a(action["id"], action["params"])
-			self.actions.append(act)
-			logging.info("Set up action %s" % action['class'])
+			try:
+				logging.info("Trying to register action: %s" % action["id"])
+				a = self.class_for_name(action["module"], action["class"])
+				act = a(action["id"], action["params"])
+			except Exception, e:
+				logging.exception("Wasn't able to add action %r" % action)
+				error_string = "Pi with id '%s' wasn't able to register action '%s':\n%s" % (config.get('pi_id'), action["class"],e)
+				self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
+			else:
+				self.actions.append(act)
+				logging.info("Registered!")
 	
 	def cleanup_actions(self):
 		# TODO: maybe manual del of all actions?
 		self.actions = []					
 
 
-	# callback for the sensors
+	# callback for the sensors, sends a message with info to the manager
 	def alarm(self, sensor_id, message):
 		if(self.active):
 			logging.info("Sensor with id %s detected something" % sensor_id)

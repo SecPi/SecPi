@@ -86,10 +86,12 @@ class Manager:
 		self.channel.queue_declare(queue='alarm')
 		self.channel.queue_declare(queue='register')
 		self.channel.queue_declare(queue='on_off')
+		self.channel.queue_declare(queue='error')
 		self.channel.queue_bind(exchange='manager', queue='on_off')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
 		self.channel.queue_bind(exchange='manager', queue='register')
+		self.channel.queue_bind(exchange='manager', queue='error')
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
@@ -104,6 +106,7 @@ class Manager:
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
 		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
+		self.channel.basic_consume(self.got_error, queue='error', no_ack=True)
 		logging.info("Setup done!")
 
 	
@@ -114,12 +117,21 @@ class Manager:
 	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
 		newFile_bytes = bytearray(body)
-		newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
-		newFile.write(newFile_bytes)
-		logging.info("Data written")
+		if not newFile_bytes: #only write data when body is not empty
+			newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
+			newFile.write(newFile_bytes)
+			logging.info("Data written")
 		self.received_data_counter += 1
 
+	# callback for when a worker reports an error
+	def got_error(self, ch, method, properties, body):
+		logging.info("Got error")
+		print "%s" % body
+		error_log_entry = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_ERROR, message=body)
+		db.session.add(error_log_entry)
+		db.session.commit()
 
+	# callback for when a setup gets activated/deactivated
 	def cb_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
 		
@@ -147,7 +159,7 @@ class Manager:
 	# this method is used to send execute messages to the action queues
 	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
-		logging.info("Sending action to %s"%to_queue)
+		logging.info("Sending action to %s" % to_queue)
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
@@ -206,6 +218,7 @@ class Manager:
 		sensors = db.session.query(db.objects.Sensor).join(db.objects.Zone).join((db.objects.Setup, db.objects.Zone.setups)).filter(db.objects.Setup.active_state == True).filter(db.objects.Sensor.worker_id == pi_id).all()
 		
 		# if we have sensors we are active
+		# TODO: is this true?
 		if(len(sensors)>0):
 			conf['active'] = True
 		

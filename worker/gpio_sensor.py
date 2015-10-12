@@ -16,6 +16,7 @@ class GPIOSensor(Sensor):
 	
 	def cleanup_sensor(self):
 		GPIO.remove_event_detect(int(self.params["gpio"]))
+		#GPIO.cleanup(int(self.params["gpio"]))
 #		logging.debug("Removed sensor at pin %s!" % self.params["gpio"])
 	
 	# callback for alarm
