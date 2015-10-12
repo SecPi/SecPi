@@ -18,7 +18,7 @@ class BaseWebPage(object):
 	
 	def __init__(self, baseclass):
 		self.baseclass = baseclass
-		self.lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
+		self.lookup = TemplateLookup(directories=['templates'], strict_undefined=False)
 		self.fields = OrderedDict()
 	
 	
@@ -81,20 +81,21 @@ class BaseWebPage(object):
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def add(self):
-		data = cherrypy.request.json
+		if(hasattr(cherrypy.request, 'json')):
+			data = cherrypy.request.json
+				
+			if(data and len(data)>0):
+				cherrypy.log("got something %s"%data)
+				newObj = self.baseclass()
+				
+				for k, v in data.iteritems():
+					if(not k == "id"):
+						setattr(newObj, k, utils.str_to_value(v))
+				
+				self.db.add(newObj)
+				self.db.commit()
+				return {'status': 'success','message':"Added new object with id %i"%newObj.id}	
 			
-		if(data and len(data)>0):
-			cherrypy.log("got something %s"%data)
-			newObj = self.baseclass()
-			
-			for k, v in data.iteritems():
-				if(not k == "id"):
-					setattr(newObj, k, utils.str_to_value(v))
-			
-			self.db.add(newObj)
-			self.db.commit()
-			return {'status': 'success','message':"Added new object with id %i"%newObj.id}	
-		
 		return {'status': 'error', 'message': 'No data recieved!'}
 		
 		
@@ -102,27 +103,30 @@ class BaseWebPage(object):
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def update(self):
-		data = cherrypy.request.json
-		
-		id = data['id']
-		
-		# check for valid id
-		if(id and id > 0):
+		if(hasattr(cherrypy.request, 'json')):
+			data = cherrypy.request.json
 			
-			if(data and len(data)>0):
-				cherrypy.log("update something %s"%data)
-				obj = self.db.query(self.baseclass).get(id)
+			id = data['id']
+			
+			# check for valid id
+			if(id and id > 0):
 				
-				for k, v in data.iteritems():
-					if(not k == "id"): # and v is not None --> can be null!?
-						setattr(obj, k, utils.str_to_value(v))
-				
-				self.db.commit()
-				
-				return {'status': 'success', 'message': "Updated object with id %i"%obj.id}
-				
-		else:
-			return {'status':'error', 'message': "Invalid ID!" }
+				if(data and len(data)>0):
+					cherrypy.log("update something %s"%data)
+					obj = self.db.query(self.baseclass).get(id)
+					
+					for k, v in data.iteritems():
+						if(not k == "id"): # and v is not None --> can be null!?
+							setattr(obj, k, utils.str_to_value(v))
+					
+					self.db.commit()
+					
+					return {'status': 'success', 'message': "Updated object with id %i"%obj.id}
+					
+			else:
+				return {'status':'error', 'message': "Invalid ID!" }
+		
+		return {'status': 'error', 'message': 'No data recieved!'}
 
 
 
