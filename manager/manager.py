@@ -107,9 +107,10 @@ class Manager:
 	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
 		newFile_bytes = bytearray(body)
-		newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
-		newFile.write(newFile_bytes)
-		logging.info("Data written")
+		if not newFile_bytes: #only write data when body is not empty
+			newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
+			newFile.write(newFile_bytes)
+			logging.info("Data written")
 		self.received_data_counter += 1
 
 	def got_error(self, ch, method, properties, body):

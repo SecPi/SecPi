@@ -103,6 +103,10 @@ class Worker:
 				self.channel.basic_publish(exchange='manager', routing_key="data", body=byte_stream)
 				logging.info("Sent data to manager")
 				self.cleanup_data()
+			else:
+				logging.info("No data to send")
+				# Send empty message which acts like a finished
+				self.channel.basic_publish(exchange='manager', routing_key="data", body="")
 			# TODO: send finished
 		else:
 			logging.debug("Received action but wasn't active")
