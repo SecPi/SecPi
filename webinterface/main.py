@@ -23,6 +23,7 @@ import pika
 # our stuff
 from tools.db import objects
 from tools import config
+from tools import utils
 
 # sub pages
 from sites.sensors import SensorsPage
@@ -65,6 +66,7 @@ class Root(object):
 		self.channel = connection.channel()
 		self.channel.queue_declare(queue='on_off')
 		self.channel.queue_bind(exchange='manager', queue='on_off')
+		
 	
 	@property
 	def db(self):
@@ -78,30 +80,44 @@ class Root(object):
 	
 	
 	@cherrypy.expose
-	def activate(self, activate_setup=None, deactivate_setup=None):
-		msg = None
-		# we got a setup, activate it
-		if(activate_setup):
-			su = self.db.query(objects.Setup).get(int(activate_setup))
-			su.active_state = True
-			self.db.commit()
-			ooff = { 'active_state': True }
-			self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
-			msg="Activated setup %s!"%su.name
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
+	def activate(self):
+		if(hasattr(cherrypy.request, 'json')):
+			id = cherrypy.request.json['id']
+			
+			if(id and id > 0):
+				su = self.db.query(objects.Setup).get(int(id))
+				su.active_state = True
+				self.db.commit()
+				ooff = { 'active_state': True }
+				self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
+				
+				return {'status': 'success', 'message': "Activated setup %s!"%su.name}
+			
+			return {'status':'error', 'message': "Invalid ID!" }
 		
-		# we got a setup, deactivate it
-		if(deactivate_setup):
-			su = self.db.query(objects.Setup).get(int(deactivate_setup))
-			su.active_state = False
-			self.db.commit()
-			ooff = { 'active_state': False }
-			self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
-			msg="Deactivated setup %s!"%su.name
+		return {'status': 'error', 'message': 'No data recieved!'}
+	
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
+	def deactivate(self):
+		if(hasattr(cherrypy.request, 'json')):
+			id = cherrypy.request.json['id']
+			
+			if(id and id > 0):
+				su = self.db.query(objects.Setup).get(int(id))
+				su.active_state = False
+				self.db.commit()
+				ooff = { 'active_state': False }
+				self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
+				
+				return {'status': 'success', 'message': "Deactivated setup %s!"%su.name}
+			
+			return {'status':'error', 'message': "Invalid ID!" }
 		
-		active_setups = self.db.query(objects.Setup).filter(objects.Setup.active_state == True).all()
-		inactive_setups = self.db.query(objects.Setup).filter(objects.Setup.active_state == False).all()
-		tmpl = lookup.get_template("activate.mako")
-		return tmpl.render(page_title="Activate", active_setups=active_setups, inactive_setups=inactive_setups, flash_message=msg)
+		return {'status': 'error', 'message': 'No data recieved!'}
 
 
 def run():

@@ -255,9 +255,53 @@ app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', '
 	self.refresh_inter = $interval(self.refresh, 5000);
 }]);
 
-app.controller('ActivateController', function($http, $log, $scope, $timeout, $attrs){
+
+
+app.controller('ActivateController', ['$http', '$log', '$interval', 'FlashService', 'HTTPService', function($http, $log, $interval, FlashService, HTTPService){
 	var self = this;
-		
-});
+	
+	self.inactive_setups = [];
+	self.active_setups = [];
+	
+	self.fetch_active = function(){
+		HTTPService.post('/setups/list', {"filter":"active_state==1"}, function(data, msg){self.active_setups = data})
+	}
+	
+	self.fetch_inactive = function(){
+		HTTPService.post('/setups/list', {"filter":"active_state==0"}, function(data, msg){self.inactive_setups = data})
+	}
+	
+	self.activate = function(){
+		if(self.activate_setup){
+			HTTPService.post('/activate', {"id": self.activate_setup.id}, 
+				function(data,msg){
+					FlashService.flash(msg, FlashService.TYPE_INFO);
+					self.fetch_active();
+					self.fetch_inactive();
+				}
+			);
+		}
+	}
+	
+	self.deactivate = function(){
+		if(self.deactivate_setup){
+			HTTPService.post('/deactivate', {"id": self.deactivate_setup.id}, 
+				function(data,msg){
+					FlashService.flash(msg, FlashService.TYPE_INFO);
+					self.fetch_active();
+					self.fetch_inactive();
+				}
+			);
+		}	
+	}
+	
+	
+	self.fetch_active();
+	self.fetch_inactive();
+}]);
+
+
+
+
 
 

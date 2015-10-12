@@ -2,7 +2,6 @@
 
 <ul class="tabrow">
 	<li id="home"><a href="/">Home</a></li>
-	<li id="activate"><a href="/activate">Activate</a></li>
 	<li id="setups"><a href="/setups">Setups</a></li>
 	<li id="alarms"><a href="/alarms">Alarms</a></li>
 	<li id="workers"><a href="/workers">Workers</a></li>
