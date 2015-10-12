@@ -128,7 +128,12 @@ def run():
 		'/static': {
 			'tools.staticdir.on': True,
 			'tools.staticdir.dir': 'static'
-		}
+		},
+		 "/favicon.ico":
+        {
+          "tools.staticfile.on": True,
+          "tools.staticfile.filename": config.get("project_path")+"/webinterface/favicon.ico"
+        }
 	}
 	cherrypy.tree.mount(Root(), '/', app_config)
 	dbfile = "%s/data.db"%config.get("project_path")
