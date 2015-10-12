@@ -144,7 +144,7 @@ class Manager:
 	# this method is used to send execute messages to the action queues
 	def send_message(self, to_queue, message):
 		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
-		logging.info("Sending action to %s"%to_queue)
+		logging.info("Sending action to %s" % to_queue)
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
@@ -203,6 +203,7 @@ class Manager:
 		sensors = db.session.query(db.objects.Sensor).join(db.objects.Zone).join((db.objects.Setup, db.objects.Zone.setups)).filter(db.objects.Setup.active_state == True).filter(db.objects.Sensor.worker_id == pi_id).all()
 		
 		# if we have sensors we are active
+		# TODO: is this true?
 		if(len(sensors)>0):
 			conf['active'] = True
 		

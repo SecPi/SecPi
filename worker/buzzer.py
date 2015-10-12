@@ -26,7 +26,7 @@ class Buzzer(Action):
 		# set output to low again, because cleanup doesn't work yet
 		state = False
 		GPIO.output(self.gpio_pin, state)
-		print "finished buzzing"
+		print "Finished buzzing"
 	# TODO: implement cleanup for gpio
 
 	def execute(self):
