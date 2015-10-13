@@ -128,7 +128,7 @@ class Manager:
 	def got_error(self, ch, method, properties, body):
 		logging.info("Got error")
 		print "%s" % body
-		error_log_entry = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_ERROR, message=body)
+		error_log_entry = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_ERR, message=str(body))
 		db.session.add(error_log_entry)
 		db.session.commit()
 
