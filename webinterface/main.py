@@ -1,9 +1,12 @@
 import os
 import json
+import sys
+import traceback
 
 # web framework
 import cherrypy
 from cherrypy.lib import auth_digest
+from cherrypy import _cperror
 
 # db connection
 from sqlalchemy.ext.declarative import declarative_base
@@ -44,6 +47,8 @@ config.load("webinterface")
 class Root(object):
 
 	def __init__(self):
+		cherrypy.config.update({'request.error_response': self.handle_error})
+		
 		self.sensors = SensorsPage()
 		self.zones = ZonesPage()
 		self.setups = SetupsPage()
@@ -74,8 +79,18 @@ class Root(object):
 	
 	@property
 	def db(self):
-		return cherrypy.request.db
+		return cherrypy.request.db	
 	
+	def handle_error(self):
+		if('Content-Type' in cherrypy.request.headers and 'application/json' in cherrypy.request.headers['Content-Type'].lower()):
+			exc_type, exc_value, exc_traceback = sys.exc_info()
+			cherrypy.response.status = 200
+			cherrypy.response.body = json.dumps({'status':'error', 'message': "An exception occured during processing! %s"%exc_value, 'traceback':traceback.format_exc() })
+		else:
+			#exc_type, exc_value, exc_traceback = sys.exc_info()
+			pg = cherrypy._cperror.get_error_page(500, traceback=traceback.format_exc())
+			cherrypy.response.status = 500
+			cherrypy.response.body = pg
 
 	@cherrypy.expose
 	def index(self):
