@@ -12,11 +12,14 @@ app.service('FlashService', function($log, $timeout){
 	
 	self.flash_messages = [];
 	
-	self.flash = function(message,type){
+	self.flash = function(message,type,time){
+		if(!time){
+			time = 5000;
+		}
 		msg = {message: message, type: type}
 		self.flash_messages.push(msg);
 		
-		$timeout(self.removeFlash, 5000)
+		$timeout(self.removeFlash, time)
 	};
 	
 	self.removeFlash = function(){
@@ -275,6 +278,7 @@ app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', '
 		// refresh list every 5 seconds
 		if(!self.refresh_inter){
 			self.refresh_inter = $interval(self.refresh, 5000);
+			FlashService.flash('Started refresh of log messages!', FlashService.TYPE_INFO, 2000);
 			$('#refresh_toggle').prop('value', "stop refresh");
 		}
 	}
@@ -283,6 +287,7 @@ app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', '
 		if(self.refresh_inter){
 			$interval.cancel(self.refresh_inter);
 			self.refresh_inter = null;
+			FlashService.flash('Stopped refresh of log messages!', FlashService.TYPE_INFO, 2000);
 			$('#refresh_toggle').prop('value', "start refresh");
 		}
 	}
