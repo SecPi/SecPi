@@ -118,7 +118,7 @@ class Manager:
 	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
 		newFile_bytes = bytearray(body)
-		if not newFile_bytes: #only write data when body is not empty
+		if newFile_bytes: #only write data when body is not empty
 			newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
 			newFile.write(newFile_bytes)
 			logging.info("Data written")
