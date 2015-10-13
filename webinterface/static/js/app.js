@@ -313,6 +313,7 @@ app.controller('ActivateController', ['$http', '$log', '$interval', 'FlashServic
 }]);
 
 
+app.controller('ConfigController', ['$log', 'FlashService', 'HTTPService', function($log, FlashService, HTTPService){
 	var self = this;
 	
 	
