@@ -262,9 +262,34 @@ app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', '
 		self.fetchLog();
 	}
 	
+	self.toggleRefresh = function(){
+		if(self.refresh_inter){
+			self.stopRefresh();
+		}
+		else{
+			self.startRefresh();
+		}
+	}
+	
+	self.startRefresh = function(){
+		// refresh list every 5 seconds
+		if(!self.refresh_inter){
+			self.refresh_inter = $interval(self.refresh, 5000);
+			$('#refresh_toggle').prop('value', "stop refresh");
+		}
+	}
+	
+	self.stopRefresh = function(){
+		if(self.refresh_inter){
+			$interval.cancel(self.refresh_inter);
+			self.refresh_inter = null;
+			$('#refresh_toggle').prop('value', "start refresh");
+		}
+	}
+	
 	self.fetchLog();
-	// refresh list every 5 seconds 
-	self.refresh_inter = $interval(self.refresh, 5000);
+	
+	self.startRefresh()
 }]);
 
 
