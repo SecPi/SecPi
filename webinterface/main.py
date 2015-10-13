@@ -61,21 +61,23 @@ class Root(object):
 		self.setupszones = SetupsZonesPage();
 		self.workersactions = WorkersActionsPage();
 		
-		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq')['master_ip'],
-			port=5671,
-			ssl=True,
-			ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
-				"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
-				"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
-			}
-		)
-		connection = pika.BlockingConnection(parameters=parameters)
-		self.channel = connection.channel()
-		self.channel.queue_declare(queue='on_off')
-		self.channel.queue_bind(exchange='manager', queue='on_off')
-		
+		try:
+			credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
+			parameters = pika.ConnectionParameters(credentials=credentials,
+				host=config.get('rabbitmq')['master_ip'],
+				port=5671,
+				ssl=True,
+				ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
+					"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
+					"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
+				}
+			)
+			connection = pika.BlockingConnection(parameters=parameters)
+			self.channel = connection.channel()
+			self.channel.queue_declare(queue='on_off')
+			self.channel.queue_bind(exchange='manager', queue='on_off')
+		except Exception as e:
+			cherrypy.log("Error connecting to Queue! %s"%e)
 	
 	@property
 	def db(self):
@@ -107,12 +109,23 @@ class Root(object):
 			
 			if(id and id > 0):
 				su = self.db.query(objects.Setup).get(int(id))
-				su.active_state = True
-				self.db.commit()
-				ooff = { 'active_state': True }
-				self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
+				try:
+					if(hasattr(self, "channel")):
+						su.active_state = True
+						self.db.commit()
+						ooff = { 'active_state': True }
+						self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
+					else:
+						return {'status':'error', 'message': "Error activating %s! No connection to queue server!"%su.name }
+						
+				except Exception as e:
+					su.active_state = False;
+					self.db.commit()
+					return {'status':'error', 'message': "Error activating! %s"%e }
+				else:
+					return {'status': 'success', 'message': "Activated setup %s!"%su.name}
+					
 				
-				return {'status': 'success', 'message': "Activated setup %s!"%su.name}
 			
 			return {'status':'error', 'message': "Invalid ID!" }
 		
@@ -127,12 +140,21 @@ class Root(object):
 			
 			if(id and id > 0):
 				su = self.db.query(objects.Setup).get(int(id))
-				su.active_state = False
-				self.db.commit()
-				ooff = { 'active_state': False }
-				self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
-				
-				return {'status': 'success', 'message': "Deactivated setup %s!"%su.name}
+				try:
+					if(hasattr(self, "channel")):
+						su.active_state = False
+						self.db.commit()
+						ooff = { 'active_state': False }
+						self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
+					else:
+						return {'status':'error', 'message': "Error activating %s! No connection to queue server!"%su.name }
+						
+				except Exception as e:
+					su.active_state = True;
+					self.db.commit()
+					return {'status':'error', 'message': "Error activating! %s"%e }
+				else:
+					return {'status': 'success', 'message': "Deactivated setup %s!"%su.name}
 			
 			return {'status':'error', 'message': "Invalid ID!" }
 		
