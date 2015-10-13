@@ -37,6 +37,7 @@ class Worker:
 			host=config.get('rabbitmq')['master_ip'], #this will change because we need the ip initially
 			port=5671,
 			ssl=True,
+			socket_timeout=10,
 			ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
 				"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
 				"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
@@ -66,27 +67,31 @@ class Worker:
 		
 	# Create a zip of all the files which were collected while actions were executed
 	def prepare_data(self):
-		if os.listdir(self.data_directory): # check if there are any files available
-			shutil.make_archive("/var/tmp/%s" % config.get('pi_id'), "zip", self.data_directory)
-			logging.info("Created ZIP file")
-			return True
-		else:
-			logging.info("No data to zip")
-			return False
+		try:
+			if os.listdir(self.data_directory): # check if there are any files available
+				shutil.make_archive("/var/tmp/%s" % config.get('pi_id'), "zip", self.data_directory)
+				logging.info("Created ZIP file")
+				return True
+			else:
+				logging.info("No data to zip")
+				return False
+		except OSError, e:
+			logging.exception("Error while trying to prepare data for manager:\n%s" % e)
+			#return False
 
 	# Remove all the data that was created during the alarm, unlink == remove
-	# TODO: implement checks to see if files/directories exist before deleting them
 	def cleanup_data(self):
-		os.unlink("/var/tmp/%s.zip" % config.get('pi_id'))
-		for the_file in os.listdir(self.data_directory):
-			file_path = os.path.join(self.data_directory, the_file)
-			try:
+		try:
+			os.unlink("/var/tmp/%s.zip" % config.get('pi_id'))
+			for the_file in os.listdir(self.data_directory):
+				file_path = os.path.join(self.data_directory, the_file)
 				if os.path.isfile(file_path):
 					os.unlink(file_path)
-				elif os.path.isdir(file_path): shutil.rmtree(file_path)
-			except Exception, e:
-				print e
-		logging.info("Cleaned up files")
+				elif os.path.isdir(file_path):
+					shutil.rmtree(file_path)
+			logging.info("Cleaned up files")
+		except OSError, e:
+			logging.exception("Error while cleaning up data:\n%s" % e)
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
@@ -243,9 +248,12 @@ class Worker:
 		return ip
 
 	def prepare_data_directory(self, data_path):
-		if not os.path.isdir(data_path): #check if directory structure already exists
-			os.makedirs(data_path)
-			logging.debug("Created SecPi data directory")
+		try:
+			if not os.path.isdir(data_path): #check if directory structure already exists
+				os.makedirs(data_path)
+				logging.debug("Created SecPi data directory")
+		except OSError, e:
+			logging.exception("Error while creating data directory:\n%s" % e)
 	
 	def __del__(self):
 		self.connection.close()

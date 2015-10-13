@@ -69,6 +69,7 @@ class Manager:
 			host=config.get('rabbitmq')['master_ip'],
 			port=5671,
 			ssl=True,
+			socket_timeout=10,
 			ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
 				"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
 				"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
@@ -218,7 +219,6 @@ class Manager:
 		sensors = db.session.query(db.objects.Sensor).join(db.objects.Zone).join((db.objects.Setup, db.objects.Zone.setups)).filter(db.objects.Setup.active_state == True).filter(db.objects.Sensor.worker_id == pi_id).all()
 		
 		# if we have sensors we are active
-		# TODO: is this true?
 		if(len(sensors)>0):
 			conf['active'] = True
 		
