@@ -77,6 +77,8 @@ class Worker:
 				return False
 		except OSError, e:
 			logging.exception("Error while trying to prepare data for manager:\n%s" % e)
+			error_string = "Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), e)
+			self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
 			#return False
 
 	# Remove all the data that was created during the alarm, unlink == remove
@@ -92,6 +94,8 @@ class Worker:
 			logging.info("Cleaned up files")
 		except OSError, e:
 			logging.exception("Error while cleaning up data:\n%s" % e)
+			error_string = "Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e)
+			self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
@@ -254,6 +258,8 @@ class Worker:
 				logging.debug("Created SecPi data directory")
 		except OSError, e:
 			logging.exception("Error while creating data directory:\n%s" % e)
+			error_string = "Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e)
+			self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
 	
 	def __del__(self):
 		self.connection.close()
