@@ -313,30 +313,46 @@ app.controller('ActivateController', ['$http', '$log', '$interval', 'FlashServic
 }]);
 
 
-app.controller('SetupsZonesController', ['$log', '$timeout', 'FlashService', 'HTTPService', function($log, $timeout, FlashService, HTTPService){
 	var self = this;
 	
-	self.setups_zones = [];
-	self.setups = [];
-	self.zones = [];
+	
+}]);
+
+
+app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($log, $timeout, $attrs, FlashService, HTTPService){
+	var self = this;
+	
+	if (!$attrs.leftclass) throw new Error("No left class defined!");
+	if (!$attrs.rightclass) throw new Error("No right class defined!");
+	
+	self.leftclass = $attrs.leftclass;
+	self.rightclass = $attrs.rightclass;
+	
+	self.leftname = $attrs.leftname?$attrs.leftname:$attrs.leftclass;
+	self.rightname = $attrs.rightname?$attrs.rightname:$attrs.rightclass;
+	
+	
+	self.lefts_rights = [];
+	self.lefts = [];
+	self.rights = [];
 	
 	
 	self.fetchData = function(){
-		HTTPService.post('/setupszones/list', {},
+		HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/list', {},
 			function(data,msg){
-				self.setups_zones = data;		
+				self.lefts_rights = data;		
 			}
 		);
 		
-		HTTPService.post('/setups/list', {},
+		HTTPService.post('/' +self.leftclass +'s/list', {},
 			function(data,msg){
-				self.setups = data;		
+				self.lefts = data;
 			}
 		);
 		
-		HTTPService.post('/zones/list', {},
+		HTTPService.post('/' +self.rightclass +'s/list', {},
 			function(data,msg){
-				self.zones = data;		
+				self.rights = data;
 			}
 		);
 	}
@@ -346,7 +362,10 @@ app.controller('SetupsZonesController', ['$log', '$timeout', 'FlashService', 'HT
 	}
 	
 	self.save = function(){
-		HTTPService.post('/setupszones/add', {"setup_id": self.setup.id, "zone_id": self.zone.id},
+		var dat = {};
+		dat[self.leftclass+"_id"] = self.left.id;
+		dat[self.rightclass+"_id"] = self.right.id;
+		HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/add', dat,
 			function(data, msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO);
 				self.fetchData();
@@ -362,9 +381,12 @@ app.controller('SetupsZonesController', ['$log', '$timeout', 'FlashService', 'HT
 		
 	}
 	
-	self.delete = function(setup_id, zone_id){
+	self.delete = function(left_id, right_id){
 		if(confirm("Do you really want to delete this association?")){
-			HTTPService.post('/setupszones/delete', {"setup_id": setup_id, "zone_id": zone_id},
+			var dat = {};
+			dat[self.leftclass+"_id"] = left_id;
+			dat[self.rightclass+"_id"] = right_id;
+			HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/delete', dat,
 				function(data, msg){
 					FlashService.flash(msg, FlashService.TYPE_INFO);
 					self.fetchData();
@@ -377,8 +399,8 @@ app.controller('SetupsZonesController', ['$log', '$timeout', 'FlashService', 'HT
 	$timeout(function(){
 		self.dialog = $( "#sz-form" ).dialog({
 			autoOpen: false,
-			height: 300,
-			width: 350,
+			height: 200,
+			width: 200,
 			modal: true,
 			buttons: {
 				"Save": function(){
@@ -394,8 +416,6 @@ app.controller('SetupsZonesController', ['$log', '$timeout', 'FlashService', 'HT
 	
 	self.fetchData();
 }]);
-
-
 
 
 
