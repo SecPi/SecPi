@@ -36,6 +36,7 @@ from sites.notifiers import NotifiersPage
 from sites.params import ParamsPage
 from sites.logs import LogEntriesPage
 from sites.setupszones import SetupsZonesPage
+from sites.workersactions import WorkersActionsPage
 
 lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
 config.load("webinterface")
@@ -53,6 +54,7 @@ class Root(object):
 		self.params = ParamsPage()
 		self.logs = LogEntriesPage()
 		self.setupszones = SetupsZonesPage();
+		self.workersactions = WorkersActionsPage();
 		
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
