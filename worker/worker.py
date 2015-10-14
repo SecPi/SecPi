@@ -4,7 +4,6 @@ import logging
 import logging.config
 import os
 import pika
-import RPi.GPIO as GPIO
 import shutil
 import socket
 import sys
@@ -24,8 +23,6 @@ class Worker:
 		
 		config.load("worker")
 		
-		# setup gpio and logging
-		GPIO.setmode(GPIO.BCM)
 		logging.config.fileConfig(os.path.join(config.get('project_path'), 'logging.conf'), defaults={'logfilename': os.path.join(config.get('project_path'),'logs/worker.log')})
 		
 		self.prepare_data_directory(self.data_directory)
@@ -263,7 +260,6 @@ class Worker:
 	
 	def __del__(self):
 		self.connection.close()
-		GPIO.cleanup()
 
 
 if __name__ == '__main__':

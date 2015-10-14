@@ -6,6 +6,9 @@ class GPIOSensor(Sensor):
 	
 	def __init__(self, id, params, worker):
 		super(GPIOSensor, self).__init__(id, params, worker)
+		# setup gpio and logging
+		GPIO.setmode(GPIO.BCM)
+		
 		self.active = False
 	
 	def setup_sensor(self):
