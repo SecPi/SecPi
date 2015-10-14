@@ -10,21 +10,24 @@ app.service('FlashService', function($log, $timeout){
 	self.TYPE_WARN = 'warn';
 	self.TYPE_ERR = 'error';
 	
-	self.flash_messages = [];
+	self.flash_messages = {};
+	
+	self.id = 0;
 	
 	self.flash = function(message,type,time){
+		var id = ++self.id;
 		if(!time){
 			time = 5000;
 		}
-		msg = {message: message, type: type}
-		self.flash_messages.push(msg);
+		msg = {message: message, type: type, id:id}
+		self.flash_messages[id] = msg;
 		
-		$timeout(self.removeFlash, time)
+		$timeout(self.removeFlash, time, true, id)
 	};
 	
-	self.removeFlash = function(){
-		if(self.flash_messages.length > 0){
-			self.flash_messages.splice(0,1); // remove first element from array
+	self.removeFlash = function(id){
+		if(self.flash_messages.hasOwnProperty(id)){
+			delete self.flash_messages[id];
 		}
 	};
 	

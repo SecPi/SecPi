@@ -23,7 +23,7 @@
 	</div>
 	
 	<div id="main">
-		<div ng-controller="FlashController as flashCtrl" id="flash_container" ng-show="flashCtrl.messages.length > 0">
+		<div ng-controller="FlashController as flashCtrl" id="flash_container">
 			<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null">
 				{{msg.message}}
 			</div>
