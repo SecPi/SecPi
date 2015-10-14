@@ -61,7 +61,18 @@ class Worker:
 		logging.info("Setup done!")
 		
 		self.channel.start_consuming() # this is a blocking call!!
-		
+	
+	
+	def push_msg(self, rk, body, **kwargs):
+		try:
+			self.channel.basic_publish(exchange='manager', routing_key=rk, body=body, **kwargs)
+			return True
+		except Exception as e:
+			logging.exception("Error while sending data to queue:\n%s" % e)
+			return False
+			
+	
+	
 	# Create a zip of all the files which were collected while actions were executed
 	def prepare_data(self):
 		try:
@@ -75,7 +86,7 @@ class Worker:
 		except OSError, e:
 			logging.exception("Error while trying to prepare data for manager:\n%s" % e)
 			error_string = "Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), e)
-			self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
+			self.push_msg("error", error_string)
 			#return False
 
 	# Remove all the data that was created during the alarm, unlink == remove
@@ -92,7 +103,7 @@ class Worker:
 		except OSError, e:
 			logging.exception("Error while cleaning up data:\n%s" % e)
 			error_string = "Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e)
-			self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
+			self.push_msg("error", error_string)
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
@@ -116,13 +127,13 @@ class Worker:
 			if self.prepare_data(): #check if there is any data to send
 				zip_file = open("/var/tmp/%s.zip" % config.get('pi_id'), "rb")
 				byte_stream = zip_file.read()
-				self.channel.basic_publish(exchange='manager', routing_key="data", body=byte_stream)
+				self.push_msg("data", byte_stream)
 				logging.info("Sent data to manager")
 				self.cleanup_data()
 			else:
 				logging.info("No data to send")
 				# Send empty message which acts like a finished
-				self.channel.basic_publish(exchange='manager', routing_key="data", body="")
+				self.push_msg("data", "")
 			# TODO: send finished
 		else:
 			logging.debug("Received action but wasn't active")
@@ -180,7 +191,7 @@ class Worker:
 				logging.exception("Wasn't able to add sensor %r" % sensor)
 				# prepare full message here, manager shouldn't have to deal with this
 				error_string = "Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (config.get('pi_id'), sensor["class"],e)
-				self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
+				self.push_msg("error", error_string)
 			else:
 				self.sensors.append(sen)
 				logging.info("Registered!")
@@ -213,7 +224,7 @@ class Worker:
 			except Exception, e:
 				logging.exception("Wasn't able to add action %r" % action)
 				error_string = "Pi with id '%s' wasn't able to register action '%s':\n%s" % (config.get('pi_id'), action["class"],e)
-				self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
+				self.push_msg("error", error_string)
 			else:
 				self.actions.append(act)
 				logging.info("Registered!")
@@ -236,7 +247,7 @@ class Worker:
 			
 			# send a message to the alarmQ and tell which sensor signaled
 			properties = pika.BasicProperties(content_type='application/json')
-			self.channel.basic_publish(exchange='manager', routing_key='alarm', body=msg_string, properties=properties)
+			self.push_msg('alarm', msg_string, properties=properties)
 		
 		
 	def get_ip(self):
@@ -256,7 +267,7 @@ class Worker:
 		except OSError, e:
 			logging.exception("Error while creating data directory:\n%s" % e)
 			error_string = "Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e)
-			self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
+			self.push_msg("error", error_string)
 	
 	def __del__(self):
 		self.connection.close()
