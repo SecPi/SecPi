@@ -213,7 +213,7 @@ class Worker:
 				logging.info("Trying to register action: %s" % action["id"])
 				a = self.class_for_name(action["module"], action["class"])
 				act = a(action["id"], action["params"])
-			except Exception, e:
+			except Exception, e: #AttributeError, KeyError
 				logging.exception("Wasn't able to add action %r" % action)
 				error_string = "Pi with id '%s' wasn't able to register action '%s':\n%s" % (config.get('pi_id'), action["class"],e)
 				self.channel.basic_publish(exchange='manager', routing_key="error", body=error_string)
