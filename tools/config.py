@@ -20,8 +20,8 @@ def load(path):
 
 
 
-def get(key):
-	return conf[key]
+def get(key, default=None):
+	return conf.get(key, default)
 
 def set(key, value):
 	conf[key] = value
