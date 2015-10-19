@@ -23,11 +23,6 @@
 	</div>
 	
 	<div id="main">
-		<div ng-controller="FlashController as flashCtrl" id="flash_container">
-			<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null">
-				{{msg.message}}
-			</div>
-		</div>
 		% if flash_message is not None and not flash_message == "":
 			<div id="flash_message" class="${flash_type}">
 				${flash_message}
@@ -38,6 +33,11 @@
 	<footer>
 		SecPi, a project by Martin Liebl and Philip W&ouml;lfel
 	</footer>
+</div>
+<div ng-controller="FlashController as flashCtrl" id="flash_container">
+	<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null">
+		{{msg.message}}
+	</div>
 </div>
 </body>
 </html>

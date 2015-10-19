@@ -21,7 +21,7 @@
 		</tr>
 	</table>
 
-	<div id="edit-form-div" ng-show="dataCtrl.edit_data" title="Edit ${basetitle}">
+	<div id="edit-form-div" title="Edit ${basetitle}">
 	<form id="edit-form" ng-submit="dataCtrl.saveEdit()">
 		<table>
 			<tr ng-repeat="(k, v) in dataCtrl.form_fields">
