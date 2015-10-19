@@ -90,10 +90,9 @@ class Root(object):
 			cherrypy.response.status = 200
 			cherrypy.response.body = json.dumps({'status':'error', 'message': "An exception occured during processing! %s"%exc_value, 'traceback':traceback.format_exc() })
 		else:
-			#exc_type, exc_value, exc_traceback = sys.exc_info()
-			pg = cherrypy._cperror.get_error_page(500, traceback=traceback.format_exc())
+			tmpl = lookup.get_template("500.mako")
 			cherrypy.response.status = 500
-			cherrypy.response.body = pg
+			cherrypy.response.body = tmpl.render(page_title="Error!", traceback=traceback.format_exc())
 
 	def error_404(self, status, message, traceback, version):
 		tmpl = lookup.get_template("404.mako")
