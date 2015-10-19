@@ -11,7 +11,6 @@ import threading
 import time
 
 from tools import config
-from webcam import Webcam
 
 class Worker:
 
@@ -206,12 +205,16 @@ class Worker:
 	
 	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
 	def class_for_name(self, module_name, class_name):
-		# TODO: try/catch
-		# load the module, will raise ImportError if module cannot be loaded
-		m = importlib.import_module(module_name)
-		# get the class, will raise AttributeError if class cannot be found
-		c = getattr(m, class_name)
-		return c
+		try:
+			# load the module, will raise ImportError if module cannot be loaded
+			m = importlib.import_module(module_name)
+			# get the class, will raise AttributeError if class cannot be found
+			c = getattr(m, class_name)
+			return c
+		except ImportError as ie:
+			self.push_msg("error", "Couldn't import module %s: %s"%(module_name, ie))
+		except AttributeError as ae:
+			self.push_msg("error", "Couldn't find class %s: %s"%(class_name, ae))
 	
 	
 	# Initialize all the actions
