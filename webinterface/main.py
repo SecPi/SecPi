@@ -48,6 +48,7 @@ class Root(object):
 
 	def __init__(self):
 		cherrypy.config.update({'request.error_response': self.handle_error})
+		cherrypy.config.update({'error_page.404': self.error_404})
 		
 		self.sensors = SensorsPage()
 		self.zones = ZonesPage()
@@ -93,6 +94,11 @@ class Root(object):
 			pg = cherrypy._cperror.get_error_page(500, traceback=traceback.format_exc())
 			cherrypy.response.status = 500
 			cherrypy.response.body = pg
+
+	def error_404(self, status, message, traceback, version):
+		tmpl = lookup.get_template("404.mako")
+		return tmpl.render(page_title="File not found!")
+
 
 	@cherrypy.expose
 	def index(self):
