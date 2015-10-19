@@ -7,19 +7,21 @@ then
 
 	# set python path so all classes are found
 	export PYTHONPATH=`pwd`
-
+	
+	PROJECT_PATH=$PWD
+	
 	if [ $1 = "manager" ]
 	then
 		cd manager
-		python manager.py
+		python manager.py $PROJECT_PATH
 	elif [ $1 = "worker" ]
 	then
 		cd worker
-		python worker.py
+		python worker.py $PROJECT_PATH
 	elif [ $1 = "webui" ]
 	then
 		cd webinterface
-		python main.py
+		python main.py $PROJECT_PATH
 	elif [ $1 = "setup" ]
 	then
 		cd tools/db

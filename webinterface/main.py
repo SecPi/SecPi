@@ -68,9 +68,9 @@ class Root(object):
 				host=config.get('rabbitmq')['master_ip'],
 				port=5671,
 				ssl=True,
-				ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
-					"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
-					"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
+				ssl_options = { "ca_certs":(PROJECT_PATH)+config.get('rabbitmq')['cacert'],
+					"certfile":PROJECT_PATH+config.get('rabbitmq')['certfile'],
+					"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
 				}
 			)
 			connection = pika.BlockingConnection(parameters=parameters)
@@ -129,9 +129,7 @@ class Root(object):
 					return {'status':'error', 'message': "Error activating! %s"%e }
 				else:
 					return {'status': 'success', 'message': "Activated setup %s!"%su.name}
-					
 				
-			
 			return {'status':'error', 'message': "Invalid ID!" }
 		
 		return {'status': 'error', 'message': 'No data recieved!'}
@@ -181,7 +179,7 @@ def run():
 	app_config = {
 		'/': {
 			'tools.db.on': True,
-			'tools.staticdir.root': os.path.join(config.get("project_path"), "webinterface"),
+			'tools.staticdir.root': os.path.join(PROJECT_PATH, "webinterface"),
 			'tools.auth_digest.on': True,
 	        'tools.auth_digest.realm': 'secpi',
 	        'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('.htdigest'),
@@ -194,11 +192,11 @@ def run():
 		 "/favicon.ico":
         {
           "tools.staticfile.on": True,
-          "tools.staticfile.filename": config.get("project_path")+"/webinterface/favicon.ico"
+          "tools.staticfile.filename": PROJECT_PATH+"/webinterface/favicon.ico"
         }
 	}
 	cherrypy.tree.mount(Root(), '/', app_config)
-	dbfile = "%s/data.db"%config.get("project_path")
+	dbfile = "%s/data.db"%PROJECT_PATH
 
 	if not os.path.exists(dbfile):
 		open(dbfile, 'w+').close()
@@ -214,4 +212,8 @@ def run():
 
 
 if __name__ == '__main__':
-	run()
+	if(len(sys.argv)>1):
+		PROJECT_PATH = sys.argv[1]
+		run()
+	else:
+		print("Error initializing Webinterface, no path given!");

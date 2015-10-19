@@ -13,47 +13,12 @@ from mailer import Mailer
 from tools import config
 from tools.db import database as db
 
-#state = False
-#
-#def init():
-#	# register cb_onoff
-#	check_setups()
-#
-#def check_setups():
-#	# TODO: check if active setup is the same
-#	setups = get_active_setups()
-#	if(len(setups)>0):
-#		if(not state):
-#			state = True
-#			send_config(True)
-#	else:
-#		if(state):
-#			state = False
-#			send_config(False)
-#
-#def get_active_setups():
-#	# get stuff from db
-#	
-#	
-#def send_config(new_state):
-#	# get stuff from db
-#	# convert stuff to json
-#	# send stuff over queue to worker
-#
-#def cb_onoff():
-#	check_setups()
-#	
-#def cb_data():
-#	# wait for data
-#
-
 
 class Manager:
 
 	def __init__(self):
-		config.load("manager")
-		
-		logging.config.fileConfig(os.path.join(config.get('project_path'), 'logging.conf'), defaults={'logfilename': os.path.join(config.get('project_path'),'logs/manager.log')})
+		config.load("manager")		
+		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': os.path.join(PROJECT_PATH,'logs/manager.log')})
 		
 		db.connect()
 		
@@ -70,9 +35,9 @@ class Manager:
 			port=5671,
 			ssl=True,
 			socket_timeout=10,
-			ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
-				"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
-				"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
+			ssl_options = { "ca_certs":(PROJECT_PATH)+config.get('rabbitmq')['cacert'],
+				"certfile":PROJECT_PATH+config.get('rabbitmq')['certfile'],
+				"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
 			}
 		)
 		self.connection = pika.BlockingConnection(parameters=parameters)
@@ -296,9 +261,13 @@ class Manager:
 
 if __name__ == '__main__':
 	try:
-		mg = Manager()
-		# mg.send_config(1)
-		mg.start()
+		if(len(sys.argv)>1):
+			PROJECT_PATH = sys.argv[1]
+			mg = Manager()
+			# mg.send_config(1)
+			mg.start()
+		else:
+			print("Error initializing Manager, no path given!");
 	except KeyboardInterrupt:
 		logging.info("Shutting down manager!")
 		# TODO: cleanup?

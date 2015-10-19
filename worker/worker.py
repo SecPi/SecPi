@@ -23,7 +23,7 @@ class Worker:
 		
 		config.load("worker")
 		
-		logging.config.fileConfig(os.path.join(config.get('project_path'), 'logging.conf'), defaults={'logfilename': os.path.join(config.get('project_path'),'logs/worker.log')})
+		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': os.path.join(PROJECT_PATH,'logs/worker.log')})
 		
 		self.prepare_data_directory(self.data_directory)
 
@@ -35,9 +35,9 @@ class Worker:
 			port=5671,
 			ssl=True,
 			socket_timeout=10,
-			ssl_options = { "ca_certs":(config.get("project_path"))+config.get('rabbitmq')['cacert'],
-				"certfile":config.get("project_path")+config.get('rabbitmq')['certfile'],
-				"keyfile":config.get("project_path")+config.get('rabbitmq')['keyfile']
+			ssl_options = { "ca_certs":(PROJECT_PATH)+config.get('rabbitmq')['cacert'],
+				"certfile":PROJECT_PATH+config.get('rabbitmq')['certfile'],
+				"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
 			}
 		) 
 		self.connection = pika.BlockingConnection(parameters=parameters) 
@@ -275,7 +275,11 @@ class Worker:
 
 if __name__ == '__main__':
 	try:
-		w = Worker()
+		if(len(sys.argv)>1):
+			PROJECT_PATH = sys.argv[1]
+			w = Worker()
+		else:
+			print("Error initializing Worker, no path given!");
 	except KeyboardInterrupt:
 		logging.info('Shutting down worker!')
 		# TODO: cleanup?
