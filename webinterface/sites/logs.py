@@ -15,7 +15,7 @@ class LogEntriesPage(BaseWebPage):
 		super(LogEntriesPage, self).__init__(objects.LogEntry)
 		self.fields['id'] = {'name':'ID', 'visible':['list']}
 		self.fields['logtime'] = {'name':'Time', 'visible':['list', 'add']}
-		self.fields['ack'] = {'name':'Ack', 'visible':['list', 'add', 'update']}
+		self.fields['ack'] = {'name':'Ack', 'visible':['list', 'add', 'update'], 'type':'bool'}
 		self.fields['level'] = {'name':'Log Level', 'visible':['list', 'add']}
 		self.fields['message'] = {'name':'Message', 'visible':['list', 'add']}
 		

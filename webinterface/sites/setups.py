@@ -16,7 +16,7 @@ class SetupsPage(BaseWebPage):
 		self.fields['id'] = {'name':'ID', 'visible':['list']}
 		self.fields['name'] = {'name':'Name', 'visible':['list', 'add', 'update']}
 		self.fields['description'] = {'name':'Description', 'visible':['list', 'add', 'update']}
-		self.fields['active_state'] = {'name':'Active', 'visible':['list', 'add', 'update']}
+		self.fields['active_state'] = {'name':'Active', 'visible':['list', 'add', 'update'], 'type':'bool'}
 
 
 	@cherrypy.expose

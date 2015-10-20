@@ -26,7 +26,16 @@
 		<table>
 			<tr ng-repeat="(k, v) in dataCtrl.form_fields">
 				<td>{{v['name']}}</td>
-				<td><input type="text" name="k" id="k" ng-model="dataCtrl.edit_data[k]" /></td>
+				<td>
+					<span ng-switch on="v['type']">
+						<span ng-switch-when="bool">
+							<input type="checkbox" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
+						</span>
+						<span ng-switch-default>
+							<input type="text" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
+						</span>
+					</span>
+				</td>
 			</tr>
 		</table>
 	</form>
