@@ -1,6 +1,7 @@
 
 from collections import OrderedDict
 import dateutil.parser
+import pytz
 
 import json
 import datetime
@@ -30,7 +31,8 @@ def str_to_value(val):
 				return float(val)
 			except ValueError:
 				try:
-					return dateutil.parser.parse(val)
+					dat = dateutil.parser.parse(val)
+					return dat.replace(tzinfo=None) #pytz.UTC.localize(dat)
 				except:
 					return val
 	
