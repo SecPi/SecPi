@@ -49,6 +49,7 @@ class Root(object):
 	def __init__(self):
 		cherrypy.config.update({'request.error_response': self.handle_error})
 		cherrypy.config.update({'error_page.404': self.error_404})
+		cherrypy.config.update({'error_page.401': self.error_401})
 		
 		self.sensors = SensorsPage()
 		self.zones = ZonesPage()
@@ -95,9 +96,14 @@ class Root(object):
 			cherrypy.response.body = tmpl.render(page_title="Error!", traceback=traceback.format_exc())
 
 	def error_404(self, status, message, traceback, version):
-		tmpl = lookup.get_template("404.mako")
+		tmpl = self.lookup.get_template("404.mako")
+		cherrypy.response.status = 404
 		return tmpl.render(page_title="File not found!")
 
+	def error_401(self, status, message, traceback, version):
+		tmpl = self.lookup.get_template("401.mako")
+		cherrypy.response.status = 401
+		return tmpl.render(page_title="Not Authorized!")
 
 	@cherrypy.expose
 	def index(self):
