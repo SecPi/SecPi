@@ -11,7 +11,7 @@ engine = None
 def connect():
 	global session
 	global engine
-	engine = create_engine("sqlite:///%s/data.db"%config.get("project_path"), echo = False) # echo = true aktiviert debug logging
+	engine = create_engine("sqlite:///%s/data.db"%PROJECT_PATH, echo = False) # echo = true aktiviert debug logging
 
 	Session = sessionmaker(bind=engine)
 	session = Session()

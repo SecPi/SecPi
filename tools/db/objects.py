@@ -90,7 +90,7 @@ class LogEntry(Base):
 	
 
 	def __repr__(self):
-		return "%s[%i,%s]: %s" %(self.alarmtime.strftime("%Y-%m-%d %H:%M:%S"), self.level, self.message, self.ack)
+		return "%s[%i,%s]: %s" %(self.logtime.strftime("%Y-%m-%d %H:%M:%S"), self.level, self.message, self.ack)
 
 
 worker_action_table = Table('workers_actions', Base.metadata,
