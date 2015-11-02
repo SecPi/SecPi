@@ -69,6 +69,7 @@ class Root(object):
 				host=config.get('rabbitmq')['master_ip'],
 				port=5671,
 				ssl=True,
+				socket_timeout=10,
 				ssl_options = { "ca_certs":(PROJECT_PATH)+config.get('rabbitmq')['cacert'],
 					"certfile":PROJECT_PATH+config.get('rabbitmq')['certfile'],
 					"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
