@@ -55,6 +55,7 @@ class Manager:
 		self.channel.queue_declare(queue='register')
 		self.channel.queue_declare(queue='on_off')
 		self.channel.queue_declare(queue='error')
+		#self.channel.queue_purge(queue='alarm') #Clears the queue
 		self.channel.queue_bind(exchange='manager', queue='on_off')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
@@ -159,7 +160,7 @@ class Manager:
 			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify)
 			timeout_thread.start()
 		else:
-			logging.info("Received alarm but I'm in holddown bro!")
+			logging.info("Received alarm but manager is in holddown state")
 
 	# timeout thread which sends the received data from workers
 	def notify(self):
