@@ -11,6 +11,7 @@ import time
 
 from mailer import Mailer
 from tools import config
+from tools import utils
 from tools.db import database as db
 
 
@@ -52,12 +53,12 @@ class Manager:
 		self.channel.queue_declare(queue='alarm')
 		self.channel.queue_declare(queue='register')
 		self.channel.queue_declare(queue='on_off')
-		self.channel.queue_declare(queue='error')
+		self.channel.queue_declare(queue='log')
 		self.channel.queue_bind(exchange='manager', queue='on_off')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
 		self.channel.queue_bind(exchange='manager', queue='register')
-		self.channel.queue_bind(exchange='manager', queue='error')
+		self.channel.queue_bind(exchange='manager', queue='log')
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
@@ -72,7 +73,7 @@ class Manager:
 		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
 		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
-		self.channel.basic_consume(self.got_error, queue='error', no_ack=True)
+		self.channel.basic_consume(self.got_log, queue='log', no_ack=True)
 		logging.info("Setup done!")
 
 	
@@ -89,12 +90,11 @@ class Manager:
 			logging.info("Data written")
 		self.received_data_counter += 1
 
-	# callback for when a worker reports an error
-	def got_error(self, ch, method, properties, body):
-		logging.info("Got error")
-		print "%s" % body
-		error_log_entry = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_ERR, message=str(body))
-		db.session.add(error_log_entry)
+	# callback for log messages
+	def got_log(self, ch, method, properties, body):
+		log = json.loads(body)
+		log_entry = db.objects.LogEntry(level=log['level'], message=str(log['msg']), sender=log['sender'], logtime=utils.str_to_value(log['datetime']))
+		db.session.add(log_entry)
 		db.session.commit()
 
 	# callback for when a setup gets activated/deactivated
@@ -144,7 +144,7 @@ class Manager:
 			self.send_message("%i_action"%pi.id, "execute")
 		
 		al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
+		lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="New alarm from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
 		db.session.add(al)
 		db.session.add(lo)
 		db.session.commit()
@@ -165,7 +165,7 @@ class Manager:
 		# continue code execution
 		if self.received_data_counter < self.num_of_workers:
 			logging.info("TIMEOUT: Only %d out of %d workers replied with data" % (self.received_data_counter, self.num_of_workers))
-			lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers))
+			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers))
 			db.session.add(lo)
 			db.session.commit()
 			

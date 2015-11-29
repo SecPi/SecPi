@@ -8,6 +8,11 @@ import datetime
 
 import cherrypy
 
+LEVEL_DEBUG=0
+LEVEL_INFO=50
+LEVEL_WARN=75
+LEVEL_ERR=100
+
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()
 	

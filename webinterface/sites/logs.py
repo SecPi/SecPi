@@ -17,6 +17,7 @@ class LogEntriesPage(BaseWebPage):
 		self.fields['logtime'] = {'name':'Time', 'visible':['list', 'add']}
 		self.fields['ack'] = {'name':'Ack', 'visible':['list', 'add', 'update'], 'type':'bool'}
 		self.fields['level'] = {'name':'Log Level', 'visible':['list', 'add']}
+		self.fields['sender'] = {'name':'Sender', 'visible':['list', 'add']}
 		self.fields['message'] = {'name':'Message', 'visible':['list', 'add']}
 		
 	@cherrypy.expose

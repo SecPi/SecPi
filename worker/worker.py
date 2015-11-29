@@ -9,8 +9,10 @@ import socket
 import sys
 import threading
 import time
+import datetime
 
 from tools import config
+from tools import utils
 
 class Worker:
 
@@ -47,7 +49,7 @@ class Worker:
 		self.channel.queue_declare(queue='%i_config' % config.get('pi_id'))
 		self.channel.queue_declare(queue='data')
 		self.channel.queue_declare(queue='alarm')
-		self.channel.queue_declare(queue='error')
+		self.channel.queue_declare(queue='log')
 
 		#specify the queues we want to listen to, including the callback
 		self.channel.basic_consume(self.got_action, queue='%i_action' % config.get('pi_id'), no_ack=True)
@@ -70,7 +72,25 @@ class Worker:
 			logging.exception("Error while sending data to queue:\n%s" % e)
 			return False
 			
-	
+	def post_err(self, msg):
+		logging.exception(msg)
+		err = { "msg": msg,
+				"level": utils.LEVEL_ERR,
+				"sender": "Worker %s"%config.get('pi_id'),
+				"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+				
+		properties = pika.BasicProperties(content_type='application/json')
+		self.push_msg("log", json.dumps(err), properties=properties)
+		
+	def post_log(self, msg, lvl):
+		logging.exception(msg)
+		lg = { "msg": msg,
+				"level": lvl,
+				"sender": "Worker %s"%config.get('pi_id'),
+				"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+				
+		properties = pika.BasicProperties(content_type='application/json')
+		self.push_msg("log", json.dumps(lg), properties=properties)
 	
 	# Create a zip of all the files which were collected while actions were executed
 	def prepare_data(self):
@@ -83,10 +103,7 @@ class Worker:
 				logging.info("No data to zip")
 				return False
 		except OSError, e:
-			logging.exception("Error while trying to prepare data for manager:\n%s" % e)
-			error_string = "Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), e)
-			self.push_msg("error", error_string)
-			#return False
+			self.post_err("Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), e))
 
 	# Remove all the data that was created during the alarm, unlink == remove
 	def cleanup_data(self):
@@ -100,9 +117,7 @@ class Worker:
 					shutil.rmtree(file_path)
 			logging.info("Cleaned up files")
 		except OSError, e:
-			logging.exception("Error while cleaning up data:\n%s" % e)
-			error_string = "Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e)
-			self.push_msg("error", error_string)
+			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
@@ -187,10 +202,7 @@ class Worker:
 				sen = s(sensor["id"], sensor["params"], self)
 				sen.activate()
 			except Exception, e:
-				logging.exception("Wasn't able to add sensor %r" % sensor)
-				# prepare full message here, manager shouldn't have to deal with this
-				error_string = "Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (config.get('pi_id'), sensor["class"],e)
-				self.push_msg("error", error_string)
+				self.post_err("Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (config.get('pi_id'), sensor["class"],e))
 			else:
 				self.sensors.append(sen)
 				logging.info("Registered!")
@@ -212,9 +224,9 @@ class Worker:
 			c = getattr(m, class_name)
 			return c
 		except ImportError as ie:
-			self.push_msg("error", "Couldn't import module %s: %s"%(module_name, ie))
+			self.post_err("Couldn't import module %s: %s"%(module_name, ie))
 		except AttributeError as ae:
-			self.push_msg("error", "Couldn't find class %s: %s"%(class_name, ae))
+			self.post_err("Couldn't find class %s: %s"%(class_name, ae))
 	
 	
 	# Initialize all the actions
@@ -225,9 +237,7 @@ class Worker:
 				a = self.class_for_name(action["module"], action["class"])
 				act = a(action["id"], action["params"])
 			except Exception, e: #AttributeError, KeyError
-				logging.exception("Wasn't able to add action %r" % action)
-				error_string = "Pi with id '%s' wasn't able to register action '%s':\n%s" % (config.get('pi_id'), action["class"],e)
-				self.push_msg("error", error_string)
+				self.post_err("Pi with id '%s' wasn't able to register action '%s':\n%s" % (config.get('pi_id'), action["class"],e))
 			else:
 				self.actions.append(act)
 				logging.info("Registered!")
@@ -268,9 +278,7 @@ class Worker:
 				os.makedirs(data_path)
 				logging.debug("Created SecPi data directory")
 		except OSError, e:
-			logging.exception("Error while creating data directory:\n%s" % e)
-			error_string = "Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e)
-			self.push_msg("error", error_string)
+			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e))
 	
 	def __del__(self):
 		self.connection.close()

@@ -91,10 +91,10 @@ set_home.zones = [zone_window]
 
 
 db.session.add_all([
-	db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_DEBUG, message="Debug test log entry"),
-	db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="Info test log entry"),
-	db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_WARN, message="Warn test log entry"),
-	db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_ERR, message="Error test log entry")
+	db.objects.LogEntry(level=utils.LEVEL_DEBUG, sender="Test", message="Debug test log entry"),
+	db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Test", message="Info test log entry"),
+	db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Test", message="Warn test log entry"),
+	db.objects.LogEntry(level=utils.LEVEL_ERR, sender="Test", message="Error test log entry")
 ])
 
 
