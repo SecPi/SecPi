@@ -8,10 +8,11 @@ import objects
 session = None
 engine = None
 
-def connect():
+def connect(path):
 	global session
 	global engine
-	engine = create_engine("sqlite:///%s/data.db"%PROJECT_PATH, echo = False) # echo = true aktiviert debug logging
+	
+	engine = create_engine("sqlite:///%s/data.db"%path, echo = False) # echo = true aktiviert debug logging
 
 	Session = sessionmaker(bind=engine)
 	session = Session()

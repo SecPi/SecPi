@@ -20,7 +20,7 @@ class Manager:
 		config.load("manager")		
 		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': os.path.join(PROJECT_PATH,'logs/manager.log')})
 		
-		db.connect()
+		db.connect(PROJECT_PATH)
 		
 		self.notifiers = []
 		self.received_data_counter = 0

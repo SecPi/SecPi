@@ -6,7 +6,7 @@ if [ $# -gt 0 ]
 then
 
 	# set python path so all classes are found
-	export PYTHONPATH=`pwd`
+	export PYTHONPATH=$PWD
 	
 	PROJECT_PATH=$PWD
 	
@@ -27,6 +27,8 @@ then
 		cd tools/db
 		python setup.py
 		python test.py
+	else
+		echo "Usage: startup.sh <manager|worker|webui|setup>"
 	fi
 
 else
