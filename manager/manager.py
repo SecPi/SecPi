@@ -28,6 +28,8 @@ class Manager:
 		self.data_timeout = 10
 		self.num_of_workers = 0
 		self.mail_enabled = False
+		self.holddown_state = False
+		self.holddown_timer = 10
 
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
@@ -129,28 +131,35 @@ class Manager:
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
-		logging.info("Received alarm: %s"%body)
-		msg = json.loads(body)
-		# TODO: adapt dir for current alarm
-		self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
-		os.makedirs(self.current_alarm_dir)
-		logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
-		self.received_data_counter = 0
+		if not self.holddown_state:
+			# put into holddown
+			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)
+			holddown_thread.start()
 
-		# interate over workers and send "execute"
-		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
-		self.num_of_workers = len(workers)
-		for pi in workers:
-			self.send_message("%i_action"%pi.id, "execute")
-		
-		al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-		lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
-		db.session.add(al)
-		db.session.add(lo)
-		db.session.commit()
-		# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
-		timeout_thread = threading.Thread(name="thread-timeout", target=self.notify)
-		timeout_thread.start()
+			logging.info("Received alarm: %s"%body)
+			msg = json.loads(body)
+			# TODO: adapt dir for current alarm
+			self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
+			os.makedirs(self.current_alarm_dir)
+			logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+			self.received_data_counter = 0
+
+			# interate over workers and send "execute"
+			workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
+			self.num_of_workers = len(workers)
+			for pi in workers:
+				self.send_message("%i_action"%pi.id, "execute")
+			
+			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
+			lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
+			db.session.add(al)
+			db.session.add(lo)
+			db.session.commit()
+			# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
+			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify)
+			timeout_thread.start()
+		else:
+			logging.info("Received alarm but I'm in holddown bro!")
 
 	# timeout thread which sends the received data from workers
 	def notify(self):
@@ -169,8 +178,14 @@ class Manager:
 			db.session.add(lo)
 			db.session.commit()
 			
-		for notifier in self.notifiers:
-			notifier.notify()
+		#for notifier in self.notifiers:
+		#	notifier.notify()
+
+	def holddown(self):
+		self.holddown_state = True
+		for i in range(0, self.holddown_timer):
+			time.sleep(1)
+		self.holddown_state = False
 
 
 	def send_config(self, pi_id):
