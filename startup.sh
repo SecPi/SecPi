@@ -25,8 +25,8 @@ then
 	elif [ $1 = "setup" ]
 	then
 		cd tools/db
-		python setup.py
-		python test.py
+		python setup.py $PROJECT_PATH
+	#	python test.py
 	else
 		echo "Usage: startup.sh <manager|worker|webui|setup>"
 	fi
