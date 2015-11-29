@@ -29,7 +29,7 @@ class Manager:
 		self.num_of_workers = 0
 		self.mail_enabled = False
 		self.holddown_state = False
-		self.holddown_timer = 10
+		self.holddown_timer = 30
 
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
@@ -185,6 +185,7 @@ class Manager:
 		self.holddown_state = True
 		for i in range(0, self.holddown_timer):
 			time.sleep(1)
+		logging.info("Holddown is over") #TODO: change to debug message
 		self.holddown_state = False
 
 
