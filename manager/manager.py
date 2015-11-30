@@ -51,13 +51,11 @@ class Manager:
 		#define queues: data, alarm and action & config for every pi
 		self.channel.queue_declare(queue='data')
 		self.channel.queue_declare(queue='alarm')
-		self.channel.queue_declare(queue='register')
 		self.channel.queue_declare(queue='on_off')
 		self.channel.queue_declare(queue='log')
 		self.channel.queue_bind(exchange='manager', queue='on_off')
 		self.channel.queue_bind(exchange='manager', queue='data')
 		self.channel.queue_bind(exchange='manager', queue='alarm')
-		self.channel.queue_bind(exchange='manager', queue='register')
 		self.channel.queue_bind(exchange='manager', queue='log')
 		
 		# load workers from db
@@ -70,7 +68,6 @@ class Manager:
 
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue='alarm', no_ack=True)
-		self.channel.basic_consume(self.cb_register, queue='register', no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
 		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
 		self.channel.basic_consume(self.got_log, queue='log', no_ack=True)
@@ -234,10 +231,7 @@ class Manager:
 		
 		properties = pika.BasicProperties(content_type='application/json')
 		self.channel.basic_publish(exchange='manager', routing_key='%i_config'%pi_id, body=msg, properties=properties)
-		
-
-	def cb_register(self, ch, method, properties, body):
-		'''Wait for new workers to register.'''
+	
 	
 	# copypasta from worker.py:
 	def class_for_name(self, module_name, class_name):
