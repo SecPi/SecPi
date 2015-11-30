@@ -49,28 +49,28 @@ class Manager:
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
 
 		#define queues: data, alarm and action & config for every pi
-		self.channel.queue_declare(queue='data')
-		self.channel.queue_declare(queue='alarm')
-		self.channel.queue_declare(queue='on_off')
-		self.channel.queue_declare(queue='log')
-		self.channel.queue_bind(exchange='manager', queue='on_off')
-		self.channel.queue_bind(exchange='manager', queue='data')
-		self.channel.queue_bind(exchange='manager', queue='alarm')
-		self.channel.queue_bind(exchange='manager', queue='log')
+		self.channel.queue_declare(queue=utils.QUEUE_DATA)
+		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
+		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
+		self.channel.queue_declare(queue=utils.QUEUE_LOG)
+		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ON_OFF)
+		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_DATA)
+		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ALARM)
+		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_LOG)
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
 		for pi in workers:
-			self.channel.queue_declare(queue='%i_action'%pi.id)
-			self.channel.queue_declare(queue='%i_config'%pi.id)
-			self.channel.queue_bind(exchange='manager', queue='%i_action'%pi.id)
-			self.channel.queue_bind(exchange='manager', queue='%i_config'%pi.id)
+			self.channel.queue_declare(queue=str(pi.id)+utils.QUEUE_ACTION)
+			self.channel.queue_declare(queue=str(pi.id)+utils.QUEUE_CONFIG)
+			self.channel.queue_bind(exchange='manager', queue=str(pi.id)+utils.QUEUE_ACTION)
+			self.channel.queue_bind(exchange='manager', queue=str(pi.id)+utils.QUEUE_CONFIG)
 
 		#define callbacks for alarm and data queues
-		self.channel.basic_consume(self.got_alarm, queue='alarm', no_ack=True)
-		self.channel.basic_consume(self.cb_on_off, queue='on_off', no_ack=True)
-		self.channel.basic_consume(self.got_data, queue='data', no_ack=True)
-		self.channel.basic_consume(self.got_log, queue='log', no_ack=True)
+		self.channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
+		self.channel.basic_consume(self.cb_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
+		self.channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
+		self.channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
 		logging.info("Setup done!")
 
 	
@@ -90,6 +90,7 @@ class Manager:
 	# callback for log messages
 	def got_log(self, ch, method, properties, body):
 		log = json.loads(body)
+		logging.debug("Got log message from %s: %s"%(log['sender'], log['msg']))
 		log_entry = db.objects.LogEntry(level=log['level'], message=str(log['msg']), sender=log['sender'], logtime=utils.str_to_value(log['datetime']))
 		db.session.add(log_entry)
 		db.session.commit()

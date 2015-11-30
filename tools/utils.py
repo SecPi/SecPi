@@ -13,6 +13,13 @@ LEVEL_INFO=50
 LEVEL_WARN=75
 LEVEL_ERR=100
 
+QUEUE_LOG="log"
+QUEUE_DATA="data"
+QUEUE_ALARM="alarm"
+QUEUE_ON_OFF="on_off"
+QUEUE_ACTION="_action"
+QUEUE_CONFIG="_config"
+
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()
 	

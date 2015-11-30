@@ -45,15 +45,15 @@ class Worker:
 		self.channel = self.connection.channel()
 
 		#declare all the queues
-		self.channel.queue_declare(queue='%i_action' % config.get('pi_id'))
-		self.channel.queue_declare(queue='%i_config' % config.get('pi_id'))
-		self.channel.queue_declare(queue='data')
-		self.channel.queue_declare(queue='alarm')
-		self.channel.queue_declare(queue='log')
+		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
+		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
+		self.channel.queue_declare(queue=utils.QUEUE_DATA)
+		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
+		self.channel.queue_declare(queue=utils.QUEUE_LOG)
 
 		#specify the queues we want to listen to, including the callback
-		self.channel.basic_consume(self.got_action, queue='%i_action' % config.get('pi_id'), no_ack=True)
-		self.channel.basic_consume(self.got_config, queue='%i_config' % config.get('pi_id'), no_ack=True)
+		self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
+		self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
 
 		logging.info("Setting up sensors and actions")
 		self.setup_sensors()
