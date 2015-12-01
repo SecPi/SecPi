@@ -132,13 +132,13 @@ class Manager:
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
+		msg = json.loads(body)
 		if not self.holddown_state:
 			# put into holddown
 			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)
 			holddown_thread.start()
 
 			logging.info("Received alarm: %s"%body)
-			msg = json.loads(body)
 			# TODO: adapt dir for current alarm
 			self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
 			os.makedirs(self.current_alarm_dir)
@@ -151,16 +151,23 @@ class Manager:
 			for pi in workers:
 				self.send_message("%i_action"%pi.id, "execute")
 			
+			# create log entry for db
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
 			lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="New alarm from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
 			db.session.add(al)
 			db.session.add(lo)
 			db.session.commit()
-			# TODO: wait until all workers finished with their actions (or timeout) then send mail etc
+
+			# start timeout thread for workers to reply
 			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify)
 			timeout_thread.start()
-		else:
-			logging.info("Received alarm but manager is in holddown state")
+		else: # --> holddown state
+			logging.info("Received alarm but manager is in holddown state: %s" % body)
+			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Alarm during holddown state: %s" % msg['message'])
+			lo = db.objects.LogEntry(level=db.objects.LogEntry.LEVEL_INFO, message="Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
+			db.session.add(al)
+			db.session.add(lo)
+			db.session.commit()
 
 	# timeout thread which sends the received data from workers
 	def notify(self):
