@@ -16,6 +16,7 @@ case "$1" in
 		echo "Stopping SecPi Manager..."
 		ID=`cat $PID_PATH`
 		kill -9 $ID
+		rm $PID_PATH
 		echo "Stopped $ID!"
 		;;
 	status)
@@ -27,7 +28,7 @@ case "$1" in
 		fi
 		;;
 	*)
-		echo "Usage: /etc/init.d/secpi-manager {start|stop}"
+		echo "Usage: /etc/init.d/secpi-manager {start|stop|status}"
 		exit 1
 		;;
 esac
