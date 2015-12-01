@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#SECPI_PATH="/opt/local/secpi"
+SECPI_PATH="/Volumes/Data/fhstp/8_sem/99_alarmpi/dev"
+PID_PATH="/var/run/secpi/webinterface.pid"
+
+case "$1" in
+	start)
+		echo "Starting SecPi Webinterface..."
+		export PYTHONPATH=$SECPI_PATH
+		python $SECPI_PATH/webinterface/main.py $SECPI_PATH &
+		echo $! > $PID_PATH
+		echo "Started!"
+		;;
+	stop)
+		echo "Stopping SecPi Webinterface..."
+		ID=`cat $PID_PATH`
+		kill -9 $ID
+		rm $PID_PATH
+		echo "Stopped $ID!"
+		;;
+	status)
+		if [ -f $PID_PATH ];
+		then
+			echo "SecPi Webinterface running with Process-ID `cat $PID_PATH`"
+		else
+			echo "SecPi Webinterface not running!"
+		fi
+		;;
+	*)
+		echo "Usage: /etc/init.d/secpi-webinterface {start|stop|status}"
+		exit 1
+		;;
+esac
+
+exit 0
