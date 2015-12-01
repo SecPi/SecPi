@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#SECPI_PATH="/opt/local/secpi"
+SECPI_PATH="/Volumes/Data/fhstp/8_sem/99_alarmpi/dev"
+PID_PATH="/var/run/secpi/manager.pid"
+
+case "$1" in
+	start)
+		echo "Starting SecPi Manager..."
+		export PYTHONPATH=$SECPI_PATH
+		python $SECPI_PATH/manager/manager.py $SECPI_PATH &
+		echo $! > $PID_PATH
+		echo "Started!"
+		;;
+	stop)
+		echo "Stopping SecPi Manager..."
+		ID=`cat $PID_PATH`
+		kill -9 $ID
+		echo "Stopped $ID!"
+		;;
+	status)
+		if [ -f $PID_PATH ];
+		then
+			echo "SecPi Manager running with Process-ID `cat $PID_PATH`"
+		else
+			echo "SecPi Manager not running!"
+		fi
+		;;
+	*)
+		echo "Usage: /etc/init.d/secpi-manager {start|stop}"
+		exit 1
+		;;
+esac
+
+exit 0
