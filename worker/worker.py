@@ -124,7 +124,7 @@ class Worker:
 		if(self.active):			
 			# DONE: threading
 			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
-			logging.info("Received action from manager")
+			logging.info("Received action from manager:%s" % body)
 			threads = []
 			
 			for act in self.actions:

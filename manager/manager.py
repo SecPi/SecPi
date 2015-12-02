@@ -125,9 +125,14 @@ class Manager:
 			logging.info("Activated %s"%pi.name)
 
 	# this method is used to send execute messages to the action queues
-	def send_message(self, to_queue, message):
-		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
-		logging.info("Sending action to %s" % to_queue)
+	def send_message(self, to_queue, body, **kwargs):
+		try:
+			self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=body, **kwargs)
+			logging.info("Sending action to %s" % to_queue)
+			return True
+		except Exception as e:
+			logging.exception("Error while sending data to queue:\n%s" % e)
+			return False
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
@@ -156,8 +161,11 @@ class Manager:
 			# interate over workers and send "execute"
 			workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 			self.num_of_workers = len(workers)
+			properties = pika.BasicProperties(content_type='application/json')
+			action_message = { "msg": "execute",
+								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 			for pi in workers:
-				self.send_message("%i_action"%pi.id, "execute")
+				self.send_message("%i_action"%pi.id, json.dumps(action_message), properties=properties)
 			
 			# create log entry for db
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
