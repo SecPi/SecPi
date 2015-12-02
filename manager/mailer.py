@@ -41,8 +41,12 @@ class Mailer(Notifier):
 			self.send_mail_ssl()
 		elif self.smtp_security == "NOSSL":
 			self.send_mail_nossl()
-		elif self.smtp_security == "NOAUTH":
-			self.send_mail_noauth()
+		elif self.smtp_security == "NOAUTH_NOSSL":
+			self.send_mail_noauth_nossl()
+		elif self.smtp_security == "NOAUTH_SSL":
+			self.send_mail_noauth_ssl()
+		elif self.smtp_security == "NOAUTH_STARTTLS":
+			self.send_mail_noauth_starttls()
 
 	# Search for the latest alarm folder and attach all files within it to the mail
 	def prepare_mail_attachments(self):
@@ -88,15 +92,72 @@ class Mailer(Notifier):
 	def send_mail_ssl(self):
 		self.prepare_mail_attachments()
 		logging.debug("Trying to send mail with SSL")
+		try:
+			logging.debug("Establishing connection to SMTP server...")
+			smtp = smtplib.SMTP_SSL(self.smtp_address, self.smtp_port)
+			smtp.ehlo()
+			logging.debug("Logging in...")
+			smtp.login(self.smtp_user, self.smtp_pass)
+			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			logging.info("Mail sent")
+			smtp.quit()
+		except Exception, e:
+			print(e)
 
 	def send_mail_nossl(self):
 		self.prepare_mail_attachments()
 		logging.debug("Trying to send mail without SSL")
+		try:
+			logging.debug("Establishing connection to SMTP server...")
+			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
+			smtp.ehlo()
+			logging.debug("Logging in...")
+			smtp.login(self.smtp_user, self.smtp_pass)
+			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			logging.info("Mail sent")
+			smtp.quit()
+		except Exception, e:
+			print(e)
 
-	def send_mail_noauth(self):
+	def send_mail_noauth_nossl(self):
 		self.prepare_mail_attachments()
 		logging.debug("Trying to send mail without authentication")
-
+		try:
+			logging.debug("Establishing connection to SMTP server...")
+			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
+			smtp.ehlo()
+			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			logging.info("Mail sent")
+			smtp.quit()
+		except Exception, e:
+			print(e)
+	
+	def send_mail_noauth_ssl(self):
+		self.prepare_mail_attachments()
+		logging.debug("Trying to send mail without authentication")
+		try:
+			logging.debug("Establishing connection to SMTP server...")
+			smtp = smtplib.SMTP_SSL(self.smtp_address, self.smtp_port)
+			smtp.ehlo()
+			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			logging.info("Mail sent")
+			smtp.quit()
+		except Exception, e:
+			print(e)
+	
+	def send_mail_noauth_starttls(self):
+		self.prepare_mail_attachments()
+		logging.debug("Trying to send mail with STARTTLS")
+		try:
+			logging.debug("Establishing connection to SMTP server...")
+			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
+			smtp.ehlo()
+			smtp.starttls()
+			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			logging.info("Mail sent")
+			smtp.quit()
+		except Exception, e:
+			print(e)
 
 
 
