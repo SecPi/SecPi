@@ -19,7 +19,7 @@ class Manager:
 
 	def __init__(self):
 		config.load("manager")		
-		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log')})
+		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
 		
 		db.connect(PROJECT_PATH)
 		
