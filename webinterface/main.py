@@ -31,6 +31,8 @@ from tools.db import objects
 from tools import config
 from tools import utils
 
+from mako_template_tool import MakoTemplateTool
+
 # sub pages
 from sites.sensors import SensorsPage
 from sites.zones import ZonesPage
@@ -44,7 +46,6 @@ from sites.logs import LogEntriesPage
 from sites.setupszones import SetupsZonesPage
 from sites.workersactions import WorkersActionsPage
 
-lookup = TemplateLookup(directories=['templates'], strict_undefined=True)
 config.load("webinterface")
 
 class Root(object):
@@ -87,7 +88,11 @@ class Root(object):
 	
 	@property
 	def db(self):
-		return cherrypy.request.db	
+		return cherrypy.request.db
+		
+	@property
+	def lookup(self):
+		return cherrypy.request.lookup
 	
 	def handle_error(self):
 		if('Content-Type' in cherrypy.request.headers and 'application/json' in cherrypy.request.headers['Content-Type'].lower()):
@@ -95,7 +100,7 @@ class Root(object):
 			cherrypy.response.status = 200
 			cherrypy.response.body = json.dumps({'status':'error', 'message': "An exception occured during processing! %s"%exc_value, 'traceback':traceback.format_exc() })
 		else:
-			tmpl = lookup.get_template("500.mako")
+			tmpl = self.lookup.get_template("500.mako")
 			cherrypy.response.status = 500
 			cherrypy.response.body = tmpl.render(page_title="Error!", traceback=traceback.format_exc())
 
@@ -111,7 +116,7 @@ class Root(object):
 
 	@cherrypy.expose
 	def index(self):
-		tmpl = lookup.get_template("index.mako")
+		tmpl = self.lookup.get_template("index.mako")
 		return tmpl.render(page_title="Welcome")
 	
 	
@@ -185,6 +190,7 @@ def run():
 	db_logger.setLevel(logging.INFO)
 	
 	cherrypy.tools.db = SQLAlchemyTool()
+	cherrypy.tools.lookup = MakoTemplateTool('%s/webinterface/templates'%(PROJECT_PATH))
 	
 	
 	cherrypy.config.update({
@@ -198,10 +204,11 @@ def run():
 	app_config = {
 		'/': {
 			'tools.db.on': True,
+			'tools.lookup.on': True,
 			'tools.staticdir.root': os.path.join(PROJECT_PATH, "webinterface"),
 			'tools.auth_digest.on': True,
 	        'tools.auth_digest.realm': 'secpi',
-	        'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('.htdigest'),
+	        'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('%s/webinterface/.htdigest'%(PROJECT_PATH)),
 	        'tools.auth_digest.key': 'ae41349f9413b13c'
 		},
 		'/static': {
