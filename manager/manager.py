@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import importlib
 import json
@@ -131,6 +132,10 @@ class Manager:
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
 		msg = json.loads(body)
+		date_object = datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S")
+		# logging.info(str(date_object))
+		# print "----"
+		# logging.info(repr(date_object))
 		if not self.holddown_state:
 			# put into holddown
 			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)

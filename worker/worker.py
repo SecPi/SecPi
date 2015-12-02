@@ -1,3 +1,4 @@
+import datetime
 import importlib
 import json
 import logging
@@ -9,7 +10,6 @@ import socket
 import sys
 import threading
 import time
-import datetime
 
 from tools import config
 from tools import utils
@@ -254,7 +254,8 @@ class Worker:
 
 			msg = {	"pi_id":config.get("pi_id"),
 					"sensor_id": sensor_id,
-					"message": message}
+					"message": message,
+					"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 			
 			msg_string = json.dumps(msg)
 			
