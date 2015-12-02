@@ -24,7 +24,7 @@ class Worker:
 		
 		config.load("worker")
 		
-		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': os.path.join(PROJECT_PATH,'logs/worker.log')})
+		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log')})
 		
 		self.prepare_data_directory(self.data_directory)
 
