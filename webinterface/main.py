@@ -2,6 +2,9 @@ import os
 import json
 import sys
 import traceback
+import logging
+import logging.config
+
 
 # web framework
 import cherrypy
@@ -172,15 +175,24 @@ class Root(object):
 
 
 def run():
+	db_log_file_name = '/var/log/secpi/db.log'
+	
+	db_handler = logging.FileHandler(db_log_file_name)
+	db_handler.setLevel(logging.INFO)
+
+	db_logger = logging.getLogger('sqlalchemy')
+	db_logger.addHandler(db_handler)
+	db_logger.setLevel(logging.INFO)
+	
 	cherrypy.tools.db = SQLAlchemyTool()
 	
 	
 	cherrypy.config.update({
 		'server.socket_host': '0.0.0.0',
 		'server.socket_port': 8080,
-		'log.error_file': "../logs/webui.log",
-		'log.access_file': "../logs/webui_access.log",
-		'log.screen': True
+		'log.error_file': "/var/log/secpi/webui.log",
+		'log.access_file': "/var/log/secpi/webui_access.log",
+		'log.screen': False
 	})
 	
 	app_config = {
@@ -210,10 +222,11 @@ def run():
 
 	sqlalchemy_plugin = SQLAlchemyPlugin(
 		cherrypy.engine, objects.Base, 'sqlite:///%s' % (dbfile),
-		echo=True
+		echo=False
 	)
 	sqlalchemy_plugin.subscribe()
 	sqlalchemy_plugin.create()
+	
 	cherrypy.engine.start()
 	cherrypy.engine.block()
 
