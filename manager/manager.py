@@ -133,9 +133,14 @@ class Manager:
 	def got_alarm(self, ch, method, properties, body):
 		msg = json.loads(body)
 		date_object = datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S")
+		date_now = datetime.datetime.now()
 		# logging.info(str(date_object))
 		# print "----"
 		# logging.info(repr(date_object))
+		if (date_now - date_object) > datetime.timedelta(0,30):
+			logging.info("Message is old")
+		else:
+			logging.info("Message is new")
 		if not self.holddown_state:
 			# put into holddown
 			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)
