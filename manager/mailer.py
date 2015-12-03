@@ -26,10 +26,10 @@ class Mailer(Notifier):
 	def notify(self, info):
 		# Mail setup
 		self.message = MIMEMultipart()
-		self.message["From"] = params["sender"]
-		self.message["To"] = params["recipient"]
-		self.message["Subject"] = params["subject"]
-		self.message.attach(MIMEText(params["text"], "plain"))
+		self.message["From"] = self.params["sender"]
+		self.message["To"] = self.params["recipient"]
+		self.message["Subject"] = self.params["subject"]
+		self.message.attach(MIMEText(self.params["text"], "plain"))
 		info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
 		self.message.attach(MIMEText(info_str, "plain"))
 		
