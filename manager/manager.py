@@ -154,7 +154,7 @@ class Manager:
 			
 			# create log entry for db
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
+			lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
 			db.session.add(al)
 			db.session.add(lo)
 			db.session.commit()
