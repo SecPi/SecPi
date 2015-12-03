@@ -26,27 +26,29 @@ class Mailer(Notifier):
 		self.smtp_port = int(params["smtp_port"])
 		self.smtp_user = params["smtp_user"]
 		self.smtp_pass = params["smtp_pass"]
-		self.smtp_security = params["smtp_security"] # not used yet
+		self.smtp_security = params["smtp_security"]
 
 		logging.info("Mailer initialized")
 	
-	def notify(self):
-		self.send_mail()
+	def notify(self, info):
+		self.send_mail(info)
 
 	# TODO: include more details about which sensors signaled, etc.???
-	def send_mail(self):
+	def send_mail(self, info):
+		self.prepare_mail_attachments()
+		
 		if self.smtp_security == "STARTTLS":
-			self.send_mail_starttls()
+			self.send_mail_starttls(info)
 		elif self.smtp_security == "SSL":
-			self.send_mail_ssl()
+			self.send_mail_ssl(info)
 		elif self.smtp_security == "NOSSL":
-			self.send_mail_nossl()
+			self.send_mail_nossl(info)
 		elif self.smtp_security == "NOAUTH_NOSSL":
-			self.send_mail_noauth_nossl()
+			self.send_mail_noauth_nossl(info)
 		elif self.smtp_security == "NOAUTH_SSL":
-			self.send_mail_noauth_ssl()
+			self.send_mail_noauth_ssl(info)
 		elif self.smtp_security == "NOAUTH_STARTTLS":
-			self.send_mail_noauth_starttls()
+			self.send_mail_noauth_starttls(info)
 
 	# Search for the latest alarm folder and attach all files within it to the mail
 	def prepare_mail_attachments(self):
@@ -73,10 +75,11 @@ class Mailer(Notifier):
 				logging.debug("%s is not a file" % file)
 		# TODO: maybe log something if there are no files?
 
-	def send_mail_starttls(self):
-		self.prepare_mail_attachments()
+	def send_mail_starttls(self, info):
 		logging.debug("Trying to send mail with STARTTLS")
 		try:
+			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
+			self.message.attach(MIMEText(info_str, "plain"))
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
@@ -87,12 +90,13 @@ class Mailer(Notifier):
 			logging.info("Mail sent")
 			smtp.quit()
 		except Exception, e:
-			print(e)
+			logging.error(e)
 
-	def send_mail_ssl(self):
-		self.prepare_mail_attachments()
+	def send_mail_ssl(self, info):
 		logging.debug("Trying to send mail with SSL")
 		try:
+			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
+			self.message.attach(MIMEText(info_str, "plain"))
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP_SSL(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
@@ -102,12 +106,13 @@ class Mailer(Notifier):
 			logging.info("Mail sent")
 			smtp.quit()
 		except Exception, e:
-			print(e)
+			logging.error(e)
 
-	def send_mail_nossl(self):
-		self.prepare_mail_attachments()
+	def send_mail_nossl(self, info):
 		logging.debug("Trying to send mail without SSL")
 		try:
+			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
+			self.message.attach(MIMEText(info_str, "plain"))
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
@@ -117,12 +122,13 @@ class Mailer(Notifier):
 			logging.info("Mail sent")
 			smtp.quit()
 		except Exception, e:
-			print(e)
+			logging.error(e)
 
-	def send_mail_noauth_nossl(self):
-		self.prepare_mail_attachments()
+	def send_mail_noauth_nossl(self, info):
 		logging.debug("Trying to send mail without authentication")
 		try:
+			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
+			self.message.attach(MIMEText(info_str, "plain"))
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
@@ -130,12 +136,13 @@ class Mailer(Notifier):
 			logging.info("Mail sent")
 			smtp.quit()
 		except Exception, e:
-			print(e)
+			logging.error(e)
 	
-	def send_mail_noauth_ssl(self):
-		self.prepare_mail_attachments()
+	def send_mail_noauth_ssl(self, info):
 		logging.debug("Trying to send mail without authentication")
 		try:
+			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
+			self.message.attach(MIMEText(info_str, "plain"))
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP_SSL(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
@@ -143,12 +150,13 @@ class Mailer(Notifier):
 			logging.info("Mail sent")
 			smtp.quit()
 		except Exception, e:
-			print(e)
+			logging.error(e)
 	
-	def send_mail_noauth_starttls(self):
-		self.prepare_mail_attachments()
+	def send_mail_noauth_starttls(self, info):
 		logging.debug("Trying to send mail with STARTTLS")
 		try:
+			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
+			self.message.attach(MIMEText(info_str, "plain"))
 			logging.debug("Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
@@ -157,7 +165,7 @@ class Mailer(Notifier):
 			logging.info("Mail sent")
 			smtp.quit()
 		except Exception, e:
-			print(e)
+			logging.error(e)
 
 
 

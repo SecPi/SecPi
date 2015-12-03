@@ -158,9 +158,17 @@ class Manager:
 			db.session.add(al)
 			db.session.add(lo)
 			db.session.commit()
+			
+			notif_info = {
+				"message": msg['message'],
+				"sensor": (sensor.name if sensor else msg['sensor_id']),
+				"sensor_id": msg['sensor_id'],
+				"worker": (worker.name if worker else msg['pi_id']),
+				"worker_id": msg['pi_id']
+			}
 
 			# start timeout thread for workers to reply
-			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify)
+			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify, args=[notif_info])
 			timeout_thread.start()
 		else: # --> holddown state
 			logging.info("Received alarm but manager is in holddown state: %s" % body)
@@ -171,7 +179,7 @@ class Manager:
 			db.session.commit()
 
 	# timeout thread which sends the received data from workers
-	def notify(self):
+	def notify(self, info):
 		timeout = 30 # TODO: make this configurable
 		for i in range(0, timeout):
 			if self.received_data_counter < self.num_of_workers: #not all data here yet
@@ -187,9 +195,10 @@ class Manager:
 			db.session.add(lo)
 			db.session.commit()
 		
+		
 		# TODO: try/catch
 		for notifier in self.notifiers:
-			notifier.notify()
+			notifier.notify(info)
 
 	def holddown(self):
 		self.holddown_state = True

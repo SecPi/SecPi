@@ -7,5 +7,5 @@ class Notifier(object):
 		self.params = params
 
 	@abc.abstractmethod
-	def notify(self):
+	def notify(self, info):
 		return
