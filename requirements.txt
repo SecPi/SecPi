@@ -10,3 +10,7 @@ CherryPy-SQLAlchemy (0.5.2)
 	DB <--> Web Framework
 Mako (1.0.1)
 	Web Templating Engine
+
+on Raspberry Pi:
+	pytz
+	python-dateutil
