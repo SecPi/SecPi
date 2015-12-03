@@ -172,7 +172,7 @@ class Worker:
 			# TODO: check valid config file?!
 			# write config to file
 			try:
-				f = open('config.json','w') # TODO: pfad
+				f = open('%s/worker/config.json'%(PROJECT_PATH),'w') # TODO: pfad
 				f.write(body)
 				f.close()
 			except Exception, e:
