@@ -195,10 +195,11 @@ class Manager:
 			db.session.add(lo)
 			db.session.commit()
 		
-		
-		# TODO: try/catch
-		for notifier in self.notifiers:
-			notifier.notify(info)
+		try:
+			for notifier in self.notifiers:
+				notifier.notify(info)
+		except Exception as ex:
+			logging.exception("Error notifying: %s"%ex)
 
 	def holddown(self):
 		self.holddown_state = True
