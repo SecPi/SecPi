@@ -149,9 +149,12 @@ class Manager:
 			for pi in workers:
 				self.send_message("%i_action"%pi.id, "execute")
 			
+			worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.id == msg['pi_id']).first()
+			sensor = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
+			
 			# create log entry for db
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="New alarm from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
+			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
 			db.session.add(al)
 			db.session.add(lo)
 			db.session.commit()
@@ -183,7 +186,8 @@ class Manager:
 			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers))
 			db.session.add(lo)
 			db.session.commit()
-			
+		
+		# TODO: try/catch
 		for notifier in self.notifiers:
 			notifier.notify()
 
