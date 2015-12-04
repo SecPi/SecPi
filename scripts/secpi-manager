@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SECPI_PATH="/opt/local/secpi"
+#SECPI_PATH="/opt/secpi"
 SECPI_PATH="/Volumes/Data/fhstp/8_sem/99_alarmpi/dev"
 PID_PATH="$SECPI_PATH/run/"
 PID_NAME="manager.pid"
