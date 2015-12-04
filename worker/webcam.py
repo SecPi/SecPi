@@ -31,3 +31,7 @@ class Webcam(Action):
 	
 	def execute(self):
 		self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
+		
+	def cleanup(self):
+		# do some cleanup?
+		

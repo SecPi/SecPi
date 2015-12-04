@@ -243,7 +243,9 @@ class Worker:
 				logging.info("Registered!")
 	
 	def cleanup_actions(self):
-		# TODO: maybe manual del of all actions?
+		for a in self.actions:
+			a.cleanup()
+			
 		self.actions = []					
 
 

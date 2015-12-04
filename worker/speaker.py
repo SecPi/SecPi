@@ -25,3 +25,7 @@ class Speaker(Action):
 
 	def execute(self):
 		self.play_audio()
+		
+	def cleanup(self):
+		# do some cleanup
+		
