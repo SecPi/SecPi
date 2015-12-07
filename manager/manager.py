@@ -18,9 +18,12 @@ from tools.db import database as db
 class Manager:
 
 	def __init__(self):
-		config.load("manager")		
-		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
-		
+		config.load("manager")
+		try: #TODO: this should be nicer...		
+			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
+		except Exception, e:
+			print "Error while trying to load config file for log"
+
 		db.connect(PROJECT_PATH)
 		
 		self.notifiers = []
