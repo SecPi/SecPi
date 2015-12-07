@@ -33,4 +33,4 @@ class Webcam(Action):
 		self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
 		
 	def cleanup(self):
-		print "No cleanup necessary at the moment"# do some cleanup?
+		logging.debug("No cleanup necessary at the moment")# do some cleanup?
