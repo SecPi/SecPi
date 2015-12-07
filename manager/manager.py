@@ -137,24 +137,30 @@ class Manager:
 			logging.exception("Error while sending data to queue:\n%s" % e)
 			return False
 
+	# checks if the incoming message arrived late -> return true (late) or false (!late)
+	def check_late_arrival(self, date_message):
+		date_now = datetime.datetime.now()
+
+		if (date_now - date_message) < datetime.timedelta(0,30): #TODO: make delta configurable?
+			return False
+		else:
+			return True
+
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
 		msg = json.loads(body)
-		date_object = datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S")
-		date_now = datetime.datetime.now()
-		# logging.info(str(date_object))
-		# print "----"
-		# logging.info(repr(date_object))
-		if (date_now - date_object) > datetime.timedelta(0,30):
-			logging.info("Message is old")
+		late_arrival = self.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
+
+		if not late_arrival:
+			logging.info("Received alarm: %s"%body)
 		else:
-			logging.info("Message is new")
+			logging.info("Received old alarm: %s"%body)
+
 		if not self.holddown_state:
 			# put into holddown
 			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)
 			holddown_thread.start()
 
-			logging.info("Received alarm: %s"%body)
 			# TODO: adapt dir for current alarm
 			self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
 			os.makedirs(self.current_alarm_dir)
@@ -166,7 +172,8 @@ class Manager:
 			self.num_of_workers = len(workers)
 			properties = pika.BasicProperties(content_type='application/json')
 			action_message = { "msg": "execute",
-								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+								"late_arrival":late_arrival}
 			for pi in workers:
 				self.send_message("%i_action"%pi.id, json.dumps(action_message), properties=properties)
 			
@@ -174,12 +181,17 @@ class Manager:
 			sensor = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
 			
 			# create log entry for db
-			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-			lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
+			if not late_arrival:
+				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
+				lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
+			else:
+				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Late Alarm: %s" %msg['message'])
+				lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="Old alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
 			db.session.add(al)
 			db.session.add(lo)
 			db.session.commit()
 			
+			# TODO: add information about late arrival of alarm
 			notif_info = {
 				"message": msg['message'],
 				"sensor": (sensor.name if sensor else msg['sensor_id']),
@@ -191,7 +203,7 @@ class Manager:
 			# start timeout thread for workers to reply
 			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify, args=[notif_info])
 			timeout_thread.start()
-		else: # --> holddown state
+		else: # --> holddown state, TODO: should we care about late arrivals?
 			logging.info("Received alarm but manager is in holddown state: %s" % body)
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Alarm during holddown state: %s" % msg['message'])
 			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
