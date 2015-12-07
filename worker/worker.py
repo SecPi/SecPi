@@ -24,7 +24,7 @@ class Worker:
 		
 		config.load("worker")
 		
-		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': os.path.join(PROJECT_PATH,'logs/worker.log')})
+		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
 		
 		self.prepare_data_directory(self.data_directory)
 
@@ -172,7 +172,7 @@ class Worker:
 			# TODO: check valid config file?!
 			# write config to file
 			try:
-				f = open('config.json','w') # TODO: pfad
+				f = open('%s/worker/config.json'%(PROJECT_PATH),'w') # TODO: pfad
 				f.write(body)
 				f.close()
 			except Exception, e:
@@ -243,7 +243,9 @@ class Worker:
 				logging.info("Registered!")
 	
 	def cleanup_actions(self):
-		# TODO: maybe manual del of all actions?
+		for a in self.actions:
+			a.cleanup()
+			
 		self.actions = []					
 
 

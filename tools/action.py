@@ -7,7 +7,13 @@ class Action(object):
 		self.params = params
 		
 	@abc.abstractmethod
-	def execute(self, data_path):
+	def execute(self):
 		"""Do some stuff.
 		Params is a dict with additional info for the executing actor."""
+		return
+	
+	
+	@abc.abstractmethod
+	def cleanup(self):
+		"""Cleanup anything you might have started. (e.g. listening on ports etc.)"""
 		return

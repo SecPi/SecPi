@@ -1,34 +1,75 @@
 #!/bin/bash
 
-#SECPI_PATH="/opt/local/secpi"
+#SECPI_PATH="/opt/secpi"
 SECPI_PATH="/Volumes/Data/fhstp/8_sem/99_alarmpi/dev"
-PID_PATH="/var/run/secpi/manager.pid"
+PID_PATH="$SECPI_PATH/run/"
+PID_NAME="manager.pid"
+SECPI_USER="philip"
+SECPI_GROUP="admin"
+
+function start {
+	echo "Starting SecPi Manager..."
+	# create folder for pid storage
+	#mkdir -p $PID_PATH
+	# and set permissions
+	#chown $SECPI_USER:$SECPI_GROUP $PID_PATH
+	# set python path so other files can be found
+	export PYTHONPATH=$SECPI_PATH
+	# execute as lower rights user
+	python $SECPI_PATH/manager/manager.py $SECPI_PATH &
+	ID=$!
+	echo $ID > $PID_PATH$PID_NAME
+	echo "Started with PID $ID!"
+}
+
+function stop {
+	echo "Stopping SecPi Manager..."
+	if [ -f $PID_PATH$PID_NAME ];
+	then
+		ID=`cat $PID_PATH$PID_NAME`
+		kill -9 $ID > /dev/null 2>&1
+		rm $PID_PATH$PID_NAME
+		echo "Stopped $ID!"
+	else
+		echo "SecPi Manager not running!"
+	fi
+}
+
+function status {
+	if [ -f $PID_PATH$PID_NAME ];
+	then
+		ID=`cat $PID_PATH$PID_NAME`
+		# pid file exists, check if process is really running
+		kill -0 $ID > /dev/null 2>&1
+		if [ $? -ne 0 ];
+		then
+			echo "SecPi Manager not running!"
+			# PID file exists but not running --> remove PID file
+			rm $PID_PATH$PID_NAME
+		else
+			echo "SecPi Manager running with Process-ID $ID"
+		fi
+	else
+		echo "SecPi Manager not running!"
+	fi
+}
 
 case "$1" in
 	start)
-		echo "Starting SecPi Manager..."
-		export PYTHONPATH=$SECPI_PATH
-		python $SECPI_PATH/manager/manager.py $SECPI_PATH &
-		echo $! > $PID_PATH
-		echo "Started!"
+		start
 		;;
 	stop)
-		echo "Stopping SecPi Manager..."
-		ID=`cat $PID_PATH`
-		kill -9 $ID
-		rm $PID_PATH
-		echo "Stopped $ID!"
+		stop
+		;;
+	restart)
+		stop
+		start
 		;;
 	status)
-		if [ -f $PID_PATH ];
-		then
-			echo "SecPi Manager running with Process-ID `cat $PID_PATH`"
-		else
-			echo "SecPi Manager not running!"
-		fi
+		status
 		;;
 	*)
-		echo "Usage: /etc/init.d/secpi-manager {start|stop|status}"
+		echo "Usage: /etc/init.d/secpi-manager {start|stop|restart|status}"
 		exit 1
 		;;
 esac

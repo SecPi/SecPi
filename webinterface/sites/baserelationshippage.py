@@ -20,6 +20,10 @@ class BaseRelationshipPage(object):
 	def db(self):
 		return cherrypy.request.db
 
+	@property
+	def lookup(self):
+		return cherrypy.request.lookup
+
 
 	@cherrypy.expose()
 	@cherrypy.tools.json_in()

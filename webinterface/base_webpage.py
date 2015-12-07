@@ -18,7 +18,6 @@ class BaseWebPage(object):
 	
 	def __init__(self, baseclass):
 		self.baseclass = baseclass
-		self.lookup = TemplateLookup(directories=['templates'], strict_undefined=False)
 		self.fields = OrderedDict()
 	
 	
@@ -41,6 +40,10 @@ class BaseWebPage(object):
 	@property
 	def db(self):
 		return cherrypy.request.db
+		
+	@property
+	def lookup(self):
+		return cherrypy.request.lookup
 	
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
