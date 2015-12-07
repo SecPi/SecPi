@@ -23,6 +23,9 @@ class TCPPortListener(Sensor):
 		self.active = False
 		self.server.server_close()
 
+	def cleanup(self):
+		self.deactivate()
+
 # Request Handler
 import SocketServer
 class SecPiTCPHandler(SocketServer.BaseRequestHandler):
