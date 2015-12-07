@@ -121,7 +121,13 @@ class Worker:
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
-		if(self.active):			
+		if(self.active):
+			date_message = datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S")
+			date_now = datetime.datetime.now()
+			
+			if (date_now - date_message) > datetime.timedelta(0,30): #TODO: make delta configurable?
+				logging.info("Received old action from manager:%s" % body)
+				return # we don't have to send a message to the data queue since the timeout will be over anyway
 			# DONE: threading
 			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
 			logging.info("Received action from manager:%s" % body)
