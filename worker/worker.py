@@ -119,13 +119,20 @@ class Worker:
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
 
+	def check_late_arrival(self, date_message):
+		date_now = datetime.datetime.now()
+
+		if (date_now - date_message) < datetime.timedelta(0,30): #TODO: make delta configurable?
+			return False
+		else:
+			return True
+
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
 		if(self.active):
-			date_message = datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S")
-			date_now = datetime.datetime.now()
+			late_arrival = self.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))			date_now = datetime.datetime.now()
 			
-			if (date_now - date_message) > datetime.timedelta(0,30): #TODO: make delta configurable?
+			if late_arrival:
 				logging.info("Received old action from manager:%s" % body)
 				return # we don't have to send a message to the data queue since the timeout will be over anyway
 			# DONE: threading
