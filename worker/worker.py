@@ -60,8 +60,6 @@ class Worker:
 		self.setup_actions()
 		
 		logging.info("Setup done!")
-		
-		self.channel.start_consuming() # this is a blocking call!!
 	
 	
 	def push_msg(self, rk, body, **kwargs):
@@ -119,18 +117,12 @@ class Worker:
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
 
-	def check_late_arrival(self, date_message):
-		date_now = datetime.datetime.now()
-
-		if (date_now - date_message) < datetime.timedelta(0,30): #TODO: make delta configurable?
-			return False
-		else:
-			return True
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
 		if(self.active):
-			late_arrival = self.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))			date_now = datetime.datetime.now()
+			msg = json.loads(body)
+			late_arrival = utils.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
 			
 			if late_arrival:
 				logging.info("Received old action from manager:%s" % body)
@@ -295,21 +287,28 @@ class Worker:
 				logging.debug("Created SecPi data directory")
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e))
+
+	def start(self):
+		self.channel.start_consuming()
 	
 	def __del__(self):
 		self.connection.close()
 
 
 if __name__ == '__main__':
+	w = None
 	try:
 		if(len(sys.argv)>1):
 			PROJECT_PATH = sys.argv[1]
 			w = Worker()
+			w.start()
 		else:
 			print("Error initializing Worker, no path given!");
 	except KeyboardInterrupt:
 		logging.info('Shutting down worker!')
 		# TODO: cleanup?
+		w.cleanup_actions()
+		w.cleanup_sensors()
 		try:
 			sys.exit(0)
 		except SystemExit:

@@ -23,7 +23,7 @@ class Manager:
 		try: #TODO: this should be nicer...		
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
 		except Exception, e:
-			print "Error while trying to load config file for log"
+			print "Error while trying to load config file for logging"
 
 		db.connect(PROJECT_PATH)
 		
@@ -137,19 +137,10 @@ class Manager:
 			logging.exception("Error while sending data to queue:\n%s" % e)
 			return False
 
-	# checks if the incoming message arrived late -> return true (late) or false (!late)
-	def check_late_arrival(self, date_message):
-		date_now = datetime.datetime.now()
-
-		if (date_now - date_message) < datetime.timedelta(0,30): #TODO: make delta configurable?
-			return False
-		else:
-			return True
-
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
 		msg = json.loads(body)
-		late_arrival = self.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
+		late_arrival = utils.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
 
 		if not late_arrival:
 			logging.info("Received alarm: %s"%body)
@@ -203,7 +194,7 @@ class Manager:
 			# start timeout thread for workers to reply
 			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify, args=[notif_info])
 			timeout_thread.start()
-		else: # --> holddown state, TODO: should we care about late arrivals?
+		else: # --> holddown state
 			logging.info("Received alarm but manager is in holddown state: %s" % body)
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Alarm during holddown state: %s" % msg['message'])
 			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
