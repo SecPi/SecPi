@@ -8,12 +8,11 @@
 	## </pre>
 
 
-	<input type="button" ng-click="dataCtrl.getList()" value="Refresh data" ng-hide="dataCtrl.data.length > 0" /><br />
 
 	<table class="list">
 		<tr>
 			<th ng-repeat="(k, v) in dataCtrl.getFields('list')">{{v['name']}}</th>
-			<th><img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" ng-show="dataCtrl.edit_active" /></th>
+			<th><img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" ng-show="dataCtrl.edit_active" /><img src="/static/img/icons/refresh.png" ng-click="dataCtrl.getList()" /></th>
 		</tr>
 		<tr ng-repeat="obj in dataCtrl.data">
 			<td ng-repeat="(k, v) in dataCtrl.getFields('list')">{{obj[k]}}</td>
