@@ -90,6 +90,8 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	self.edit_id = -1;
 	self.orig_data = null;
 	
+	self.loading = true;
+	
 	
 	self.edit_active = true;
 	HTTPService.post('/setups/list', {"filter":"active_state==1"},
@@ -130,6 +132,7 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	
 	
 	self.getList = function(){
+		self.loading = true;
 		$log.log('fetching list')
 		var list_data = {}
 		if(self.query_filter){
@@ -139,6 +142,10 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 		HTTPService.post(self.baseclass+'/list', list_data,
 			function(data, msg){
 				self.data = data;
+				self.loading = false;
+			},
+			function(){
+				self.loading = false;
 			}
 		);
 	};
@@ -152,7 +159,8 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 		self.dialog.dialog("open");
 	};
 	
-	self.saveEdit = function(){ 
+	self.saveEdit = function(){
+		self.loading = true;
 		$log.log("saving stuff")
 		if(self.edit_id == -1){ // if edit id is -1 we are adding a new one
 			HTTPService.post(self.baseclass+'/add', self.edit_data,
@@ -167,6 +175,10 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 					self.edit_id = -1;
 					
 					self.dialog.dialog( "close" );
+					self.loading = false;
+				},
+				function(){
+					self.loading = false;
 				}
 			);
 		}
@@ -178,6 +190,10 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 					self.edit_data = null;
 					self.edit_id = -1;
 					self.dialog.dialog( "close" );
+					self.loading = false;
+				},
+				function(){
+					self.loading = false;
 				}
 			);
 		}
@@ -207,6 +223,10 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 				function(data, msg){
 					FlashService.flash(msg, FlashService.TYPE_INFO)
 					self.data.splice(delId, 1);
+					self.loading = false;
+				},
+				function(){
+					self.loading = false;
 				}
 			);
 		}
@@ -236,6 +256,8 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	
 	self.fetchFields();
 	self.getList();
+	
+	self.loading = false;
 }]);
 
 

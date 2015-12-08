@@ -7,7 +7,7 @@
 	## {{dataCtrl.baseclass}}
 	## </pre>
 
-
+	## <img src="/static/img/icons/loading.gif" ng-show="dataCtrl.loading" /><br />
 
 	<table class="list">
 		<tr>
