@@ -40,7 +40,7 @@ app.service('FlashService', function($log, $timeout){
 app.service('HTTPService', ['$http', 'FlashService', function($http, FlashService){
 	var self = this;
 	
-	self.post = function(path, data, success_func){
+	self.post = function(path, data, success_func, err_func){
 		$http.post(path, data).then(
 			function (response) {
 				// success
@@ -49,6 +49,7 @@ app.service('HTTPService', ['$http', 'FlashService', function($http, FlashServic
 				}
 				else{
 					FlashService.flash(response.data['message'], FlashService.TYPE_ERR);
+					err_func();
 				}
 			},
 			FlashService.handle_error
