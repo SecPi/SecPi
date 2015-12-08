@@ -5,11 +5,11 @@
 		<tr>
 			<th>${leftname}</th>
 			<th>${rightname}</th>
-			<th><img src="/static/img/icons/plus.png" ng-click="rlCtrl.showAdd()" /></th>
+			<th><img src="/static/img/icons/plus.png" ng-click="rlCtrl.showAdd()" class="pointer" ng-show="rlCtrl.edit_active" /><img src="/static/img/icons/refresh.png" ng-click="dataCtrl.fetchData()" class="pointer" /></th>
 		</tr>
 		<tr ng-repeat="obj in rlCtrl.lefts_rights">
 			<td>{{obj['name']}}</td>
-			<td><p ng-repeat="z in obj['${rightclass}s']">{{z.name}} <img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="rlCtrl.delete(obj.id, z.id)" /></p></td>
+			<td><p ng-repeat="z in obj['${rightclass}s']">{{z.name}} <img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="rlCtrl.delete(obj.id, z.id)" class="pointer" ng-show="rlCtrl.edit_active" /></p></td>
 			<td></td>
 		</tr>
 	</table>

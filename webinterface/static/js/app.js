@@ -371,6 +371,16 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 	self.rights = [];
 	
 	
+	self.edit_active = true;
+	HTTPService.post('/setups/list', {"filter":"active_state==1"},
+		function(data, msg){
+			// FlashService.flash("got data: "+ angular.toJson(data), FlashService.TYPE_INFO);
+			if(data.length > 0){ // we got an active setup, disable edit
+				self.edit_active = false;
+			}
+		}
+	);
+	
 	self.fetchData = function(){
 		HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/list', {},
 			function(data,msg){
