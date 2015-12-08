@@ -1,3 +1,4 @@
+import datetime
 import importlib
 import json
 import logging
@@ -9,7 +10,6 @@ import socket
 import sys
 import threading
 import time
-import datetime
 
 from tools import config
 from tools import utils
@@ -60,8 +60,6 @@ class Worker:
 		self.setup_actions()
 		
 		logging.info("Setup done!")
-		
-		self.channel.start_consuming() # this is a blocking call!!
 	
 	
 	def push_msg(self, rk, body, **kwargs):
@@ -119,12 +117,19 @@ class Worker:
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
 
+
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
-		if(self.active):			
+		if(self.active):
+			msg = json.loads(body)
+			late_arrival = utils.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
+			
+			if late_arrival:
+				logging.info("Received old action from manager:%s" % body)
+				return # we don't have to send a message to the data queue since the timeout will be over anyway
 			# DONE: threading
 			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
-			logging.info("Received action from manager")
+			logging.info("Received action from manager:%s" % body)
 			threads = []
 			
 			for act in self.actions:
@@ -256,7 +261,8 @@ class Worker:
 
 			msg = {	"pi_id":config.get("pi_id"),
 					"sensor_id": sensor_id,
-					"message": message}
+					"message": message,
+					"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 			
 			msg_string = json.dumps(msg)
 			
@@ -281,21 +287,28 @@ class Worker:
 				logging.debug("Created SecPi data directory")
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e))
+
+	def start(self):
+		self.channel.start_consuming()
 	
 	def __del__(self):
 		self.connection.close()
 
 
 if __name__ == '__main__':
+	w = None
 	try:
 		if(len(sys.argv)>1):
 			PROJECT_PATH = sys.argv[1]
 			w = Worker()
+			w.start()
 		else:
 			print("Error initializing Worker, no path given!");
 	except KeyboardInterrupt:
 		logging.info('Shutting down worker!')
 		# TODO: cleanup?
+		w.cleanup_actions()
+		w.cleanup_sensors()
 		try:
 			sys.exit(0)
 		except SystemExit:

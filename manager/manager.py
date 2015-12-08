@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import importlib
 import json
@@ -22,7 +23,7 @@ class Manager:
 		try: #TODO: this should be nicer...		
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
 		except Exception, e:
-			print "Error while trying to load config file for log"
+			print "Error while trying to load config file for logging"
 
 		db.connect(PROJECT_PATH)
 		
@@ -127,19 +128,30 @@ class Manager:
 			logging.info("Activated %s"%pi.name)
 
 	# this method is used to send execute messages to the action queues
-	def send_message(self, to_queue, message):
-		self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=message)
-		logging.info("Sending action to %s" % to_queue)
+	def send_message(self, to_queue, body, **kwargs):
+		try:
+			self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=body, **kwargs)
+			logging.info("Sending action to %s" % to_queue)
+			return True
+		except Exception as e:
+			logging.exception("Error while sending data to queue:\n%s" % e)
+			return False
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
 		msg = json.loads(body)
+		late_arrival = utils.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
+
+		if not late_arrival:
+			logging.info("Received alarm: %s"%body)
+		else:
+			logging.info("Received old alarm: %s"%body)
+
 		if not self.holddown_state:
 			# put into holddown
 			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)
 			holddown_thread.start()
 
-			logging.info("Received alarm: %s"%body)
 			# TODO: adapt dir for current alarm
 			self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
 			os.makedirs(self.current_alarm_dir)
@@ -149,19 +161,28 @@ class Manager:
 			# interate over workers and send "execute"
 			workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 			self.num_of_workers = len(workers)
+			properties = pika.BasicProperties(content_type='application/json')
+			action_message = { "msg": "execute",
+								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+								"late_arrival":late_arrival}
 			for pi in workers:
-				self.send_message("%i_action"%pi.id, "execute")
+				self.send_message("%i_action"%pi.id, json.dumps(action_message), properties=properties)
 			
 			worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.id == msg['pi_id']).first()
 			sensor = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
 			
 			# create log entry for db
-			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-			lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
+			if not late_arrival:
+				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
+				lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
+			else:
+				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Late Alarm: %s" %msg['message'])
+				lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="Old alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
 			db.session.add(al)
 			db.session.add(lo)
 			db.session.commit()
 			
+			# TODO: add information about late arrival of alarm
 			notif_info = {
 				"message": msg['message'],
 				"sensor": (sensor.name if sensor else msg['sensor_id']),
