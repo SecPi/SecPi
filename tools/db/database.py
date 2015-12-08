@@ -12,7 +12,8 @@ def connect(path):
 	global session
 	global engine
 	
-	engine = create_engine("sqlite:///%s/data.db"%path, echo = False) # echo = true aktiviert debug logging
+	# TODO: think about check_same_thread=False
+	engine = create_engine("sqlite:///%s/data.db"%path, connect_args={'check_same_thread':False}, echo = False) # echo = true aktiviert debug logging
 
 	Session = sessionmaker(bind=engine)
 	session = Session()
