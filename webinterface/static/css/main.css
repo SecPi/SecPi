@@ -53,6 +53,10 @@ footer {
 }
 
 
+.pointer {
+	cursor: pointer;
+}
+
 
 /*
 	######### Flash Messages #########
