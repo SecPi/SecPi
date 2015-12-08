@@ -8,7 +8,6 @@ from tools.action import Action
 class Webcam(Action):
 
 	def __init__(self, id, params):
-		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.INFO)	# TODO make it nicer
 		super(Webcam, self).__init__(id, params)	
 
 		self.path = params["path"]
