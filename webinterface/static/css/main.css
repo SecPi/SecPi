@@ -58,6 +58,11 @@ footer {
 }
 
 
+.ack_table {
+	width: 50%;
+	vertical-align: top;
+}
+
 /*
 	######### Flash Messages #########
 */
@@ -115,6 +120,29 @@ footer {
 
 .flash_message.ng-leave.ng-leave-active {
 	opacity:0;
+}
+
+/*
+	######### Alarms #########
+*/
+.alarm_entry {
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 10px;
+	
+	display: block;
+	max-width: 500px;
+	padding: 10px 10px 10px 30px;
+	margin: 10px;
+	
+	color: #C70000;
+	border-color: #C70000;
+	background: #FFA3A3 url('/static/img/icons/error.png') no-repeat 10px 10px;
+}
+
+.alarm_ack {
+	float: right;
+	cursor: pointer;
 }
 
 

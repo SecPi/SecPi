@@ -261,34 +261,37 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 }]);
 
 
-
-
-app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', 'HTTPService', function($http, $log, $interval, FlashService, HTTPService){
+app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashService', 'HTTPService', function($http, $log, $interval, $attrs, FlashService, HTTPService){
 	var self = this;
 	
-	self.log_entries = [];
+	if (!$attrs.ackclass) throw new Error("No class defined!");
 	
-	self.fetchLog = function(){
-		HTTPService.post('/logs/list', {"filter":"ack==0"},
+	self.ackclass = $attrs.ackclass;
+	
+	
+	self.entries = [];
+	
+	self.fetchData = function(){
+		HTTPService.post('/' +self.ackclass +'s/list', {"filter":"ack==0"},
 			function(data, msg){
-				if(angular.toJson(data) != angular.toJson(self.log_entries)){
-					self.log_entries = data;
+				if(angular.toJson(data) != angular.toJson(self.entries)){
+					self.entries = data;
 				}
 			}
 		);
 	};
 	
-	self.ack = function(log_id){
-		HTTPService.post('/logs/ack', {"id":self.log_entries[log_id].id},
+	self.ack = function(ent_id){
+		HTTPService.post('/' +self.ackclass +'s/ack', {"id":self.entries[ent_id].id},
 			function(data, msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO);
-				self.log_entries.splice(log_id, 1);
+				self.entries.splice(ent_id, 1);
 			}
 		);
 	}
 	
 	self.refresh = function(){
-		self.fetchLog();
+		self.fetchData();
 	}
 	
 	self.toggleRefresh = function(){
@@ -304,8 +307,8 @@ app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', '
 		// refresh list every 5 seconds
 		if(!self.refresh_inter){
 			self.refresh_inter = $interval(self.refresh, 5000);
-			FlashService.flash('Started refresh of log messages!', FlashService.TYPE_INFO, 2000);
-			$('#refresh_toggle').prop('value', "stop refresh");
+			FlashService.flash('Started refresh of messages!', FlashService.TYPE_INFO, 2000);
+			$('#refresh_toggle_'+self.ackclass).prop('value', "stop refresh");
 		}
 	}
 	
@@ -313,12 +316,12 @@ app.controller('LogController', ['$http', '$log', '$interval', 'FlashService', '
 		if(self.refresh_inter){
 			$interval.cancel(self.refresh_inter);
 			self.refresh_inter = null;
-			FlashService.flash('Stopped refresh of log messages!', FlashService.TYPE_INFO, 2000);
-			$('#refresh_toggle').prop('value', "start refresh");
+			FlashService.flash('Stopped refresh of messages!', FlashService.TYPE_INFO, 2000);
+			$('#refresh_toggle_'+self.ackclass).prop('value', "start refresh");
 		}
 	}
 	
-	self.fetchLog();
+	self.fetchData();
 	
 	self.startRefresh()
 }]);
