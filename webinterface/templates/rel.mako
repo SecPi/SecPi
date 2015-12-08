@@ -5,7 +5,7 @@
 		<tr>
 			<th>${leftname}</th>
 			<th>${rightname}</th>
-			<th><img src="/static/img/icons/plus.png" ng-click="rlCtrl.showAdd()" class="pointer" ng-show="rlCtrl.edit_active" /><img src="/static/img/icons/refresh.png" ng-click="dataCtrl.fetchData()" class="pointer" /></th>
+			<th><img src="/static/img/icons/plus.png" ng-click="rlCtrl.showAdd()" class="pointer" ng-show="rlCtrl.edit_active" /><img src="/static/img/icons/refresh.png" ng-click="rlCtrl.fetchData()" class="pointer" /></th>
 		</tr>
 		<tr ng-repeat="obj in rlCtrl.lefts_rights">
 			<td>{{obj['name']}}</td>
