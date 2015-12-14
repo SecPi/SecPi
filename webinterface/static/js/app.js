@@ -487,6 +487,12 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 			height: 200,
 			width: 200,
 			modal: true,
+			dialogClass: "fixed_pos",
+			position: {
+				my: "center center",
+				at: "center center",
+				of: window
+			},
 			buttons: {
 				"Save": function(){
 					self.save();
