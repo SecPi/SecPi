@@ -34,6 +34,21 @@ class LogEntriesPage(BaseWebPage):
 					return {'status': 'success', 'message': 'Acknowledged log message with id %s'%obj.id}
 		
 		return {'status': 'error', 'message': 'ID not found!'}
+	
+	
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
+	def ackAll(self):
+		les = self.db.query(objects.LogEntry).filter(objects.LogEntry.ack == 0).all()
+		if(les):
+			for le in les:
+				le.ack = True;
+				
+			self.db.commit()
+			return {'status': 'success', 'message': 'Acknowledged all log messages!'}
+		
+		return {'status': 'error', 'message': 'No log messages to acknowledge found!'}
 		
 
 
