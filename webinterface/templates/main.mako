@@ -2,6 +2,7 @@
 <%
 	active_tab = self.active_tab()
 %>
+<!DOCTYPE html>
 <html ng-app="SecPi">
 <head>
 	<title>SecPi - ${page_title}</title>
