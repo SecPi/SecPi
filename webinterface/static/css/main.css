@@ -63,6 +63,10 @@ footer {
 	vertical-align: top;
 }
 
+.fixed_pos {
+	position: fixed !important;
+}
+
 /*
 	######### Flash Messages #########
 */
@@ -220,8 +224,8 @@ footer {
 	margin: 5px;
 }
 
+
 .list td, th{
-	padding: 5px;
 	border: 1px solid transparent;
 	height: 30px;
 	transition: all 0.3s;
@@ -238,6 +242,9 @@ footer {
 .list tr:nth-child(odd) td { background: #DFDFDF; }
 .list tr:nth-child(even) td { background: #F1F1F1; }
 
+.list .edit_col {
+	min-width: 35px;
+}
 
 /*
 	######### Icons #########

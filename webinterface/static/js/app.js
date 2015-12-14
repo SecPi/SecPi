@@ -240,6 +240,12 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 			height: 300,
 			width: 350,
 			modal: true,
+			dialogClass: "fixed_pos",
+			position: {
+				my: "center center",
+				at: "center center",
+				of: window
+			},
 			buttons: {
 				"Save": function(){
 					self.saveEdit();
