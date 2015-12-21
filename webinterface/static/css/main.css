@@ -31,7 +31,7 @@ h1.header {
 }
 
 #main {
-	padding: 90px 40px 50px;
+	padding: 100px 40px 50px;
 }
 
 footer {
@@ -82,6 +82,7 @@ footer {
 	border-width: 2px;
 	border-radius: 10px;
 	
+	position: relative;
 	display: block;
 	width: 300px;
 	padding: 10px 10px 10px 30px;
@@ -109,21 +110,45 @@ footer {
 }
 
 .flash_message.ng-enter {
-	transition:0.5s linear all;
+	animation-name: flash_anim_in;
+	animation-duration: 0.2s;
+	animation-timing-function: linear;
+	animation-delay: 0s;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+	
+	transition:0.2s linear all;
 	opacity:0;
 }
 
 .flash_message.ng-enter.ng-enter-active {
-	opacity:1;	
+	opacity:1;
 }
 
 .flash_message.ng-leave {
-	transition:0.5s linear all;
+	animation-name: flash_anim_out;
+	animation-duration: 0.2s;
+	animation-timing-function: linear;
+	animation-delay: 0s;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+	
+	transition:0.2s linear all;
 	opacity:1;
 }
 
 .flash_message.ng-leave.ng-leave-active {
 	opacity:0;
+}
+
+@keyframes flash_anim_in {
+	from {right: -400px}
+	to {right: 0px}
+}
+
+@keyframes flash_anim_out {
+	from {right: 0px}
+	to {right: -400px}
 }
 
 /*
