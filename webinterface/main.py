@@ -119,6 +119,11 @@ class Root(object):
 		tmpl = self.lookup.get_template("index.mako")
 		return tmpl.render(page_title="Welcome")
 	
+	@cherrypy.expose
+	def test(self):
+		tmpl = self.lookup.get_template("test.mako")
+		return tmpl.render(page_title="Testing")
+	
 	
 	@cherrypy.expose
 	@cherrypy.tools.json_in()

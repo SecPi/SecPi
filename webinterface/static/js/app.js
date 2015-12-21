@@ -509,5 +509,26 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 }]);
 
 
-
-
+app.controller('TestController', ['$http', '$log', '$interval', 'FlashService', 'HTTPService', function($http, $log, $interval, FlashService, HTTPService){
+	var self = this;
+	
+	self.ftypes = ["info", "warn", "error"]
+	self.msgtime = 5000;
+	self.msgtext = "Test message!"
+	
+	self.push_flash = function(){
+		var rand = Math.floor(Math.random() * 10)%self.ftypes.length;
+		FlashService.flash("Flash message getting very very very long! What should we do now ohnoeeees asdfasdfasdfasdfasdf!!!! "+new Date(), self.ftypes[rand])
+	}
+	
+	self.showFlash = function(){
+		FlashService.flash(self.msgtext, FlashService.TYPE_INFO, self.msgtime);
+	}
+	
+	/*HTTPService.post('/test', {},
+		function(data,msg){
+			FlashService.flash(msg, FlashService.TYPE_INFO);
+		})
+	*/
+	//self.flash_inter = $interval(self.push_flash, 2000);
+}]);
