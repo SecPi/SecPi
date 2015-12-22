@@ -236,6 +236,8 @@ class Worker:
 	
 	# Initialize all the actions
 	def setup_actions(self):
+		if not config.get("actions"):
+			return
 		for action in config.get("actions"):
 			try:
 				logging.info("Trying to register action: %s" % action["id"])
