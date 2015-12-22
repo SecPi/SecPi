@@ -19,20 +19,16 @@ body {
 	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
 	position: fixed;
 	width: 70%;
-}
-
-h1.header {
-	color: white;
-	font-size: 50px;
-	font-style: italic;
-	position: absolute;
-	margin-top: 6px;
-	margin-left: 20px;
+	top: 0px;
 }
 
 #main {
-	padding: 100px 40px 50px;
+	padding: 20px 40px;
+	
+	margin-top: 92px;
+	margin-bottom: 25px;
 }
+
 
 footer {
 	font-size: 12px;
@@ -44,8 +40,17 @@ footer {
     color: white;
     vertical-align: middle;
     padding: 5px 0px;
+    height: 15px;
 }
 
+h1.header {
+	color: white;
+	font-size: 50px;
+	font-style: italic;
+	position: absolute;
+	margin-top: 6px;
+	margin-left: 20px;
+}
 
 
 #traceback {
