@@ -240,6 +240,12 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 			height: 300,
 			width: 350,
 			modal: true,
+			dialogClass: "fixed_pos",
+			position: {
+				my: "center center",
+				at: "center center",
+				of: window
+			},
 			buttons: {
 				"Save": function(){
 					self.saveEdit();
@@ -291,12 +297,12 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 	}
 	
 	self.ackAll = function(){
-		for (i=0; i<self.entries.length;i++) {
-			self.ack(i)
-		}
-		
-		FlashService.flash("Acknowledged all messages!", FlashService.TYPE_INFO);
-		self.fetchData();
+		HTTPService.post('/' +self.ackclass +'s/ackAll', {},
+			function(data, msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO);
+				self.fetchData();
+			}
+		);
 	}
 	
 	self.refresh = function(){
@@ -481,6 +487,12 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 			height: 200,
 			width: 200,
 			modal: true,
+			dialogClass: "fixed_pos",
+			position: {
+				my: "center center",
+				at: "center center",
+				of: window
+			},
 			buttons: {
 				"Save": function(){
 					self.save();

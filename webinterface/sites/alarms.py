@@ -41,5 +41,18 @@ class AlarmsPage(BaseWebPage):
 		
 		return {'status': 'error', 'message': 'ID not found!'}
 
-
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
+	def ackAll(self):
+		les = self.db.query(objects.Alarm).filter(objects.Alarm.ack == 0).all()
+		if(les):
+			for le in les:
+				le.ack = True;
+				
+			self.db.commit()
+			return {'status': 'success', 'message': 'Acknowledged all alarms!'}
+		
+		return {'status': 'error', 'message': 'No alarms to acknowledge found!'}
+	
 
