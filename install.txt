@@ -1,0 +1,16 @@
+RabbitMQ
+
+SQLAlchemy (1.0.4)
+	Database Access
+pika (0.9.14)
+	RabbitMQ
+CherryPy (3.7.0)
+	Web Framework
+CherryPy-SQLAlchemy (0.5.2)
+	DB <--> Web Framework
+Mako (1.0.1)
+	Web Templating Engine
+
+on Raspberry Pi:
+	pytz
+	python-dateutil
