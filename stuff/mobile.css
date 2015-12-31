@@ -1,0 +1,284 @@
+html {
+/*  background-color: #a0a0a0;*/
+}
+
+body {
+	margin: 0;
+	font-family: Helvetica, Arial, sans-serif;
+/*	background-color: lightgreen;*/
+
+}
+
+#container {
+	width: 100%;
+/*	margin: 0 auto;  */
+	background: white;
+	min-height: 100%;
+}
+
+#nav {
+	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+	position: fixed;
+	width: 100%;
+}
+
+h1.header {
+	color: white;
+	font-size: 50px;
+	font-style: italic;
+	position: relative;
+	margin-top: 10px; margin-left: 20px; margin-bottom: 5px;
+	
+}
+
+#activate_setup {
+	font-size: 40px;
+	
+}
+
+#main {
+
+	padding: 60px;
+	border: 1px solid;
+}
+
+footer {
+	font-size: 12px;
+    background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+    bottom: 0;
+    position: fixed;
+    width: 100%;
+    text-align: center;
+    color: white;
+    vertical-align: middle;
+    padding: 5px 0px;
+}
+
+table {
+	display: none;
+}
+
+#traceback {
+	color: red;
+}
+
+
+.pointer {
+	cursor: pointer;
+}
+
+
+.ack_table {
+	width: 50%;
+	vertical-align: top;
+}
+
+.fixed_pos {
+	position: fixed !important;
+}
+
+/*
+	######### Flash Messages #########
+*/
+#flash_container {
+	position: fixed;
+	bottom: 0%;
+	right: 0%;
+	z-index: 1000;
+}
+
+.flash_message {
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 10px;
+	
+	display: block;
+	width: 300px;
+	padding: 10px 10px 10px 30px;
+	margin: 10px;
+	
+	box-shadow: 5px 5px 25px -5px black;
+}
+
+.flash_message.info {
+	color: #1BCF3F;
+	border-color: #1BCF3F;
+	background: #B6FAC4 url('/static/img/icons/tick.png') no-repeat 10px 10px;
+}
+
+.flash_message.warn {
+	color: #BAAB07;
+	border-color: #E3D107;
+	background: #FCF6B1 url('/static/img/icons/warning.png') no-repeat 10px 10px;
+}
+
+.flash_message.error {
+	color: #C70000;
+	border-color: #C70000;
+	background: #FFA3A3 url('/static/img/icons/error.png') no-repeat 10px 10px;
+}
+
+.flash_message.ng-enter {
+	transition:0.5s linear all;
+	opacity:0;
+}
+
+.flash_message.ng-enter.ng-enter-active {
+	opacity:1;	
+}
+
+.flash_message.ng-leave {
+	transition:0.5s linear all;
+	opacity:1;
+}
+
+.flash_message.ng-leave.ng-leave-active {
+	opacity:0;
+}
+
+/*
+	######### Alarms #########
+*/
+.alarm_entry {
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 10px;
+	
+	display: block;
+	max-width: 500px;
+	padding: 10px 10px 10px 30px;
+	margin: 10px;
+	
+	color: #C70000;
+	border-color: #C70000;
+	background: #FFA3A3 url('/static/img/icons/error.png') no-repeat 10px 10px;
+}
+
+.alarm_ack {
+	float: right;
+	cursor: pointer;
+}
+
+
+/*
+	######### Log Entries #########
+*/
+.log_entry {
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 10px;
+	
+	display: block;
+	max-width: 500px;
+	padding: 10px 10px 10px 30px;
+	margin: 10px;
+}
+
+.log_ack {
+	float: right;
+	cursor: pointer;
+}
+
+/* Level DEBUG */
+.log_entry.lvl0 {
+	background: #ffffff url('/static/img/icons/debug.png') no-repeat 10px 10px;
+}
+
+/* Level INFO */
+.log_entry.lvl50 {
+	color: #1BCF3F;
+	border-color: #1BCF3F;
+	background: #B6FAC4 url('/static/img/icons/tick.png') no-repeat 10px 10px;
+}
+
+/* Level WARN */
+.log_entry.lvl75 {
+	color: #BAAB07;
+	border-color: #E3D107;
+	background: #FCF6B1 url('/static/img/icons/warning.png') no-repeat 10px 10px;
+}
+
+/* Level ERR */
+.log_entry.lvl100 {
+	color: #C70000;
+	border-color: #C70000;
+	background: #FFA3A3 url('/static/img/icons/error.png') no-repeat 10px 10px;
+}
+
+.log_entry.ng-enter {
+	transition:0.5s linear all;
+	opacity:0;
+}
+
+.log_entry.ng-enter.ng-enter-active {
+	opacity:1;	
+}
+
+.log_entry.ng-leave {
+	transition:0.5s linear all;
+	opacity:1;
+}
+
+.log_entry.ng-leave.ng-leave-active {
+	opacity:0;
+}
+
+
+/*
+	######### Data Table #########
+*/
+.list {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: 100%;
+	margin: 5px;
+}
+
+
+.list td, th{
+	border: 1px solid transparent;
+	height: 30px;
+	transition: all 0.3s;
+	text-align: center;
+	/*border-left: 2px solid black;*/
+}
+
+.list th {
+	background: #bbb;
+	font-weight: bold;
+	height: 35px;
+}
+
+.list tr:nth-child(odd) td { background: #DFDFDF; }
+.list tr:nth-child(even) td { background: #F1F1F1; }
+
+.list .edit_col {
+	min-width: 35px;
+}
+
+/*
+	######### Icons #########
+*/
+.icon_add {
+	background: url('/static/img/icons/plus.png') no-repeat 13px 3px transparent;
+}
+.icon_delete {
+	background: url('/static/img/icons/minus.png') no-repeat 13px 3px transparent;	
+}
+.icon_edit {
+	background: url('/static/img/icons/edit.png') no-repeat 13px 3px transparent;
+}
+
+.icon_list {
+	background: url('/static/img/icons/list.png') no-repeat 13px 3px transparent;
+}
+
+
+
+/*
+	######### Tab Interface #########
+*/
+.tabrow {
+	visibility: hidden;
+	display: none;
+}
