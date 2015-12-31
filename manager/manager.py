@@ -73,6 +73,17 @@ class Manager:
 			self.channel.queue_bind(exchange='manager', queue=str(pi.id)+utils.QUEUE_ACTION)
 			self.channel.queue_bind(exchange='manager', queue=str(pi.id)+utils.QUEUE_CONFIG)
 
+		# debug output, setups & state
+		setups = db.session.query(db.objects.Setup).all()
+		rebooted = False
+		for setup in setups:
+			print "name: %s active:%s" % (setup.name, setup.active_state)
+			if setup.active_state:
+				rebooted = True
+
+		if rebooted:
+			self.setup_notifiers()
+
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
 		self.channel.basic_consume(self.cb_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
