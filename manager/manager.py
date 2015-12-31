@@ -110,22 +110,27 @@ class Manager:
 		self.notifiers = []
 		
 		if(msg['active_state'] == True):
-			notifiers = db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
-			for notifier in notifiers:
-				params = {}
-				for p in notifier.params:
-					params[p.key] = p.value
-					
-				n = self.class_for_name(notifier.module, notifier.cl)
-				noti = n(notifier.id, params)
-				self.notifiers.append(noti)
-				logging.info("Set up notifier %s" % notifier.cl)
+			self.setup_notifiers()
 		
 		logging.info("Activating PIs!")
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
 			self.send_config(pi.id)
 			logging.info("Activated %s"%pi.name)
+
+	# initialize the notifiers
+	def setup_notifiers(self):
+		notifiers = db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
+		
+		for notifier in notifiers:
+			params = {}
+			for p in notifier.params:
+				params[p.key] = p.value
+				
+			n = self.class_for_name(notifier.module, notifier.cl)
+			noti = n(notifier.id, params)
+			self.notifiers.append(noti)
+			logging.info("Set up notifier %s" % notifier.cl)
 
 	# this method is used to send execute messages to the action queues
 	def send_message(self, to_queue, body, **kwargs):
