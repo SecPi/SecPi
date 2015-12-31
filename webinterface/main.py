@@ -4,6 +4,7 @@ import sys
 import traceback
 import logging
 import logging.config
+import subprocess
 
 
 # web framework
@@ -124,7 +125,11 @@ class Root(object):
 		tmpl = self.lookup.get_template("test.mako")
 		return tmpl.render(page_title="Testing")
 	
-	
+	@cherrypy.expose
+	def change_credentials(self):
+		tmpl = self.lookup.get_template("change_credentials.mako")
+		return tmpl.render(page_title="Change Login Credentials")
+
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out(handler=utils.json_handler)
@@ -139,7 +144,7 @@ class Root(object):
 						su.active_state = True
 						self.db.commit()
 						ooff = { 'active_state': True }
-						self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
+						self.channel.basic_publish(exchange='manager', routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
 						return {'status':'error', 'message': "Error activating %s! No connection to queue server!"%su.name }
 						
@@ -153,7 +158,7 @@ class Root(object):
 			return {'status':'error', 'message': "Invalid ID!" }
 		
 		return {'status': 'error', 'message': 'No data recieved!'}
-	
+
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out(handler=utils.json_handler)
@@ -168,7 +173,7 @@ class Root(object):
 						su.active_state = False
 						self.db.commit()
 						ooff = { 'active_state': False }
-						self.channel.basic_publish(exchange='manager', routing_key='on_off', body=json.dumps(ooff))
+						self.channel.basic_publish(exchange='manager', routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
 						return {'status':'error', 'message': "Error activating %s! No connection to queue server!"%su.name }
 						
@@ -182,6 +187,22 @@ class Root(object):
 			return {'status':'error', 'message': "Invalid ID!" }
 		
 		return {'status': 'error', 'message': 'No data recieved!'}
+
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
+	def change_login(self):
+		if(hasattr(cherrypy.request, 'json')):
+			username = cherrypy.request.json['username']
+			password = cherrypy.request.json['password']
+			try:
+				exit_code = subprocess.call(["./create_htdigest.sh",username, password])
+				if not exit_code: # successful
+					return {'status': 'success', 'message': "Login credentials have been changed!"}
+				else: # exit_code != 0
+					return {'status':'error', 'message': "Error changing login credentials!"}
+			except Exception as e:
+				return {'status':'error', 'message': "Error changing login credentials: %s"%e }
 
 
 def run():

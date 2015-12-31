@@ -532,3 +532,25 @@ app.controller('TestController', ['$http', '$log', '$interval', 'FlashService', 
 	*/
 	//self.flash_inter = $interval(self.push_flash, 2000);
 }]);
+
+
+app.controller('CredentialsController', ['$http', '$log', '$interval', 'FlashService', 'HTTPService', function($http, $log, $interval, FlashService, HTTPService){
+	var self = this;
+
+	//self.ftypes = ["info", "warn", "error"]
+	//self.msgtime = 5000;
+	//self.msgtext = "Login Credentials have been changed!";
+	self.username = "admin";
+	self.password = "";
+		
+	self.changeCredentials = function(){
+		HTTPService.post('change_login', {"username": self.username, "password": self.password},
+			function(data,msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO);
+			}
+		);
+		
+	}
+	
+}]);
+
