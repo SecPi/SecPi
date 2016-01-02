@@ -6,6 +6,7 @@ class Sensor(object):
 		self.id = id
 		self.params = params
 		self.worker = worker
+		self.corrupted = False
 	
 	def alarm(self, message):
 		self.worker.alarm(self.id, message)
