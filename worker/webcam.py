@@ -16,9 +16,11 @@ class Webcam(Action):
 			self.data_path = params["data_path"]
 		except ValueError, e: # if resolution can't be parsed as int
 			logging.error("Webcam: Wasn't able to initialize the device, please check your configuration: %s" % e)
+			self.corrupted = True
 			return
 		except KeyError, k: # if config parameters are missing in file
 			logging.error("Webcam: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % k)
+			self.corrupted = True
 			return
 
 		pygame.camera.init()
@@ -33,7 +35,7 @@ class Webcam(Action):
 		except SystemError, e: # device path wrong
 			logging.error("Webcam: Wasn't able to find video device at device path: %s" % self.path)
 			return
-		except AttributeError, a: # init failed, taking pictures won't work
+		except AttributeError, a: # init failed, taking pictures won't work -> shouldn't happen but anyway...
 			logging.error("Webcam: Couldn't take pictures because video device wasn't initialized properly")
 			return
 
@@ -50,7 +52,10 @@ class Webcam(Action):
 
 	
 	def execute(self):
-		self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
+		if not self.corrupted:
+			self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
+		else:
+			logging.error("Webcam: Wasn't able to take pictures because of an initialization error")
 		
 	def cleanup(self):
 		logging.debug("Webcam: No cleanup necessary at the moment")
