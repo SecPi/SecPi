@@ -12,9 +12,11 @@ class Speaker(Action):
 			self.repetitions = int(params["repetitions"]) #TODO: change| why did i write this??
 		except ValueError, e: # if repetitions can't be parsed as int
 			logging.error("Speaker: Wasn't able to initialize the device, please check your configuration: %s" % e)
+			self.corrupted = True
 			return
 		except KeyError, k: # if config parameters are missing in file
 			logging.error("Speaker: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % k)
+			self.corrupted = True
 			return
 
 		logging.debug("Speaker: Audio device initialized")
@@ -39,7 +41,10 @@ class Speaker(Action):
 		logging.debug("Speaker: Finished playing audio")
 
 	def execute(self):
-		self.play_audio()
+		if not self.corrupted:
+			self.play_audio()
+		else:
+			logging.error("Speaker: Wasn't able to play sound because of an initialization error")
 		
 	def cleanup(self):
 		logging.debug("Speaker: No cleanup necessary at the moment")		
