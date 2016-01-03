@@ -40,9 +40,19 @@ class Worker:
 				"certfile":PROJECT_PATH+config.get('rabbitmq')['certfile'],
 				"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
 			}
-		) 
-		self.connection = pika.BlockingConnection(parameters=parameters) 
-		self.channel = self.connection.channel()
+		)
+
+		connected = False
+		while not connected: #retry if establishing a connection fails
+			try:
+				logging.info("Trying to establish a connection to the manager")
+				self.connection = pika.BlockingConnection(parameters=parameters) 
+				self.channel = self.connection.channel()
+				connected = True
+				logging.info("Connection to manager established")
+			except Exception, e:
+				logging.error("Wasn't able to open a connection to the manager: %s" % e)
+				self.wait(30)
 
 		#declare all the queues
 		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
@@ -292,6 +302,10 @@ class Worker:
 
 	def start(self):
 		self.channel.start_consuming()
+
+	def wait(self, waiting_time):
+		logging.debug("Waiting for %d seconds" % waiting_time)
+		time.sleep(waiting_time)
 	
 	def __del__(self):
 		self.connection.close()
@@ -315,5 +329,3 @@ if __name__ == '__main__':
 			sys.exit(0)
 		except SystemExit:
 			os._exit(0)
-
-
