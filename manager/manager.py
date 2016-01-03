@@ -10,7 +10,6 @@ import sys
 import threading
 import time
 
-from mailer import Mailer
 from tools import config
 from tools import utils
 from tools.db import database as db
@@ -19,11 +18,16 @@ from tools.db import database as db
 class Manager:
 
 	def __init__(self):
-		config.load("manager")
 		try: #TODO: this should be nicer...		
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
 		except Exception, e:
 			print "Error while trying to load config file for logging"
+
+		try:
+			config.load("manager")
+		except ValueError: # Config file can't be loaded, e.g. no valid JSON
+			logging.error("Wasn't able to load config file, exiting...")
+			quit()
 
 		db.connect(PROJECT_PATH)
 		
@@ -50,7 +54,6 @@ class Manager:
 		self.connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = self.connection.channel()
 
-
 		#define exchange
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
 
@@ -59,7 +62,6 @@ class Manager:
 		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
 		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
 		self.channel.queue_declare(queue=utils.QUEUE_LOG)
-		#self.channel.queue_purge(queue='alarm') #Clears the queue
 		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ON_OFF)
 		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_DATA)
 		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ALARM)
@@ -170,7 +172,7 @@ class Manager:
 
 			# TODO: adapt dir for current alarm
 			self.current_alarm_dir = "/var/tmp/manager/%s" % time.strftime("/%Y%m%d_%H%M%S")
-			os.makedirs(self.current_alarm_dir)
+			os.makedirs(self.current_alarm_dir) #TODO: exception handling
 			logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
 			self.received_data_counter = 0
 
@@ -253,7 +255,6 @@ class Manager:
 		conf = {
 			"pi_id": pi_id,
 			"rabbitmq": config.get("rabbitmq"),
-			"holddown": 30, # TODO: save somewhere? include for worker?
 			"active": False, # default to false, will be overriden if should be true
 		}
 		
@@ -322,7 +323,11 @@ class Manager:
 		return c
 
 	def __del__(self):
-		self.connection.close()
+		try:
+			self.connection.close()
+		except AttributeError: #If there is no connection object closing won't work
+			logging.info("No connection cleanup possible")
+
 
 
 	# wait for config

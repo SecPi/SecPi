@@ -21,13 +21,19 @@ class Worker:
 		self.sensors = []
 		self.active = True # start deactivated --> only for debug True
 		self.data_directory = "/var/tmp/secpi_data"
-		
-		config.load("worker")
-		
-		logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
-		
-		self.prepare_data_directory(self.data_directory)
 
+		try: #TODO: this should be nicer...		
+			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
+		except Exception, e:
+			print "Error while trying to load config file for logging"
+
+		try:
+			config.load("worker")
+		except ValueError: # Config file can't be loaded, e.g. no valid JSON
+			logging.error("Wasn't able to load config file, exiting...")
+			quit()
+				
+		self.prepare_data_directory(self.data_directory)
 		
 		logging.info("Setting up queues")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
@@ -308,7 +314,10 @@ class Worker:
 		time.sleep(waiting_time)
 	
 	def __del__(self):
-		self.connection.close()
+		try:
+			self.connection.close()
+		except AttributeError: #If there is no connection object closing won't work
+			logging.info("No connection cleanup possible")
 
 
 if __name__ == '__main__':
