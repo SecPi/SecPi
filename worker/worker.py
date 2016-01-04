@@ -21,6 +21,7 @@ class Worker:
 		self.sensors = []
 		self.active = True # start deactivated --> only for debug True
 		self.data_directory = "/var/tmp/secpi_data"
+		self.message_queue = [] # stores messages which couldn't be sent
 
 		try: #TODO: this should be nicer...		
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
@@ -46,14 +47,40 @@ class Worker:
 		
 		logging.info("Setup done!")
 	
-	
+	# sends a message to the manager
 	def push_msg(self, rk, body, **kwargs):
-		try:
-			self.channel.basic_publish(exchange='manager', routing_key=rk, body=body, **kwargs)
-			return True
-		except Exception as e:
-			logging.exception("Error while sending data to queue:\n%s" % e)
+		if self.connection.is_open:
+			try:
+				logging.debug("Sending message to manager")
+				self.channel.basic_publish(exchange='manager', routing_key=rk, body=body, **kwargs)
+				return True
+			except Exception as e:
+				logging.exception("Error while sending data to queue:\n%s" % e)
+				return False
+		else:
+			logging.error("Can't send message to manager")
+			message = {"rk":rk, "body": body, "kwargs": kwargs}
+			if message not in self.message_queue: # could happen if we have another disconnect when we try to clear the message queue
+				self.message_queue.append(message)
+				logging.info("Added message to message queue")
+			else:
+				logging.debug("Message already in queue")
+
 			return False
+
+	# Try to resend the messages which couldn't be sent before
+	def clear_message_queue(self):
+		logging.info("Trying to clear message queue")
+		for message in self.message_queue:
+			if self.push_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfuly
+				self.message_queue.remove(message)
+			else:
+				logging.info("Message from queue couldn't be sent")
+
+		if not self.message_queue: # message queue is empty
+			logging.info("Message queue cleared")
+		else:
+			logging.error("Message queue couldn't be cleared completely")
 			
 	def post_err(self, msg):
 		logging.exception(msg)
@@ -87,6 +114,7 @@ class Worker:
 				return False
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), e))
+			logging.error("Wasn't able to prepare data for manager: %s" % e)
 
 	# Remove all the data that was created during the alarm, unlink == remove
 	def cleanup_data(self):
@@ -101,6 +129,8 @@ class Worker:
 			logging.info("Cleaned up files")
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
+			logging.error("Wasn't able to clean up data directory: %s" % e)
+
 
 
 	# callback method which processes the actions which originate from the manager
@@ -284,8 +314,9 @@ class Worker:
 			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
 				logging.error("Lost connection to manager")
 				disconnected = True
-				self.wait(10)
+				self.wait(10) # reconnect timer
 				self.connect()
+				self.clear_message_queue() #could this make problems if the manager replies too fast?
 	
 	def connection_cleanup(self): # not used yet
 		self.channel.close()
