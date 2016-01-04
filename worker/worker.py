@@ -27,49 +27,18 @@ class Worker:
 		except Exception, e:
 			print "Error while trying to load config file for logging"
 
+		logging.info("Initializing worker")
+
 		try:
 			config.load("worker")
+			logging.debug("Config loaded")
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
 			logging.error("Wasn't able to load config file, exiting...")
 			quit()
 				
 		self.prepare_data_directory(self.data_directory)
 		
-		logging.info("Setting up queues")
-		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq')['master_ip'], #this will change because we need the ip initially
-			port=5671,
-			ssl=True,
-			socket_timeout=10,
-			ssl_options = { "ca_certs":(PROJECT_PATH)+config.get('rabbitmq')['cacert'],
-				"certfile":PROJECT_PATH+config.get('rabbitmq')['certfile'],
-				"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
-			}
-		)
-
-		connected = False
-		while not connected: #retry if establishing a connection fails
-			try:
-				logging.info("Trying to establish a connection to the manager")
-				self.connection = pika.BlockingConnection(parameters=parameters) 
-				self.channel = self.connection.channel()
-				connected = True
-				logging.info("Connection to manager established")
-			except Exception, e:
-				logging.error("Wasn't able to open a connection to the manager: %s" % e)
-				self.wait(30)
-
-		#declare all the queues
-		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
-		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
-		self.channel.queue_declare(queue=utils.QUEUE_DATA)
-		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
-		self.channel.queue_declare(queue=utils.QUEUE_LOG)
-
-		#specify the queues we want to listen to, including the callback
-		self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
-		self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
+		self.connect()
 
 		logging.info("Setting up sensors and actions")
 		self.setup_sensors()
@@ -307,7 +276,60 @@ class Worker:
 			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e))
 
 	def start(self):
-		self.channel.start_consuming()
+		disconnected = True
+		while disconnected:
+			try:
+				disconnected = False
+				self.channel.start_consuming() # blocking call
+			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
+				logging.error("Lost connection to manager")
+				disconnected = True
+				self.wait(10)
+				self.connect()
+	
+	def connection_cleanup(self): # not used yet
+		self.channel.close()
+		self.connection.close()
+
+	def connect(self):
+		#logging.info("Setting up queues")
+		logging.debug("Initalizing network connection")
+		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
+		parameters = pika.ConnectionParameters(credentials=credentials,
+			host=config.get('rabbitmq')['master_ip'], #this will change because we need the ip initially
+			port=5671,
+			ssl=True,
+			socket_timeout=10,
+			ssl_options = { "ca_certs":(PROJECT_PATH)+config.get('rabbitmq')['cacert'],
+				"certfile":PROJECT_PATH+config.get('rabbitmq')['certfile'],
+				"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
+			}
+		)
+
+		connected = False
+		while not connected: #retry if establishing a connection fails
+			try:
+				logging.info("Trying to establish a connection to the manager")
+				self.connection = pika.BlockingConnection(parameters=parameters) 
+				self.channel = self.connection.channel()
+				connected = True
+				logging.info("Connection to manager established")
+			except pika.exceptions.AMQPConnectionError, e: # if connection can't be established
+				logging.error("Wasn't able to open a connection to the manager: %s" % e)
+				self.wait(30)
+
+		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
+
+		#declare all the queues
+		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
+		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
+		self.channel.queue_declare(queue=utils.QUEUE_DATA)
+		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
+		self.channel.queue_declare(queue=utils.QUEUE_LOG)
+
+		#specify the queues we want to listen to, including the callback
+		self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
+		self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
 
 	def wait(self, waiting_time):
 		logging.debug("Waiting for %d seconds" % waiting_time)
