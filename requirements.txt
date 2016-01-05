@@ -5,3 +5,5 @@ pika==0.9.14
 python-dateutil==1.5
 pytz
 SQLAlchemy==1.0.4
+tweepy
+logging

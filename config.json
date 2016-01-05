@@ -1,1 +1,0 @@
-{"state": false, "actors": [{"path": "path/to/script.sh", "id": 15}], "sensors": [{"gpio_port": 12, "id": 123}, {"gpio_port": 13, "id": 124}], "project_path": "/Volumes/Data/fhstp/8_sem/99_alarmpi/dev"}

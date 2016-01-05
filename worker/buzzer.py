@@ -23,7 +23,7 @@ class Buzzer(Action):
 		try:
 			GPIO.setmode(GPIO.BCM)
 			GPIO.setup(self.gpio_pin, GPIO.OUT)
-		except ValueError, v: # GPIO pin number is not useable e.g. 999
+		except ValueError, v: # GPIO pin number is not in valid range
 			logging.error("Buzzer: The given pin number is not in a valid range: %s" % v)
 			self.corrupted = True
 			return

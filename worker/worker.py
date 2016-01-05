@@ -20,7 +20,8 @@ class Worker:
 		self.actions = []
 		self.sensors = []
 		self.active = True # start deactivated --> only for debug True
-		self.data_directory = "/var/tmp/secpi_data"
+		self.data_directory = "/var/tmp/secpi/worker_data"
+		self.zip_directory = "/var/tmp/secpi"
 		self.message_queue = [] # stores messages which couldn't be sent
 
 		try: #TODO: this should be nicer...		
@@ -106,7 +107,7 @@ class Worker:
 	def prepare_data(self):
 		try:
 			if os.listdir(self.data_directory): # check if there are any files available
-				shutil.make_archive("/var/tmp/%s" % config.get('pi_id'), "zip", self.data_directory)
+				shutil.make_archive("%s/%s" % (self.zip_directory, config.get('pi_id')), "zip", self.data_directory)
 				logging.info("Created ZIP file")
 				return True
 			else:
@@ -119,7 +120,7 @@ class Worker:
 	# Remove all the data that was created during the alarm, unlink == remove
 	def cleanup_data(self):
 		try:
-			os.unlink("/var/tmp/%s.zip" % config.get('pi_id'))
+			os.unlink("%s/%s.zip" % (self.zip_directory, config.get('pi_id')))
 			for the_file in os.listdir(self.data_directory):
 				file_path = os.path.join(self.data_directory, the_file)
 				if os.path.isfile(file_path):
@@ -130,8 +131,6 @@ class Worker:
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
 			logging.error("Wasn't able to clean up data directory: %s" % e)
-
-
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
@@ -159,7 +158,7 @@ class Worker:
 				t.join()
 		
 			if self.prepare_data(): #check if there is any data to send
-				zip_file = open("/var/tmp/%s.zip" % config.get('pi_id'), "rb")
+				zip_file = open("%s/%s.zip" % (self.zip_directory, config.get('pi_id')), "rb")
 				byte_stream = zip_file.read()
 				self.push_msg("data", byte_stream)
 				logging.info("Sent data to manager")

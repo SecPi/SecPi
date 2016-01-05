@@ -33,7 +33,7 @@ class Manager:
 		
 		self.notifiers = []
 		self.received_data_counter = 0
-		self.current_alarm_dir = "/var/tmp/manager/"
+		self.current_alarm_dir = "/var/tmp/secpi/alarms"
 		self.data_timeout = 10
 		self.num_of_workers = 0
 		self.mail_enabled = False
@@ -51,6 +51,7 @@ class Manager:
 				"keyfile":PROJECT_PATH+config.get('rabbitmq')['keyfile']
 			}
 		)
+		# TODO: add exception
 		self.connection = pika.BlockingConnection(parameters=parameters)
 		self.channel = self.connection.channel()
 
