@@ -1,77 +1,66 @@
-#!/bin/bash
+#!/bin/sh
 
-#SECPI_PATH="/opt/secpi"
-SECPI_PATH="/Volumes/Data/fhstp/8_sem/99_alarmpi/dev"
-PID_PATH="$SECPI_PATH/run/"
-PID_NAME="worker.pid"
-SECPI_USER="philip"
-SECPI_GROUP="admin"
+### BEGIN INIT INFO
+# Provides:          secpi-worker
+# Required-Start:    $remote_fs $syslog $named
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: SecPi Worker
+# Description:       This starts and stops the SecPi Worker.
+### END INIT INFO
 
-function start {
-	echo "Starting SecPi Worker..."
-	# create folder for pid storage
-	#mkdir -p $PID_PATH
-	# and set permissions
-	#chown $SECPI_USER:$SECPI_GROUP $PID_PATH
-	# set python path so other files can be found
-	export PYTHONPATH=$SECPI_PATH
-	# execute as lower rights user
-	python $SECPI_PATH/worker/worker.py $SECPI_PATH &
-	ID=$!
-	echo $ID > $PID_PATH$PID_NAME
-	echo "Started with PID $ID!"
+# Author: Philip Woelfel <is141524@fhstp.ac.at>, Martin Liebl <is141513@fhstp.ac.at>
+# Original script by: http://blog.scphillips.com/posts/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/
+
+DIR=/opt/secpi
+DAEMON=$DIR/worker/worker.py
+DAEMON_NAME=secpi-worker
+
+# Add any command line options for your daemon here
+DAEMON_OPTS="$DIR"
+
+# This next line determines what user the script runs as.
+DAEMON_USER={{DEAMONUSER}}
+
+# The process ID of the script when it runs is stored here:
+PIDFILE=/var/run/$DAEMON_NAME.pid
+
+. /lib/lsb/init-functions
+
+do_start () {
+    log_daemon_msg "Starting system $DAEMON_NAME daemon"
+    start-stop-daemon --start --background --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --chuid $DAEMON_USER --startas $DAEMON -- $DAEMON_OPTS
+    log_end_msg $?
 }
-
-function stop {
-	echo "Stopping SecPi Worker..."
-	if [ -f $PID_PATH$PID_NAME ];
-	then
-		ID=`cat $PID_PATH$PID_NAME`
-		kill -9 $ID > /dev/null 2>&1
-		rm $PID_PATH$PID_NAME
-		echo "Stopped $ID!"
-	else
-		echo "SecPi Worker not running!"
-	fi
-}
-
-function status {
-	if [ -f $PID_PATH$PID_NAME ];
-	then
-		ID=`cat $PID_PATH$PID_NAME`
-		# pid file exists, check if process is really running
-		kill -0 $ID > /dev/null 2>&1
-		if [ $? -ne 0 ];
-		then
-			echo "SecPi Worker not running!"
-			# PID file exists but not running --> remove PID file
-			rm $PID_PATH$PID_NAME
-		else
-			echo "SecPi Worker running with Process-ID $ID"
-		fi
-	else
-		echo "SecPi Worker not running!"
-	fi
+do_stop () {
+    log_daemon_msg "Stopping system $DAEMON_NAME daemon"
+    start-stop-daemon --stop --pidfile $PIDFILE --retry 10
+    log_end_msg $?
 }
 
 case "$1" in
-	start)
-		start
-		;;
-	stop)
-		stop
-		;;
-	restart)
-		stop
-		start
-		;;
-	status)
-		status
-		;;
-	*)
-		echo "Usage: /etc/init.d/secpi-worker {start|stop|restart|status}"
-		exit 1
-		;;
-esac
 
+    start|stop)
+        do_${1}
+        ;;
+
+    restart|reload|force-reload)
+        do_stop
+        do_start
+        ;;
+
+    status)
+        status_of_proc "$DAEMON_NAME" "$DAEMON" && exit 0 || exit $?
+        ;;
+
+    *)
+        echo "Usage: /etc/init.d/$DAEMON_NAME {start|stop|restart|status}"
+        exit 1
+        ;;
+
+esac
 exit 0
+
+
+
