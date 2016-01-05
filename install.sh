@@ -19,7 +19,7 @@ LOG_PATH="/var/log/secpi"
 TMP_PATH="/var/tmp/secpi"
 
 
-function create_folder{
+function create_folder(){
 	mkdir $1
 	if [ $? -ne 0 ];
 	then
@@ -138,6 +138,7 @@ echo "Copying to $SECPI_PATH..."
 
 # copy tools folder
 cp -R tools/ $SECPI_PATH/
+cp logging.conf $SECPI_PATH/
 
 # manager or complete install
 if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 2 ]
@@ -189,8 +190,8 @@ then
 	cp -R worker/ $SECPI_PATH/
 	
 	read -d '' JSON_WORKER << EOF
-	"certfile": "$WEB_CERT_PATH",
-	"keyfile": "$WEB_KEY_PATH"
+	"certfile": "$WORKER_CERT_PATH",
+	"keyfile": "$WORKER_KEY_PATH"
 EOF
 
 	echo $JSON_CONFIG > $SECPI_PATH/worker/config.json
