@@ -1,38 +1,48 @@
 {
 	"rabbitmq":{
-        "master_ip": "10.0.0.9",
-        "master_port": 5671,
-        "user": "secpi",
-        "password": "S3cP1",
-        "cacert": "/certs/ca/cacert.pem",
-        "certfile": "/certs/client/worker1.secpi.local.cert.pem",
-        "keyfile": "/certs/client/worker1.secpi.local.key.pem"
-    },
-    "pi_id": 1,
-    "actions": [
-        {
-            "id": 15,
-            "module": "webcam",
-            "class": "Webcam",
-            "params": {
-            	"path": "/dev/video0",
-            	"resolution_x": 640,
-            	"resolution_y": 480,
-            	"count": 5,
-            	"interval": 1
-            }
-        }
-    ],
-    "holddown": 30,
-    "sensors": [
-        {
-            "gpio": 12,
-            "id": 123
-        },
-        {
-            "gpio": 17,
-            "id": 124
-        }
-    ],
-    "active": false
+		"master_ip": "<ip>",
+		"master_port": 5671,
+		"user": "<user>",
+		"password": "<pwd>",
+		"cacert": "ca/cacert.pem",
+		"certfile": "client/worker.cert.pem",
+		"keyfile": "client/worker.key.pem"
+	},
+	"pi_id": 1,
+	"actions": [
+		{
+			"id": 15,
+			"module": "webcam",
+			"class": "Webcam",
+			"params": {
+				"path": "/dev/video0",
+				"resolution_x": 640,
+				"resolution_y": 480,
+				"count": 5,
+				"interval": 1
+			}
+		}
+	],
+	"holddown": 30,
+	"sensors": [
+		{
+			"id": 123,
+			"module": "gpio_sensor",
+			"class": "GPIOSensor",
+			"params": {
+				"gpio": 15,
+				"bouncetime": 60000
+			}
+		},
+		{
+			"id": 124,
+			"module": "gpio_sensor",
+			"class": "GPIOSensor",
+			"params": {
+				"gpio": 17,
+				"bouncetime": 60000
+			}
+		}
+	],
+	"active": false
 }
