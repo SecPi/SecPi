@@ -64,10 +64,12 @@ class Manager:
 		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
 		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
 		self.channel.queue_declare(queue=utils.QUEUE_LOG)
+		self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
 		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ON_OFF)
 		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_DATA)
 		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ALARM)
 		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_LOG)
+		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_INIT_CONFIG)
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
@@ -93,14 +95,33 @@ class Manager:
 		self.channel.basic_consume(self.cb_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
 		self.channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
 		self.channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
+		self.channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
 		logging.info("Setup done!")
 
 	
 	def start(self):
 		self.channel.start_consuming()
 	
+	def got_config_request(self, ch, method, properties, body):
+		ip_addresses = json.loads(body)
+		logging.info("Got config request with following IP addresses: %s" % ip_addresses)
+
+		pi_id = None
+		for ip_address in ip_addresses:
+			worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.address == ip_address).first()
+			if worker:
+				pi_id = worker.id
+				logging.info("Found worker id %s for IP address %s" % (pi_id, ip_address))
+				break
+
+		assert pi_id
+		config = self.prepare_config(pi_id)
+		logging.info("Sending intial config to worker with id %s" % pi_id)
+		reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id, content_type='application/json')
+		self.channel.basic_publish(exchange="", properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
+
 	# callback method for when the manager recieves data after a worker executed its actions
-	def got_data(self, ch, method, properties, body):
+	def got_data(self, ch, method, properties, body): #TODO: error management
 		logging.info("Got data")
 		newFile_bytes = bytearray(body)
 		if newFile_bytes: #only write data when body is not empty
@@ -130,7 +151,8 @@ class Manager:
 		logging.info("Activating PIs!")
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
-			self.send_config(pi.id)
+			config = self.prepare_config(pi.id)
+			self.send_config(config)
 			logging.info("Activated %s"%pi.name)
 
 	# initialize the notifiers
@@ -252,8 +274,8 @@ class Manager:
 		logging.info("Holddown is over") #TODO: change to debug message
 		self.holddown_state = False
 
-
-	def send_config(self, pi_id):
+	def prepare_config(self, pi_id):
+		logging.info("Preparing config for worker with id %s" % pi_id)
 		conf = {
 			"pi_id": pi_id,
 			"rabbitmq": config.get("rabbitmq"),
@@ -307,12 +329,15 @@ class Manager:
 			conf_actions.append(conf_act)
 		
 		conf['actions'] = conf_actions
-		
-		msg = json.dumps(conf)
-		logging.info("Generated config: %s" % msg)
-		
+
+		logging.info("Generated config: %s" % conf)
+		return conf
+
+	def send_config(self, config):
+		logging.info("Sending config to worker with id %s" % config["pi_id"])
+		msg = json.dumps(config)
 		properties = pika.BasicProperties(content_type='application/json')
-		self.channel.basic_publish(exchange='manager', routing_key='%i_config'%pi_id, body=msg, properties=properties)
+		self.channel.basic_publish(exchange='manager', routing_key='%i_config'%int(config["pi_id"]), body=msg, properties=properties)
 	
 	
 	# copypasta from worker.py:

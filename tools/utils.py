@@ -19,6 +19,7 @@ QUEUE_ALARM="alarm"
 QUEUE_ON_OFF="on_off"
 QUEUE_ACTION="_action"
 QUEUE_CONFIG="_config"
+QUEUE_INIT_CONFIG="init_config"
 
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()

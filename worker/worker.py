@@ -3,6 +3,7 @@ import importlib
 import json
 import logging
 import logging.config
+import netifaces
 import os
 import pika
 import shutil
@@ -10,6 +11,7 @@ import socket
 import sys
 import threading
 import time
+import uuid
 
 from tools import config
 from tools import utils
@@ -39,8 +41,13 @@ class Worker:
 			quit()
 				
 		self.prepare_data_directory(self.data_directory)
-		
 		self.connect()
+		
+		# if we don't have a pi id we need to request the initial config, afterwards we have to reconnect
+		# to the queues which are specific to the pi id -> hence, call connect again
+		if not config.get('pi_id'):
+			logging.info("Requesting intial configuration")
+			self.get_init_config()
 
 		logging.info("Setting up sensors and actions")
 		self.setup_sensors()
@@ -48,6 +55,53 @@ class Worker:
 		
 		logging.info("Setup done!")
 	
+	
+	def get_ip_addresses(self):
+		result = []
+		for interface in netifaces.interfaces(): # interate through interfaces: eth0, eth1, wlan0...
+			if (not interface == "lo") and (netifaces.AF_INET in netifaces.ifaddresses(interface)): # filter loopback, and active ipv4
+				for ip_address in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+					logging.debug("Adding %s IP to result" % ip_address['addr']) #change to debug
+					result.append(ip_address['addr'])
+
+		return result
+
+
+	def get_init_config(self):
+		ip_addresses = self.get_ip_addresses()
+		# self.response = None
+		self.corr_id = str(uuid.uuid4())
+		logging.info("Requesting initial configuration from manager")
+		properties = pika.BasicProperties(reply_to=self.callback_queue, correlation_id=self.corr_id, content_type='application/json')
+		self.push_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
+		# while self.response is None:
+		# 	self.connection.process_data_events()
+		# return int(self.response)
+	
+
+	def got_init_config(self, ch, method, properties, body):
+		logging.info("Received intitial config %r" % (body))
+		if self.corr_id == properties.correlation_id: #we got the right config
+			try:
+				new_conf = json.loads(body)
+			except Exception, e:
+				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
+		
+			logging.info("Trying to apply config and reconnect")
+			self.apply_config(new_conf)
+			self.connection_cleanup()
+			self.connect() #hope this is the right spot
+			logging.info("Setting up sensors and actions")
+			self.cleanup_sensors()
+			self.cleanup_actions()
+			self.setup_sensors()
+			self.setup_actions()
+			self.start()
+			logging.info("Initial config activated")
+		else:
+			logging.info("This config isn't meant for us")
+
+
 	# sends a message to the manager
 	def push_msg(self, rk, body, **kwargs):
 		if self.connection.is_open:
@@ -73,7 +127,7 @@ class Worker:
 	def clear_message_queue(self):
 		logging.info("Trying to clear message queue")
 		for message in self.message_queue:
-			if self.push_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfuly
+			if self.push_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfully
 				self.message_queue.remove(message)
 			else:
 				logging.info("Message from queue couldn't be sent")
@@ -171,16 +225,9 @@ class Worker:
 		else:
 			logging.debug("Received action but wasn't active")
 
-	def got_config(self, ch, method, properties, body):
-		logging.info("Received config %r" % (body))
-		
-		try:
-			new_conf = json.loads(body)
-		except Exception, e:
-			logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
-		
+	def apply_config(self, new_config):
 		# check if new config changed
-		if(new_conf != config.getDict()):
+		if(new_config != config.getDict()):
 			# disable while loading config
 			self.active = False
 			
@@ -192,7 +239,7 @@ class Worker:
 			# write config to file
 			try:
 				f = open('%s/worker/config.json'%(PROJECT_PATH),'w') # TODO: pfad
-				f.write(body)
+				f.write(json.dumps(new_config))
 				f.close()
 			except Exception, e:
 				logging.exception("Wasn't able to write config file:\n%s" % e)
@@ -206,9 +253,20 @@ class Worker:
 				# TODO: activate queues
 				self.active = True
 			
-			logging.info("Config saved...")
+			logging.info("Config saved successfully...")
 		else:
 			logging.info("Config didn't change")
+
+	def got_config(self, ch, method, properties, body):
+		logging.info("Received config %r" % (body))
+		
+		try:
+			new_conf = json.loads(body)
+		except Exception, e:
+			logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
+		
+		self.apply_config(new_conf)
+
 		
 	# Initialize all the sensors for operation and add callback method
 	# TODO: check for duplicated sensors
@@ -351,6 +409,10 @@ class Worker:
 
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
 
+		# init config queue
+		result = self.channel.queue_declare(exclusive=True)
+		self.callback_queue = result.method.queue
+		
 		#declare all the queues
 		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
 		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
@@ -361,6 +423,8 @@ class Worker:
 		#specify the queues we want to listen to, including the callback
 		self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
 		self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
+		self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
+
 
 	def wait(self, waiting_time):
 		logging.debug("Waiting for %d seconds" % waiting_time)
