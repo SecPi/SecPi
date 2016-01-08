@@ -168,7 +168,7 @@ EOF
 	echo $JSON_END >> $SECPI_PATH/webinterface/config.json
 
 	echo "Creating htdigest file..."
-	webinterface/create_htdigest.sh $WEB_USER $WEB_PWD
+	webinterface/create_htdigest.sh $SECPI_PATH/webinterface/.htdigest $WEB_USER $WEB_PWD
 	
 	
 	echo "Copying startup scripts..."
