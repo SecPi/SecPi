@@ -54,7 +54,7 @@ class Worker:
 			self.setup_actions()
 			logging.info("Setup done!")
 	
-	
+	# function which returns the configured ipv4 addresses as a list
 	def get_ip_addresses(self):
 		result = []
 		for interface in netifaces.interfaces(): # interate through interfaces: eth0, eth1, wlan0...
@@ -65,25 +65,32 @@ class Worker:
 
 		return result
 
-
+	# function which requests the initial config from the manager
 	def get_init_config(self):
 		ip_addresses = self.get_ip_addresses()
-		self.corr_id = str(uuid.uuid4())
-		logging.info("Requesting initial configuration from manager")
-		properties = pika.BasicProperties(reply_to=self.callback_queue,
-										  correlation_id=self.corr_id,
-										  content_type='application/json')
-		self.push_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
+		if ip_addresses:
+			self.corr_id = str(uuid.uuid4())
+			logging.info("Requesting initial configuration from manager")
+			properties = pika.BasicProperties(reply_to=self.callback_queue,
+											  correlation_id=self.corr_id,
+											  content_type='application/json')
+			self.push_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
+		else:
+			logging.error("Wasn't able to find any IPv4 address, please check your network configuration. Exiting...")
+			quit()
 
-	
 
+	# callback function which is executed when the manager replies with the initial config which is then applied
 	def got_init_config(self, ch, method, properties, body):
 		logging.info("Received intitial config %r" % (body))
 		if self.corr_id == properties.correlation_id: #we got the right config
 			try:
 				new_conf = json.loads(body)
 			except Exception, e:
-				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
+				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e)
+				time.sleep(60) #sleep for X seconds and then ask again
+				self.get_init_config()
+				return
 		
 			logging.info("Trying to apply config and reconnect")
 			self.apply_config(new_conf)
