@@ -411,23 +411,24 @@ class Worker:
 
 		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
 
-		# init config queue
-		result = self.channel.queue_declare(exclusive=True)
-		self.callback_queue = result.method.queue
-		self.channel.queue_bind(exchange='manager', queue=self.callback_queue)
-		
-		#declare all the queues
-		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
-		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
-		self.channel.queue_declare(queue=utils.QUEUE_DATA)
-		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
-		self.channel.queue_declare(queue=utils.QUEUE_LOG)
-		self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
+		if not config.get('pi_id'): # when we have no pi id we only have to define the initial config setup
+			# init config queue
+			result = self.channel.queue_declare(exclusive=True)
+			self.callback_queue = result.method.queue
+			self.channel.queue_bind(exchange='manager', queue=self.callback_queue)
+			self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
+			self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
+		else: # only connect to the other queues when we got the initial configuration/ a pi id
+			#declare all the queues
+			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
+			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
+			self.channel.queue_declare(queue=utils.QUEUE_DATA)
+			self.channel.queue_declare(queue=utils.QUEUE_ALARM)
+			self.channel.queue_declare(queue=utils.QUEUE_LOG)
 
-		#specify the queues we want to listen to, including the callback
-		self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
-		self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
-		self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
+			#specify the queues we want to listen to, including the callback
+			self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
+			self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
 
 
 	def wait(self, waiting_time):
