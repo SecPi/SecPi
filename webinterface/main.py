@@ -83,6 +83,8 @@ class Root(object):
 			)
 			connection = pika.BlockingConnection(parameters=parameters)
 			self.channel = connection.channel()
+			self.channel.exchange_declare(exchange='manager', exchange_type='direct')
+
 			self.channel.queue_declare(queue='on_off')
 			self.channel.queue_bind(exchange='manager', queue='on_off')
 		except Exception as e:
