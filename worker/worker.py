@@ -69,14 +69,11 @@ class Worker:
 
 	def get_init_config(self):
 		ip_addresses = self.get_ip_addresses()
-		# self.response = None
 		self.corr_id = str(uuid.uuid4())
 		logging.info("Requesting initial configuration from manager")
 		properties = pika.BasicProperties(reply_to=self.callback_queue, correlation_id=self.corr_id, content_type='application/json')
 		self.push_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
-		# while self.response is None:
-		# 	self.connection.process_data_events()
-		# return int(self.response)
+
 	
 
 	def got_init_config(self, ch, method, properties, body):
@@ -412,6 +409,7 @@ class Worker:
 		# init config queue
 		result = self.channel.queue_declare(exclusive=True)
 		self.callback_queue = result.method.queue
+		self.channel.queue_bind(exchange='manager', queue=self.callback_queue)
 		
 		#declare all the queues
 		self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
@@ -419,6 +417,7 @@ class Worker:
 		self.channel.queue_declare(queue=utils.QUEUE_DATA)
 		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
 		self.channel.queue_declare(queue=utils.QUEUE_LOG)
+		self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
 
 		#specify the queues we want to listen to, including the callback
 		self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)

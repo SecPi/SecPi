@@ -118,7 +118,7 @@ class Manager:
 		config = self.prepare_config(pi_id)
 		logging.info("Sending intial config to worker with id %s" % pi_id)
 		reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id, content_type='application/json')
-		self.channel.basic_publish(exchange="", properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
+		self.channel.basic_publish(exchange="manager", properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
 
 	# callback method for when the manager recieves data after a worker executed its actions
 	def got_data(self, ch, method, properties, body): #TODO: error management
