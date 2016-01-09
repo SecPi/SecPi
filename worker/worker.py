@@ -48,12 +48,11 @@ class Worker:
 		if not config.get('pi_id'):
 			logging.info("Requesting intial configuration")
 			self.get_init_config()
-
-		logging.info("Setting up sensors and actions")
-		self.setup_sensors()
-		self.setup_actions()
-		
-		logging.info("Setup done!")
+		else:
+			logging.info("Setting up sensors and actions")
+			self.setup_sensors()
+			self.setup_actions()
+			logging.info("Setup done!")
 	
 	
 	def get_ip_addresses(self):
@@ -71,7 +70,9 @@ class Worker:
 		ip_addresses = self.get_ip_addresses()
 		self.corr_id = str(uuid.uuid4())
 		logging.info("Requesting initial configuration from manager")
-		properties = pika.BasicProperties(reply_to=self.callback_queue, correlation_id=self.corr_id, content_type='application/json')
+		properties = pika.BasicProperties(reply_to=self.callback_queue,
+										  correlation_id=self.corr_id,
+										  content_type='application/json')
 		self.push_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
 
 	
@@ -88,13 +89,8 @@ class Worker:
 			self.apply_config(new_conf)
 			self.connection_cleanup()
 			self.connect() #hope this is the right spot
-			logging.info("Setting up sensors and actions")
-			self.cleanup_sensors()
-			self.cleanup_actions()
-			self.setup_sensors()
-			self.setup_actions()
-			self.start()
 			logging.info("Initial config activated")
+			self.start()
 		else:
 			logging.info("This config isn't meant for us")
 
@@ -229,6 +225,7 @@ class Worker:
 			self.active = False
 			
 			# TODO: deactivate queues
+			logging.info("Cleaning up actions and sensors")
 			self.cleanup_sensors()
 			self.cleanup_actions()
 			
@@ -245,6 +242,7 @@ class Worker:
 			config.load("worker")
 			
 			if(config.get('active')):
+				logging.info("Activating actions and sensors")
 				self.setup_sensors()
 				self.setup_actions()
 				# TODO: activate queues
