@@ -59,7 +59,7 @@ class Manager:
 		self.channel = self.connection.channel()
 
 		#define exchange
-		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
+		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
 		#define queues: data, alarm and action & config for every pi
 		self.channel.queue_declare(queue=utils.QUEUE_DATA)
@@ -67,19 +67,19 @@ class Manager:
 		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
 		self.channel.queue_declare(queue=utils.QUEUE_LOG)
 		self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ON_OFF)
-		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_DATA)
-		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_ALARM)
-		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_LOG)
-		self.channel.queue_bind(exchange='manager', queue=utils.QUEUE_INIT_CONFIG)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_DATA)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ALARM)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_LOG)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_INIT_CONFIG)
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
 		for pi in workers:
 			self.channel.queue_declare(queue=str(pi.id)+utils.QUEUE_ACTION)
 			self.channel.queue_declare(queue=str(pi.id)+utils.QUEUE_CONFIG)
-			self.channel.queue_bind(exchange='manager', queue=str(pi.id)+utils.QUEUE_ACTION)
-			self.channel.queue_bind(exchange='manager', queue=str(pi.id)+utils.QUEUE_CONFIG)
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=str(pi.id)+utils.QUEUE_ACTION)
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=str(pi.id)+utils.QUEUE_CONFIG)
 
 		# debug output, setups & state
 		setups = db.session.query(db.objects.Setup).all()
@@ -94,7 +94,7 @@ class Manager:
 
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
-		self.channel.basic_consume(self.cb_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
+		self.channel.basic_consume(self.got_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
 		self.channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
 		self.channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
 		self.channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
@@ -103,25 +103,65 @@ class Manager:
 	
 	def start(self):
 		self.channel.start_consuming()
+		
+	def __del__(self):
+		try:
+			self.connection.close()
+		except AttributeError: #If there is no connection object closing won't work
+			logging.info("No connection cleanup possible")
+
+	
+	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
+	def class_for_name(self, module_name, class_name):
+		try:
+			# load the module, will raise ImportError if module cannot be loaded
+			m = importlib.import_module(module_name)
+			# get the class, will raise AttributeError if class cannot be found
+			c = getattr(m, class_name)
+			return c
+		except ImportError as ie:
+			self.post_err("Couldn't import module %s: %s"%(module_name, ie))
+		except AttributeError as ae:
+			self.post_err("Couldn't find class %s: %s"%(class_name, ae))
+	
+
+	# this method is used to send messages to a queue
+	def send_message(self, rk, body, **kwargs):
+		try:
+			self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
+			logging.info("Sending data to %s" % rk)
+			return True
+		except Exception as e:
+			logging.exception("Error while sending data to queue:\n%s" % e)
+			return False
+	
+	# this method is used to send json messages to a queue
+	def send_json_message(self, rk, body, **kwargs):
+		try:
+			properties = pika.BasicProperties(content_type='application/json')
+			self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
+			logging.info("Sending json data to %s" % rk)
+			return True
+		except Exception as e:
+			logging.exception("Error while sending json data to queue:\n%s" % e)
+			return False
 	
 	def got_config_request(self, ch, method, properties, body):
 		ip_addresses = json.loads(body)
 		logging.info("Got config request with following IP addresses: %s" % ip_addresses)
 
 		pi_id = None
-		for ip_address in ip_addresses:
-			worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.address == ip_address).first()
-			if worker:
-				pi_id = worker.id
-				logging.info("Found worker id %s for IP address %s" % (pi_id, ip_address))
-				break
+		worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.address.in_(ip_addresses)).first()
+		if worker:
+			pi_id = worker.id
+			logging.info("Found worker id %s for IP address %s" % (pi_id, ip_address))
 
 		assert pi_id
+		
 		config = self.prepare_config(pi_id)
 		logging.info("Sending intial config to worker with id %s" % pi_id)
 		reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id, content_type='application/json')
-		self.channel.basic_publish(exchange="manager", properties=reply_properties, 
-								   routing_key=properties.reply_to, body=json.dumps(config))
+		self.channel.basic_publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
 
 	# callback method for when the manager recieves data after a worker executed its actions
 	def got_data(self, ch, method, properties, body): #TODO: error management
@@ -142,7 +182,7 @@ class Manager:
 		db.session.commit()
 
 	# callback for when a setup gets activated/deactivated
-	def cb_on_off(self, ch, method, properties, body):
+	def got_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
 		
 		# TODO: destructor for notifier?
@@ -155,32 +195,8 @@ class Manager:
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
 			config = self.prepare_config(pi.id)
-			self.send_config(config)
+			self.send_json_message(str(pi.id)+utils.QUEUE_CONFIG, config)
 			logging.info("Activated %s"%pi.name)
-
-	# initialize the notifiers
-	def setup_notifiers(self):
-		notifiers = db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
-		
-		for notifier in notifiers:
-			params = {}
-			for p in notifier.params:
-				params[p.key] = p.value
-				
-			n = self.class_for_name(notifier.module, notifier.cl)
-			noti = n(notifier.id, params)
-			self.notifiers.append(noti)
-			logging.info("Set up notifier %s" % notifier.cl)
-
-	# this method is used to send execute messages to the action queues
-	def send_message(self, to_queue, body, **kwargs):
-		try:
-			self.channel.basic_publish(exchange='manager', routing_key=to_queue, body=body, **kwargs)
-			logging.info("Sending action to %s" % to_queue)
-			return True
-		except Exception as e:
-			logging.exception("Error while sending data to queue:\n%s" % e)
-			return False
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
@@ -206,12 +222,11 @@ class Manager:
 			# interate over workers and send "execute"
 			workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 			self.num_of_workers = len(workers)
-			properties = pika.BasicProperties(content_type='application/json')
 			action_message = { "msg": "execute",
 								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 								"late_arrival":late_arrival}
 			for pi in workers:
-				self.send_message("%i_action"%pi.id, json.dumps(action_message), properties=properties)
+				self.send_json_message(str(pi.id)+utils.QUEUE_ACTION, action_message)
 			
 			worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.id == msg['pi_id']).first()
 			sensor = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
@@ -246,6 +261,20 @@ class Manager:
 			db.session.add(al)
 			db.session.add(lo)
 			db.session.commit()
+
+	# initialize the notifiers
+	def setup_notifiers(self):
+		notifiers = db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
+		
+		for notifier in notifiers:
+			params = {}
+			for p in notifier.params:
+				params[p.key] = p.value
+				
+			n = self.class_for_name(notifier.module, notifier.cl)
+			noti = n(notifier.id, params)
+			self.notifiers.append(noti)
+			logging.info("Set up notifier %s" % notifier.cl)
 
 	# timeout thread which sends the received data from workers
 	def notify(self, info):
@@ -336,43 +365,12 @@ class Manager:
 		logging.info("Generated config: %s" % conf)
 		return conf
 
-	def send_config(self, config):
-		logging.info("Sending config to worker with id %s" % config["pi_id"])
-		msg = json.dumps(config)
-		properties = pika.BasicProperties(content_type='application/json')
-		self.channel.basic_publish(exchange='manager', routing_key='%i_config'%int(config["pi_id"]), body=msg, properties=properties)
-	
-	
-	# copypasta from worker.py:
-	def class_for_name(self, module_name, class_name):
-		# TODO: try/catch
-		# load the module, will raise ImportError if module cannot be loaded
-		m = importlib.import_module(module_name)
-		# get the class, will raise AttributeError if class cannot be found
-		c = getattr(m, class_name)
-		return c
-
-	def __del__(self):
-		try:
-			self.connection.close()
-		except AttributeError: #If there is no connection object closing won't work
-			logging.info("No connection cleanup possible")
-
-
-
-	# wait for config
-	# or queue
-	# if setup active in db && not active
-	# 	send activate, config etc.
-	# else if no setup active in db && active
-	# 	send deactivate
 
 if __name__ == '__main__':
 	try:
 		if(len(sys.argv)>1):
 			PROJECT_PATH = sys.argv[1]
 			mg = Manager()
-			# mg.send_config(1)
 			mg.start()
 		else:
 			print("Error initializing Manager, no path given!");

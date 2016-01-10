@@ -27,7 +27,7 @@ class Worker:
 		self.data_directory = "/var/tmp/secpi/worker_data"
 		self.zip_directory = "/var/tmp/secpi"
 		self.message_queue = [] # stores messages which couldn't be sent
-
+		
 		try: #TODO: this should be nicer...		
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
 		except Exception, e:
@@ -49,12 +49,177 @@ class Worker:
 		# to the queues which are specific to the pi id -> hence, call connect again
 		if not config.get('pi_id'):
 			logging.info("Requesting intial configuration")
-			self.get_init_config()
+			self.fetch_init_config()
 		else:
 			logging.info("Setting up sensors and actions")
 			self.setup_sensors()
 			self.setup_actions()
 			logging.info("Setup done!")
+	
+	def connect(self):
+		#logging.info("Setting up queues")
+		logging.debug("Initalizing network connection")
+		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
+		parameters = pika.ConnectionParameters(credentials=credentials,
+			host=config.get('rabbitmq')['master_ip'], #this will change because we need the ip initially
+			port=5671,
+			ssl=True,
+			socket_timeout=10,
+			ssl_options = { 
+				"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
+				"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
+				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
+			}
+		)
+
+		connected = False
+		while not connected: #retry if establishing a connection fails
+			try:
+				logging.info("Trying to establish a connection to the manager")
+				self.connection = pika.BlockingConnection(parameters=parameters) 
+				self.channel = self.connection.channel()
+				connected = True
+				logging.info("Connection to manager established")
+			except pika.exceptions.AMQPConnectionError, e: # if connection can't be established
+				logging.error("Wasn't able to open a connection to the manager: %s" % e)
+				time.sleep(30)
+
+		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
+
+		if not config.get('pi_id'): # when we have no pi id we only have to define the initial config setup
+			# init config queue
+			result = self.channel.queue_declare(exclusive=True)
+			self.callback_queue = result.method.queue
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=self.callback_queue)
+			self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
+			self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
+		else: # only connect to the other queues when we got the initial configuration/ a pi id
+			#declare all the queues
+			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
+			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
+			self.channel.queue_declare(queue=utils.QUEUE_DATA)
+			self.channel.queue_declare(queue=utils.QUEUE_ALARM)
+			self.channel.queue_declare(queue=utils.QUEUE_LOG)
+
+			#specify the queues we want to listen to, including the callback
+			self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
+			self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
+
+	
+	def start(self):
+		disconnected = True
+		while disconnected:
+			try:
+				disconnected = False
+				self.channel.start_consuming() # blocking call
+			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
+				logging.error("Lost connection to manager")
+				disconnected = True
+				time.sleep(10) # reconnect timer
+				self.connect()
+				self.clear_message_queue() #could this make problems if the manager replies too fast?
+	
+	def __del__(self):
+		try:
+			self.connection.close()
+		except AttributeError: #If there is no connection object closing won't work
+			logging.info("No connection cleanup possible")
+
+	# sends a message to the manager
+	def send_msg(self, rk, body, **kwargs):
+		if self.connection.is_open:
+			try:
+				logging.debug("Sending message to manager")
+				self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
+				return True
+			except Exception as e:
+				logging.exception("Error while sending data to queue:\n%s" % e)
+				return False
+		else:
+			logging.error("Can't send message to manager")
+			message = {"rk":rk, "body": body, "kwargs": kwargs, "json": False}
+			if message not in self.message_queue: # could happen if we have another disconnect when we try to clear the message queue
+				self.message_queue.append(message)
+				logging.info("Added message to message queue")
+			else:
+				logging.debug("Message already in queue")
+
+			return False
+	
+	# sends a message to the manager
+	def send_json_msg(self, rk, body, **kwargs):
+		if self.connection.is_open:
+			try:
+				logging.debug("Sending message to manager")
+				properties = pika.BasicProperties(content_type='application/json')
+				self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
+				return True
+			except Exception as e:
+				logging.exception("Error while sending data to queue:\n%s" % e)
+				return False
+		else:
+			logging.error("Can't send message to manager")
+			message = {"rk":rk, "body": body, "kwargs": kwargs, "json": True}
+			if message not in self.message_queue: # could happen if we have another disconnect when we try to clear the message queue
+				self.message_queue.append(message)
+				logging.info("Added message to message queue")
+			else:
+				logging.debug("Message already in queue")
+
+			return False
+	
+	# Try to resend the messages which couldn't be sent before
+	def clear_message_queue(self):
+		logging.info("Trying to clear message queue")
+		for message in self.message_queue:
+			if(message["json"]):
+				if self.send_json_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfully
+					self.message_queue.remove(message)
+				else:
+					logging.info("Message from queue couldn't be sent")
+			else:
+				if self.send_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfully
+					self.message_queue.remove(message)
+				else:
+					logging.info("Message from queue couldn't be sent")
+
+		if not self.message_queue: # message queue is empty
+			logging.info("Message queue cleared")
+		else:
+			logging.error("Message queue couldn't be cleared completely")
+	
+					
+	def post_err(self, msg):
+		logging.exception(msg)
+		err = { "msg": msg,
+				"level": utils.LEVEL_ERR,
+				"sender": "Worker %s"%config.get('pi_id'),
+				"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+				
+		self.send_json_msg(utils.QUEUE_LOG, err)
+		
+	def post_log(self, msg, lvl):
+		logging.exception(msg)
+		lg = { "msg": msg,
+				"level": lvl,
+				"sender": "Worker %s"%config.get('pi_id'),
+				"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+				
+		self.send_json_msg(utils.QUEUE_LOG, lg)
+	
+	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
+	def class_for_name(self, module_name, class_name):
+		try:
+			# load the module, will raise ImportError if module cannot be loaded
+			m = importlib.import_module(module_name)
+			# get the class, will raise AttributeError if class cannot be found
+			c = getattr(m, class_name)
+			return c
+		except ImportError as ie:
+			self.post_err("Couldn't import module %s: %s"%(module_name, ie))
+		except AttributeError as ae:
+			self.post_err("Couldn't find class %s: %s"%(class_name, ae))
+	
 	
 	# function which returns the configured ipv4 addresses as a list
 	def get_ip_addresses(self):
@@ -68,7 +233,7 @@ class Worker:
 		return result
 
 	# function which requests the initial config from the manager
-	def get_init_config(self):
+	def fetch_init_config(self):
 		ip_addresses = self.get_ip_addresses()
 		if ip_addresses:
 			self.corr_id = str(uuid.uuid4())
@@ -76,11 +241,10 @@ class Worker:
 			properties = pika.BasicProperties(reply_to=self.callback_queue,
 											  correlation_id=self.corr_id,
 											  content_type='application/json')
-			self.push_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
+			self.send_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
 		else:
 			logging.error("Wasn't able to find any IPv4 address, please check your network configuration. Exiting...")
 			quit()
-
 
 	# callback function which is executed when the manager replies with the initial config which is then applied
 	def got_init_config(self, ch, method, properties, body):
@@ -91,7 +255,7 @@ class Worker:
 			except Exception, e:
 				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e)
 				time.sleep(60) #sleep for X seconds and then ask again
-				self.get_init_config()
+				self.fetch_init_config()
 				return
 		
 			logging.info("Trying to apply config and reconnect")
@@ -102,62 +266,6 @@ class Worker:
 			self.start()
 		else:
 			logging.info("This config isn't meant for us")
-
-
-	# sends a message to the manager
-	def push_msg(self, rk, body, **kwargs):
-		if self.connection.is_open:
-			try:
-				logging.debug("Sending message to manager")
-				self.channel.basic_publish(exchange='manager', routing_key=rk, body=body, **kwargs)
-				return True
-			except Exception as e:
-				logging.exception("Error while sending data to queue:\n%s" % e)
-				return False
-		else:
-			logging.error("Can't send message to manager")
-			message = {"rk":rk, "body": body, "kwargs": kwargs}
-			if message not in self.message_queue: # could happen if we have another disconnect when we try to clear the message queue
-				self.message_queue.append(message)
-				logging.info("Added message to message queue")
-			else:
-				logging.debug("Message already in queue")
-
-			return False
-
-	# Try to resend the messages which couldn't be sent before
-	def clear_message_queue(self):
-		logging.info("Trying to clear message queue")
-		for message in self.message_queue:
-			if self.push_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfully
-				self.message_queue.remove(message)
-			else:
-				logging.info("Message from queue couldn't be sent")
-
-		if not self.message_queue: # message queue is empty
-			logging.info("Message queue cleared")
-		else:
-			logging.error("Message queue couldn't be cleared completely")
-			
-	def post_err(self, msg):
-		logging.exception(msg)
-		err = { "msg": msg,
-				"level": utils.LEVEL_ERR,
-				"sender": "Worker %s"%config.get('pi_id'),
-				"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-				
-		properties = pika.BasicProperties(content_type='application/json')
-		self.push_msg("log", json.dumps(err), properties=properties)
-		
-	def post_log(self, msg, lvl):
-		logging.exception(msg)
-		lg = { "msg": msg,
-				"level": lvl,
-				"sender": "Worker %s"%config.get('pi_id'),
-				"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-				
-		properties = pika.BasicProperties(content_type='application/json')
-		self.push_msg("log", json.dumps(lg), properties=properties)
 	
 	# Create a zip of all the files which were collected while actions were executed
 	def prepare_data(self):
@@ -216,13 +324,13 @@ class Worker:
 			if self.prepare_data(): #check if there is any data to send
 				zip_file = open("%s/%s.zip" % (self.zip_directory, config.get('pi_id')), "rb")
 				byte_stream = zip_file.read()
-				self.push_msg("data", byte_stream)
+				self.send_msg(utils.QUEUE_DATA, byte_stream)
 				logging.info("Sent data to manager")
 				self.cleanup_data()
 			else:
 				logging.info("No data to send")
 				# Send empty message which acts like a finished
-				self.push_msg("data", "")
+				self.send_msg(utils.QUEUE_DATA, "")
 			# TODO: send finished
 		else:
 			logging.debug("Received action but wasn't active")
@@ -270,7 +378,6 @@ class Worker:
 			logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
 		
 		self.apply_config(new_conf)
-
 		
 	# Initialize all the sensors for operation and add callback method
 	# TODO: check for duplicated sensors
@@ -296,20 +403,6 @@ class Worker:
 		
 		self.sensors = []
 	
-	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
-	def class_for_name(self, module_name, class_name):
-		try:
-			# load the module, will raise ImportError if module cannot be loaded
-			m = importlib.import_module(module_name)
-			# get the class, will raise AttributeError if class cannot be found
-			c = getattr(m, class_name)
-			return c
-		except ImportError as ie:
-			self.post_err("Couldn't import module %s: %s"%(module_name, ie))
-		except AttributeError as ae:
-			self.post_err("Couldn't find class %s: %s"%(class_name, ae))
-	
-	
 	# Initialize all the actions
 	def setup_actions(self):
 		if not config.get("actions"):
@@ -331,7 +424,6 @@ class Worker:
 			
 		self.actions = []					
 
-
 	# callback for the sensors, sends a message with info to the manager
 	def alarm(self, sensor_id, message):
 		if(self.active):
@@ -342,22 +434,9 @@ class Worker:
 					"message": message,
 					"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 			
-			msg_string = json.dumps(msg)
-			
 			# send a message to the alarmQ and tell which sensor signaled
-			properties = pika.BasicProperties(content_type='application/json')
-			self.push_msg('alarm', msg_string, properties=properties)
+			self.send_json_msg(utils.QUEUE_ALARM, msg)
 		
-		
-	def get_ip(self):
-		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		s.connect((config.get("rabbitmq")["master_ip"],5672))
-		ip = s.getsockname()[0]
-		print(ip)
-		s.close()
-		
-		return ip
-
 	def prepare_data_directory(self, data_path):
 		try:
 			if not os.path.isdir(data_path): #check if directory structure already exists
@@ -366,83 +445,12 @@ class Worker:
 		except OSError, e:
 			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e))
 
-	def start(self):
-		disconnected = True
-		while disconnected:
-			try:
-				disconnected = False
-				self.channel.start_consuming() # blocking call
-			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
-				logging.error("Lost connection to manager")
-				disconnected = True
-				self.wait(10) # reconnect timer
-				self.connect()
-				self.clear_message_queue() #could this make problems if the manager replies too fast?
-	
 	def connection_cleanup(self): # not used yet
 		self.channel.close()
 		self.connection.close()
 
-	def connect(self):
-		#logging.info("Setting up queues")
-		logging.debug("Initalizing network connection")
-		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq')['master_ip'], #this will change because we need the ip initially
-			port=5671,
-			ssl=True,
-			socket_timeout=10,
-			ssl_options = { 
-				"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-				"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			}
-		)
-
-		connected = False
-		while not connected: #retry if establishing a connection fails
-			try:
-				logging.info("Trying to establish a connection to the manager")
-				self.connection = pika.BlockingConnection(parameters=parameters) 
-				self.channel = self.connection.channel()
-				connected = True
-				logging.info("Connection to manager established")
-			except pika.exceptions.AMQPConnectionError, e: # if connection can't be established
-				logging.error("Wasn't able to open a connection to the manager: %s" % e)
-				self.wait(30)
-
-		self.channel.exchange_declare(exchange='manager', exchange_type='direct')
-
-		if not config.get('pi_id'): # when we have no pi id we only have to define the initial config setup
-			# init config queue
-			result = self.channel.queue_declare(exclusive=True)
-			self.callback_queue = result.method.queue
-			self.channel.queue_bind(exchange='manager', queue=self.callback_queue)
-			self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-			self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
-		else: # only connect to the other queues when we got the initial configuration/ a pi id
-			#declare all the queues
-			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
-			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
-			self.channel.queue_declare(queue=utils.QUEUE_DATA)
-			self.channel.queue_declare(queue=utils.QUEUE_ALARM)
-			self.channel.queue_declare(queue=utils.QUEUE_LOG)
-
-			#specify the queues we want to listen to, including the callback
-			self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
-			self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
-
-
-	def wait(self, waiting_time):
-		logging.debug("Waiting for %d seconds" % waiting_time)
-		time.sleep(waiting_time)
 	
-	def __del__(self):
-		try:
-			self.connection.close()
-		except AttributeError: #If there is no connection object closing won't work
-			logging.info("No connection cleanup possible")
-
+	
 
 if __name__ == '__main__':
 	w = None

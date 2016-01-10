@@ -85,10 +85,10 @@ class Root(object):
 			)
 			connection = pika.BlockingConnection(parameters=parameters)
 			self.channel = connection.channel()
-			self.channel.exchange_declare(exchange='manager', exchange_type='direct')
+			self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
-			self.channel.queue_declare(queue='on_off')
-			self.channel.queue_bind(exchange='manager', queue='on_off')
+			self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
 		except Exception as e:
 			cherrypy.log("Error connecting to Queue! %s"%e)
 	
@@ -149,7 +149,7 @@ class Root(object):
 						su.active_state = True
 						self.db.commit()
 						ooff = { 'active_state': True }
-						self.channel.basic_publish(exchange='manager', routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
 						return {'status':'error', 'message': "Error activating %s! No connection to queue server!"%su.name }
 						
@@ -178,7 +178,7 @@ class Root(object):
 						su.active_state = False
 						self.db.commit()
 						ooff = { 'active_state': False }
-						self.channel.basic_publish(exchange='manager', routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
 						return {'status':'error', 'message': "Error activating %s! No connection to queue server!"%su.name }
 						
