@@ -95,15 +95,15 @@ class Worker:
 			self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
 		else: # only connect to the other queues when we got the initial configuration/ a pi id
 			#declare all the queues
-			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_ACTION)
-			self.channel.queue_declare(queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG)
+			self.channel.queue_declare(queue=utils.QUEUE_ACTION+str(config.get('pi_id')))
+			self.channel.queue_declare(queue=utils.QUEUE_CONFIG+str(config.get('pi_id')))
 			self.channel.queue_declare(queue=utils.QUEUE_DATA)
 			self.channel.queue_declare(queue=utils.QUEUE_ALARM)
 			self.channel.queue_declare(queue=utils.QUEUE_LOG)
 
 			#specify the queues we want to listen to, including the callback
-			self.channel.basic_consume(self.got_action, queue=str(config.get('pi_id'))+utils.QUEUE_ACTION, no_ack=True)
-			self.channel.basic_consume(self.got_config, queue=str(config.get('pi_id'))+utils.QUEUE_CONFIG, no_ack=True)
+			self.channel.basic_consume(self.got_action, queue=utils.QUEUE_ACTION+str(config.get('pi_id')), no_ack=True)
+			self.channel.basic_consume(self.got_config, queue=utils.QUEUE_CONFIG+str(config.get('pi_id')), no_ack=True)
 
 	
 	def start(self):

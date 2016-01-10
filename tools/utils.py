@@ -14,14 +14,14 @@ LEVEL_WARN=75
 LEVEL_ERR=100
 
 
-EXCHANGE="manager"
-QUEUE_LOG="log"
-QUEUE_DATA="data"
-QUEUE_ALARM="alarm"
-QUEUE_ON_OFF="on_off"
-QUEUE_ACTION="_action"
-QUEUE_CONFIG="_config"
-QUEUE_INIT_CONFIG="init_config"
+EXCHANGE="secpi"
+QUEUE_LOG="secpi-log"
+QUEUE_DATA="secpi-data"
+QUEUE_ALARM="secpi-alarm"
+QUEUE_ON_OFF="secpi-on_off"
+QUEUE_ACTION="secpi-action-"
+QUEUE_CONFIG="secpi-config-"
+QUEUE_INIT_CONFIG="secpi-init_config"
 
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()

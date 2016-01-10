@@ -76,10 +76,10 @@ class Manager:
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
 		for pi in workers:
-			self.channel.queue_declare(queue=str(pi.id)+utils.QUEUE_ACTION)
-			self.channel.queue_declare(queue=str(pi.id)+utils.QUEUE_CONFIG)
-			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=str(pi.id)+utils.QUEUE_ACTION)
-			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=str(pi.id)+utils.QUEUE_CONFIG)
+			self.channel.queue_declare(queue=utils.QUEUE_ACTION+str(pi.id))
+			self.channel.queue_declare(queue=utils.QUEUE_CONFIG+str(pi.id))
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ACTION+str(pi.id))
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_CONFIG+str(pi.id))
 
 		# debug output, setups & state
 		setups = db.session.query(db.objects.Setup).all()
@@ -195,7 +195,7 @@ class Manager:
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
 			config = self.prepare_config(pi.id)
-			self.send_json_message(str(pi.id)+utils.QUEUE_CONFIG, config)
+			self.send_json_message(utils.QUEUE_CONFIG+str(pi.id), config)
 			logging.info("Activated %s"%pi.name)
 
 	# callback method which gets called when a worker raises an alarm
@@ -226,7 +226,7 @@ class Manager:
 								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 								"late_arrival":late_arrival}
 			for pi in workers:
-				self.send_json_message(str(pi.id)+utils.QUEUE_ACTION, action_message)
+				self.send_json_message(utils.QUEUE_ACTION+str(pi.id), action_message)
 			
 			worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.id == msg['pi_id']).first()
 			sensor = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
