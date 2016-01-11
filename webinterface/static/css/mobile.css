@@ -1,0 +1,69 @@
+
+#container {
+	width: 100%;
+/*	margin: 0 auto;  */
+	background: white;
+	min-height: 100%;
+	
+	font-size: 1.3em;
+}
+
+#nav {
+	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+	position: fixed;
+	width: 100%;
+}
+
+h1.header {
+	color: white;
+	font-size: 50px;
+	font-style: italic;
+	position: relative;
+	margin-top: 10px;
+	margin-left: 20px;
+	margin-bottom: 5px;
+}
+
+
+
+#main {
+	padding: 15px;
+}
+
+footer {
+	font-size: 12px;
+    background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+    bottom: 0;
+    position: fixed;
+    width: 100%;
+    text-align: center;
+    color: white;
+    vertical-align: middle;
+    padding: 5px 0px;
+}
+
+#log_div {
+	float: none;
+	width: 100%;
+}
+
+#alarm_div {
+	float: none;
+	width: 100%;
+}
+
+
+input[type=button] {
+	font-size: 2.5em;
+}
+
+
+/*
+	######### Tab Interface #########
+*/
+.tabrow {
+	visibility: hidden;
+	display: none;
+}
+
+
