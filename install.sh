@@ -148,6 +148,9 @@ then
 	echo "Copying webinterface..."
 	cp -R webinterface/ $SECPI_PATH/
 
+	chmod 755 $SECPI_PATH/webinterface/main.py
+	chmod 755 $SECPI_PATH/manager/manager.py
+	
 	echo "Creating config..."
 	read -d '' JSON_MGR << EOF
 	"certfile": "$MGR_CERT_PATH",
@@ -188,6 +191,7 @@ if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 3 ]
 then
 	echo "Copying worker..."
 	cp -R worker/ $SECPI_PATH/
+	chmod 755 $SECPI_PATH/worker/worker.py
 	
 	read -d '' JSON_WORKER << EOF
 	"certfile": "$WORKER_CERT_PATH",
