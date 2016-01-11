@@ -72,6 +72,24 @@ h1.header {
 	position: fixed !important;
 }
 
+#log_div {
+	float: left;
+	width: 50%;
+}
+
+#alarm_div {
+	float: right;
+	width: 50%;
+}
+span.clear {
+	clear: both;
+	display: block;
+}
+
+
+h1 {
+	margin-top: 10px;
+}
 /*
 	######### Flash Messages #########
 */
