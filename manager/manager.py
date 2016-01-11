@@ -28,10 +28,14 @@ class Manager:
 		try:
 			config.load("manager")
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
-			logging.error("Wasn't able to load config file, exiting...")
+			logging.exception("Wasn't able to load config file, exiting...")
 			quit()
-
-		db.connect(PROJECT_PATH)
+		
+		try:
+			db.connect(PROJECT_PATH)
+		except:
+			logging.exception("Couldn't connect to database!")
+			quit()
 		
 		self.notifiers = []
 		self.received_data_counter = 0
