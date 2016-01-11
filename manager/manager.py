@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+
+if(len(sys.argv)>1):
+	PROJECT_PATH = sys.argv[1]
+	sys.path.append(PROJECT_PATH)
+else:
+	print("Error initializing Manager, no path given!");
+	sys.exit(1)
+
 import datetime
 import hashlib
 import importlib
@@ -8,7 +17,6 @@ import logging
 import logging.config
 import os
 import pika
-import sys
 import threading
 import time
 
@@ -26,7 +34,7 @@ class Manager:
 			print "Error while trying to load config file for logging"
 
 		try:
-			config.load("manager")
+			config.load(PROJECT_PATH +"/manager/config.json")
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
 			logging.exception("Wasn't able to load config file, exiting...")
 			quit()
@@ -380,12 +388,8 @@ class Manager:
 
 if __name__ == '__main__':
 	try:
-		if(len(sys.argv)>1):
-			PROJECT_PATH = sys.argv[1]
-			mg = Manager()
-			mg.start()
-		else:
-			print("Error initializing Manager, no path given!");
+		mg = Manager()
+		mg.start()
 	except KeyboardInterrupt:
 		logging.info("Shutting down manager!")
 		# TODO: cleanup?

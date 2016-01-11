@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+
+if(len(sys.argv)>1):
+	PROJECT_PATH = sys.argv[1]
+	sys.path.append(PROJECT_PATH)
+else:
+	print("Error initializing Worker, no path given!");
+	sys.exit(1)
+
 import datetime
 import importlib
 import json
@@ -10,7 +19,6 @@ import os
 import pika
 import shutil
 import socket
-import sys
 import threading
 import time
 import uuid
@@ -36,7 +44,7 @@ class Worker:
 		logging.info("Initializing worker")
 
 		try:
-			config.load("worker")
+			config.load(PROJECT_PATH +"/worker/config.json")
 			logging.debug("Config loaded")
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
 			logging.error("Wasn't able to load config file, exiting...")
@@ -356,7 +364,7 @@ class Worker:
 				logging.exception("Wasn't able to write config file:\n%s" % e)
 			
 			# set new config
-			config.load("worker")
+			config.load(PROJECT_PATH +"/worker/config.json")
 			
 			if(config.get('active')):
 				logging.info("Activating actions and sensors")
@@ -455,12 +463,8 @@ class Worker:
 if __name__ == '__main__':
 	w = None
 	try:
-		if(len(sys.argv)>1):
-			PROJECT_PATH = sys.argv[1]
-			w = Worker()
-			w.start()
-		else:
-			print("Error initializing Worker, no path given!");
+		w = Worker()
+		w.start()		
 	except KeyboardInterrupt:
 		logging.info('Shutting down worker!')
 		# TODO: cleanup?

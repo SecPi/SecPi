@@ -1,6 +1,6 @@
 from tools import config
 
-config.load("manager")
+config.load(PROJECT_PATH +"/manager/config.json")
 
 import database
 import sys

@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 
+import sys
+
+if(len(sys.argv)>1):
+	PROJECT_PATH = sys.argv[1]
+	sys.path.append(PROJECT_PATH)
+else:
+	print("Error initializing Webinterface, no path given!");
+	sys.exit(1)
+
 import os
 import json
-import sys
 import traceback
 import logging
 import logging.config
@@ -49,7 +57,7 @@ from sites.logs import LogEntriesPage
 from sites.setupszones import SetupsZonesPage
 from sites.workersactions import WorkersActionsPage
 
-config.load("webinterface")
+config.load(PROJECT_PATH +"/webinterface/config.json")
 
 class Root(object):
 
@@ -270,8 +278,4 @@ def run():
 
 
 if __name__ == '__main__':
-	if(len(sys.argv)>1):
-		PROJECT_PATH = sys.argv[1]
-		run()
-	else:
-		print("Error initializing Webinterface, no path given!");
+	run()
