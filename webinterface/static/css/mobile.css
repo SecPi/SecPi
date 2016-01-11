@@ -5,7 +5,7 @@
 	background: white;
 	min-height: 100%;
 	
-	font-size: 1.3em;
+	font-size: 3em;
 }
 
 #nav {
@@ -16,7 +16,7 @@
 
 h1.header {
 	color: white;
-	font-size: 50px;
+	font-size: 3em;
 	font-style: italic;
 	position: relative;
 	margin-top: 10px;
@@ -28,6 +28,7 @@ h1.header {
 
 #main {
 	padding: 15px;
+	margin-top: 200px;
 }
 
 footer {
@@ -53,10 +54,43 @@ footer {
 }
 
 
-input[type=button] {
-	font-size: 2.5em;
+input[type=button], select {
+	font-size: 1em;
+	color: white;
+	
+	width: 100%;
+	padding: 5px;
+	margin: 5px auto;
+	
+	background: linear-gradient(to bottom, #008800 20%, #006600 80%);
+	
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 10px;
+	
 }
 
+input[type=button]:active, select:active {
+	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
+}
+
+input[type=button]:hover, select:hover {
+	border-color: #f93;
+}
+
+/*
+	######### Alarms #########
+*/
+.alarm_entry {
+	border-width: 5px;
+}
+
+/*
+	######### Log Entries #########
+*/
+.log_entry {
+	border-width: 5px;
+}
 
 /*
 	######### Tab Interface #########

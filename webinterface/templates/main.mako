@@ -7,13 +7,18 @@
 <head>
 	<title>SecPi - ${page_title}</title>
 	<link rel="stylesheet" type="text/css" href="/static/css/main.css" />
+	
 	<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.min.css" />
 	<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.theme.min.css" />
+	
 	<link rel="stylesheet" type="text/css" media="only screen and (max-width: 480px), only screen and (max-device-width: 480px)" href="/static/css/mobile.css" />
-	<script src="/static/js/jquery.min.js"></script>
-	<script src="/static/js/jquery-ui.min.js"></script>
+	
+	<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+	
 	<script type="text/javascript" src="/static/js/angular.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-animate.js"></script>
+	
 	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
 <body>

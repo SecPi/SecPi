@@ -183,7 +183,6 @@ h1 {
 	border-radius: 10px;
 	
 	display: block;
-	max-width: 500px;
 	padding: 10px 10px 10px 30px;
 	margin: 10px;
 	
@@ -207,7 +206,6 @@ h1 {
 	border-radius: 10px;
 	
 	display: block;
-	max-width: 500px;
 	padding: 10px 10px 10px 30px;
 	margin: 10px;
 }
