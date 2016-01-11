@@ -120,9 +120,9 @@ class Manager:
 			c = getattr(m, class_name)
 			return c
 		except ImportError as ie:
-			self.post_err("Couldn't import module %s: %s"%(module_name, ie))
+			self.log_err("Couldn't import module %s: %s"%(module_name, ie))
 		except AttributeError as ae:
-			self.post_err("Couldn't find class %s: %s"%(class_name, ae))
+			self.log_err("Couldn't find class %s: %s"%(class_name, ae))
 	
 
 	# this method is used to send messages to a queue
@@ -145,6 +145,14 @@ class Manager:
 		except Exception as e:
 			logging.exception("Error while sending json data to queue:\n%s" % e)
 			return False
+	
+	# helper method to create error log entry
+	def log_err(self, msg):
+		logging.error(msg)
+		log_entry = db.objects.LogEntry(level=utils.LEVEL_ERR, message=str(msg), sender="Manager")
+		db.session.add(log_entry)
+		db.session.commit()
+	
 	
 	def got_config_request(self, ch, method, properties, body):
 		ip_addresses = json.loads(body)
