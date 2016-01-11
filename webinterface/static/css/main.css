@@ -73,12 +73,12 @@ h1.header {
 }
 
 #log_div {
-	float: left;
+	float: right;
 	width: 50%;
 }
 
 #alarm_div {
-	float: right;
+	float: left;
 	width: 50%;
 }
 span.clear {

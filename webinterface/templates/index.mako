@@ -22,17 +22,6 @@
 	</div>
 </div>
 
-<div id="log_div">
-	<h1>Logs</h1>
-	<div ng-controller="AckController as logCtrl" ackclass="log">
-		<input type="button" value="stop refresh" id="refresh_toggle_log" name="refresh_toggle_log" ng-click="logCtrl.toggleRefresh()" />
-		<input type="button" value="acknowledge all" id="ack_log" name="ack_log" ng-click="logCtrl.ackAll()" />
-		<div class="log_entry" ng-repeat="log in logCtrl.entries" ng-show="log.message != null" ng-class="'lvl'+log.level">
-			<b>{{log.logtime | date:'dd. MMM. yyyy, HH:mm:ss'}} <i>{{log.sender}}:</i></b> {{log.message}}
-			<span class="log_ack"><img src="/static/img/icons/ack.png" title="acknowledge" ng-click="logCtrl.ack($index)" /></span>
-		</div>
-	</div>
-</div>
 <div id="alarm_div">
 	<h1>Alarms</h1>
 	<div ng-controller="AckController as alarmCtrl" ackclass="alarm">
@@ -44,4 +33,17 @@
 		</div>
 	</div>
 </div>
+
+<div id="log_div">
+	<h1>Logs</h1>
+	<div ng-controller="AckController as logCtrl" ackclass="log">
+		<input type="button" value="stop refresh" id="refresh_toggle_log" name="refresh_toggle_log" ng-click="logCtrl.toggleRefresh()" />
+		<input type="button" value="acknowledge all" id="ack_log" name="ack_log" ng-click="logCtrl.ackAll()" />
+		<div class="log_entry" ng-repeat="log in logCtrl.entries" ng-show="log.message != null" ng-class="'lvl'+log.level">
+			<b>{{log.logtime | date:'dd. MMM. yyyy, HH:mm:ss'}} <i>{{log.sender}}:</i></b> {{log.message}}
+			<span class="log_ack"><img src="/static/img/icons/ack.png" title="acknowledge" ng-click="logCtrl.ack($index)" /></span>
+		</div>
+	</div>
+</div>
+
 <span class="clear"></span>
