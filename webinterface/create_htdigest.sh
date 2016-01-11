@@ -1,5 +1,5 @@
 #!/bin/bash
-HASH=`echo -n $2:secpi:$3 | md5 |awk '{print $1}'`
+HASH=`echo -n $2:secpi:$3 | md5sum |awk '{print $1}'`
 LINE="$2:secpi:$HASH"
 # file already exists, do some magic
 if [ -f $1 ]

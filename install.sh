@@ -226,6 +226,8 @@ then
 fi
 
 
+
+echo "SecPi sucessfully installed!"
 ################
 exit 0
 ################
