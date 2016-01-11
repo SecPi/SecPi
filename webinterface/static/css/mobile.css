@@ -1,11 +1,12 @@
-
+body {
+	font-size: 3em;
+}
 #container {
 	width: 100%;
 /*	margin: 0 auto;  */
 	background: white;
 	min-height: 100%;
 	
-	font-size: 3em;
 }
 
 #nav {
@@ -32,15 +33,9 @@ h1.header {
 }
 
 footer {
-	font-size: 12px;
-    background: linear-gradient(to bottom, #006600 20%, #008800 80%);
-    bottom: 0;
-    position: fixed;
-    width: 100%;
-    text-align: center;
-    color: white;
-    vertical-align: middle;
-    padding: 5px 0px;
+	width: 100%;
+	font-size: 0.6em;
+	height:40px;
 }
 
 #log_div {
@@ -76,6 +71,15 @@ input[type=button]:active, select:active {
 
 input[type=button]:hover, select:hover {
 	border-color: #f93;
+}
+
+
+/*
+	######### Flash Messages #########
+*/
+
+.flash_message {
+	width: auto;
 }
 
 /*
