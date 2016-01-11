@@ -20,6 +20,11 @@ TMP_PATH="/var/tmp/secpi"
 
 
 function create_folder(){
+	if [ -d $1 ];
+	then
+		echo "$1 exists!"
+		return 0
+	fi
 	mkdir $1
 	if [ $? -ne 0 ];
 	then
