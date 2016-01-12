@@ -174,9 +174,7 @@ class Manager:
 		worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.address.in_(ip_addresses)).first()
 		if worker:
 			pi_id = worker.id
-			logging.info("Found worker id %s for IP address %s" % (pi_id, ip_address))
-
-		assert pi_id
+			logging.info("Found worker id %s for IP address %s" % (pi_id, worker.address))
 		
 		config = self.prepare_config(pi_id)
 		logging.info("Sending intial config to worker with id %s" % pi_id)
