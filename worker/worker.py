@@ -391,23 +391,25 @@ class Worker:
 	# TODO: check for duplicated sensors
 	def setup_sensors(self):
 		# self.sensors = []
-		for sensor in config.get("sensors"):
-			try:
-				logging.info("Trying to register sensor: %s" % sensor["id"])
-				s = self.class_for_name(sensor["module"], sensor["class"])
-				sen = s(sensor["id"], sensor["params"], self)
-				sen.activate()
-			except Exception, e:
-				self.post_err("Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (config.get('pi_id'), sensor["class"],e))
-			else:
-				self.sensors.append(sen)
-				logging.info("Registered!")
+		if(config.get("sensors")):
+			for sensor in config.get("sensors"):
+				try:
+					logging.info("Trying to register sensor: %s" % sensor["id"])
+					s = self.class_for_name(sensor["module"], sensor["class"])
+					sen = s(sensor["id"], sensor["params"], self)
+					sen.activate()
+				except Exception, e:
+					self.post_err("Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (config.get('pi_id'), sensor["class"],e))
+				else:
+					self.sensors.append(sen)
+					logging.info("Registered!")
 	
 	def cleanup_sensors(self):
 		# remove the callbacks
-		for sensor in self.sensors:
-			sensor.deactivate()
-			logging.debug("Removed sensor: %d" % int(sensor.id))
+		if(self.sensors):
+			for sensor in self.sensors:
+				sensor.deactivate()
+				logging.debug("Removed sensor: %d" % int(sensor.id))
 		
 		self.sensors = []
 	
