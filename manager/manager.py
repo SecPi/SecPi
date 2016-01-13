@@ -329,7 +329,6 @@ class Manager:
 		logging.info("Preparing config for worker with id %s" % pi_id)
 		conf = {
 			"pi_id": pi_id,
-			"rabbitmq": config.get("rabbitmq"),
 			"active": False, # default to false, will be overriden if should be true
 		}
 		

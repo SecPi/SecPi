@@ -385,6 +385,9 @@ class Worker:
 		except Exception, e:
 			logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
 		
+		# we don't get the rabbitmq config sent to us, so add the current one
+		new_conf["rabbitmq"] = config.get("rabbitmq")
+		
 		self.apply_config(new_conf)
 		
 	# Initialize all the sensors for operation and add callback method
