@@ -7,3 +7,4 @@ pytz
 SQLAlchemy==1.0.4
 tweepy
 logging
+netifaces

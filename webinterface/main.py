@@ -234,7 +234,11 @@ def run():
 	
 	cherrypy.config.update({
 		'server.socket_host': '0.0.0.0',
-		'server.socket_port': 8080,
+		'server.socket_port': 8443,
+		'server.ssl_module':'pyopenssl',
+		'server.ssl_certificate':'%s/certs/%s'%(PROJECT_PATH, config.get("server_cert")),
+		'server.ssl_private_key':'%s/certs/%s'%(PROJECT_PATH, config.get("server_key")),
+		'server.ssl_certificate_chain':'%s/certs/%s'%(PROJECT_PATH, config.get("server_ca_chain")),
 		'log.error_file': "/var/log/secpi/webui.log",
 		'log.access_file': "/var/log/secpi/webui_access.log",
 		'log.screen': False
@@ -246,19 +250,19 @@ def run():
 			'tools.lookup.on': True,
 			'tools.staticdir.root': os.path.join(PROJECT_PATH, "webinterface"),
 			'tools.auth_digest.on': True,
-	        'tools.auth_digest.realm': 'secpi',
-	        'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('%s/webinterface/.htdigest'%(PROJECT_PATH)),
-	        'tools.auth_digest.key': 'ae41349f9413b13c'
+			'tools.auth_digest.realm': 'secpi',
+			'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('%s/webinterface/.htdigest'%(PROJECT_PATH)),
+			'tools.auth_digest.key': 'ae41349f9413b13c'
 		},
 		'/static': {
 			'tools.staticdir.on': True,
 			'tools.staticdir.dir': 'static'
 		},
 		 "/favicon.ico":
-        {
-          "tools.staticfile.on": True,
-          "tools.staticfile.filename": PROJECT_PATH+"/webinterface/favicon.ico"
-        }
+		{
+		  "tools.staticfile.on": True,
+		  "tools.staticfile.filename": PROJECT_PATH+"/webinterface/favicon.ico"
+		}
 	}
 	cherrypy.tree.mount(Root(), '/', app_config)
 	dbfile = "%s/data.db"%PROJECT_PATH

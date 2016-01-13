@@ -183,10 +183,22 @@ EOF
 	
 	cp scripts/secpi-manager /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-manager
+	
+	cp scripts/secpi-manager.service /etc/systemd/system/
+	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-manager.service
+	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-manager.service
+	
 	update-rc.d secpi-manager defaults
+	
+	
 	
 	cp scripts/secpi-webinterface /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-webinterface
+	
+	cp scripts/secpi-webinterface.service /etc/systemd/system/
+	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-webinterface.service
+	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-webinterface.service
+	
 	update-rc.d secpi-webinterface defaults
 fi
 
@@ -210,9 +222,18 @@ EOF
 	echo "Copying startup scripts..."
 	cp scripts/secpi-worker /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-worker
+	
+	cp scripts/secpi-worker.service /etc/systemd/system/
+	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-worker.service
+	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-worker.service
+	
 	update-rc.d secpi-worker defaults
+	
+	
 fi
 
+# reload systemd, but don't write anything if systemctl doesn't exist
+systemctl daemon-reload > /dev/null 2>&1
 
 
 ################################################################################################
@@ -226,8 +247,9 @@ then
 fi
 
 
-
+echo "#####################################################"
 echo "SecPi sucessfully installed!"
+echo "#####################################################"
 ################
 exit 0
 ################

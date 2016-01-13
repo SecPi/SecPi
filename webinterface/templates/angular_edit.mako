@@ -30,6 +30,9 @@
 						<span ng-switch-when="bool">
 							<input type="checkbox" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
 						</span>
+						<span ng-switch-when="number">
+							<input type="number" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
+						</span>
 						<span ng-switch-default>
 							<input type="text" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
 						</span>
