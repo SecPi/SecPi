@@ -17,8 +17,9 @@ echo "  _________            __________.__
 SECPI_PATH="/opt/secpi"
 LOG_PATH="/var/log/secpi"
 TMP_PATH="/var/tmp/secpi"
+CERT_PATH="$SECPI_PATH/certs"
 
-
+# creates a folder and sets permissions to given user and group
 function create_folder(){
 	if [ -d $1 ];
 	then
@@ -43,6 +44,23 @@ function create_folder(){
 		echo "Changed user and group of $1 to $2 and $3"
 	fi
 }
+# generates and signs a certificate with the passed name
+# second parameter is client/server
+function gen_and_sign_cert(){
+	# generate key
+	openssl genrsa -out $CERT_PATH/$1.key.pem 2048
+	# generate csr
+	openssl req -new -key $CERT_PATH/$1.key.pem -out $CERT_PATH/$1.req.pem -outform PEM -subj /CN=$1/ -nodes
+	# sign cert
+	if [ $2 = "server" ]
+	then
+		openssl ca -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch -extensions server_ca_extensions
+	elif [ $2 = "client" ]
+		openssl ca -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch -extensions client_ca_extensions
+	else
+		openssl ca -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch
+	fi
+}
 
 
 echo "Please input the user which SecPi should use:"
@@ -63,28 +81,29 @@ read MQ_IP
 echo "Enter RabbitMQ Server Port (default: 5671)"
 read MQ_PORT
 
+if [ MQ_PORT = ""]
+then
+	MQ_PORT="5671"
+fi
+
 echo "Enter RabbitMQ User"
 read MQ_USER
 
 echo "Enter RabbitMQ Password"
 read MQ_PWD
 
-echo "Enter path to CA certificate relative to $SECPI_PATH/certs/"
-read CA_CERT_PATH
+echo "Enter certificate authority domain (for rabbitmq and webserver, default: secpi.local)"
+read CA_DOMAIN
+
+if [ CA_DOMAIN = ""]
+then
+	CA_DOMAIN="secpi.local"
+fi
 
 if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 2 ]
 then
-	echo "Enter path to manager client certificate relative to $SECPI_PATH/certs/"
-	read MGR_CERT_PATH
-	
-	echo "Enter path to manager client key relative to $SECPI_PATH/certs/"
-	read MGR_KEY_PATH
-
-	echo "Enter path to webinterface client certificate relative to $SECPI_PATH/certs/"
-	read WEB_CERT_PATH
-	
-	echo "Enter path to webinterface client key relative to $SECPI_PATH/certs/"
-	read WEB_KEY_PATH
+	echo "Enter name for webserver certificate (excluding $CA_DOMAIN)"
+	read WEB_CERT_NAME
 	
 	echo "Enter user for webinterface:"
 	read WEB_USER
@@ -93,14 +112,6 @@ then
 	read WEB_PWD
 fi
 
-if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 3 ]
-then
-	echo "Enter path to worker client certificate relative to $SECPI_PATH/certs/"
-	read WORKER_CERT_PATH
-	
-	echo "Enter path to worker client key relative to $SECPI_PATH/certs/"
-	read WORKER_KEY_PATH
-fi
 
 
 
@@ -122,6 +133,17 @@ create_folder $TMP_PATH/worker_data $SECPI_USER $SECPI_GROUP
 create_folder $TMP_PATH/alarms $SECPI_USER $SECPI_GROUP
 
 
+
+# generate certificates for rabbitmq
+mkdir $CERT_PATH
+# generate ca cert
+openssl req -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/cacert.pem -keyout $CERT_PATH/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
+
+# generate mq server certificate
+gen_and_sign_cert mq-server.$CA_DOMAIN server
+
+
+
 read -d '' JSON_CONFIG << EOF
 {
 	"rabbitmq":{
@@ -129,11 +151,10 @@ read -d '' JSON_CONFIG << EOF
 		"master_port": $MQ_PORT,
 		"user": "$MQ_USER",
 		"password": "$MQ_PWD",
-		"cacert": "$CA_CERT_PATH",
+		"cacert": "cacert.pem",
 EOF
 
 read -d '' JSON_END << EOF
-	}
 }
 EOF
 
@@ -158,13 +179,18 @@ then
 	
 	echo "Creating config..."
 	read -d '' JSON_MGR << EOF
-	"certfile": "$MGR_CERT_PATH",
-	"keyfile": "$MGR_KEY_PATH"
+		"certfile": "manager.$CA_DOMAIN.cert.pem",
+		"keyfile": "manager.$CA_DOMAIN.key.pem"
+	}
 EOF
 	
 	read -d '' JSON_WEB << EOF
-	"certfile": "$WEB_CERT_PATH",
-	"keyfile": "$WEB_KEY_PATH"
+		"certfile": "webui.$CA_DOMAIN.cert.pem",
+		"keyfile": "webui.$CA_DOMAIN.cert.pem"
+	},
+	"server_cert": "$WEB_CERT_NAME.$CA_DOMAIN.cert.pem",
+	"server_key": "$WEB_CERT_NAME.$CA_DOMAIN.key.pem",
+	"server_ca_chain": "cacert.pem"
 EOF
 
 	echo $JSON_CONFIG > $SECPI_PATH/manager/config.json
@@ -174,6 +200,13 @@ EOF
 	echo $JSON_CONFIG > $SECPI_PATH/webinterface/config.json
 	echo $JSON_WEB >> $SECPI_PATH/webinterface/config.json
 	echo $JSON_END >> $SECPI_PATH/webinterface/config.json
+
+	echo "Generating rabbitmq certificates..."
+	gen_and_sign_cert manager.$CA_DOMAIN client
+	gen_and_sign_cert webui.$CA_DOMAIN client
+	
+	echo "Generating webserver certificate..."
+	gen_and_sign_cert $WEB_CERT_NAME.$CA_DOMAIN server
 
 	echo "Creating htdigest file..."
 	webinterface/create_htdigest.sh $SECPI_PATH/webinterface/.htdigest $WEB_USER $WEB_PWD
@@ -211,13 +244,16 @@ then
 	chmod 755 $SECPI_PATH/worker/worker.py
 	
 	read -d '' JSON_WORKER << EOF
-	"certfile": "$WORKER_CERT_PATH",
-	"keyfile": "$WORKER_KEY_PATH"
+		"certfile": "$WORKER_CERT_PATH",
+		"keyfile": "$WORKER_KEY_PATH"
+	}
 EOF
 
 	echo $JSON_CONFIG > $SECPI_PATH/worker/config.json
 	echo $JSON_WORKER >> $SECPI_PATH/worker/config.json
 	echo $JSON_END >> $SECPI_PATH/worker/config.json
+	
+	gen_and_sign_cert worker1.$CA_DOMAIN client
 	
 	echo "Copying startup scripts..."
 	cp scripts/secpi-worker /etc/init.d/
