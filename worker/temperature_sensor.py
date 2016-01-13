@@ -15,7 +15,7 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 			self.min = int(params["min"])
 			self.max = int(params["max"])
 			self.bouncetime = int(params["bouncetime"])
-			device_folder = params["device_id"]
+			self.device_id = params["device_id"]
 		except ValueError, v: # if one configuration parameter can't be parsed as int
 			logging.error("TemperatureSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % v)
 			self.corrupted = True
@@ -30,7 +30,7 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 
 		base_dir = '/sys/bus/w1/devices/'
 		#device_folder = glob.glob(base_dir + '28*')[0]
-		self.device_file = base_dir + device_folder + '/w1_slave'
+		self.device_file = base_dir + self.device_id + '/w1_slave'
 
 		if not os.path.isfile(self.device_file): # if there is no slave file which contains the temperature
 			self.corrupted = True
@@ -41,19 +41,24 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 
 	def activate(self):
 		if not self.corrupted:
-			self.checker_thread = threading.Thread(name="thread-checker", target=self.check_temperature) #thread name issue when multiple sensors used?
+			self.stop_thread = False
+			self.checker_thread = threading.Thread(name="thread-checker-%s" % self.device_id,
+												   target=self.check_temperature)
 			self.checker_thread.start()
 		else:
 			logging.error("TemperatureSensor: Sensor couldn't be activated")
 
 	def deactivate(self):
 		if not self.corrupted:
-			print "test"
+			self.stop_thread = True
 		else:
 			logging.error("TemperatureSensor: Sensor couldn't be deactivated")
 
 	def check_temperature(self):
 		while True:
+			if self.stop_thread: #exit thread when flag is set
+				return
+
 			current_temp = self.read_temp()
 			if current_temp < self.min or current_temp > self.max:
 				self.alarm("Temperature is not in valid range: %s" % current_temp)
