@@ -8,7 +8,7 @@
 <h1>Activate</h1>
 
 <div ng-controller="ActivateController as actCtrl">
-	<div ng-show="actCtrl.inactive_setups.length > 0">
+	<div ng-show="actCtrl.active_setups.length == 0">
 		Inactive: <select name="activate_setup" id="activate_setup"
 			ng-options="sup.name for sup in actCtrl.inactive_setups track by sup.id"
 			ng-model="actCtrl.activate_setup"></select>

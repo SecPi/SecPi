@@ -41,6 +41,7 @@ class Manager:
 		
 		try:
 			db.connect(PROJECT_PATH)
+			db.setup()
 		except:
 			logging.exception("Couldn't connect to database!")
 			quit()
