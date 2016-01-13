@@ -390,7 +390,9 @@ class Worker:
 	# Initialize all the sensors for operation and add callback method
 	# TODO: check for duplicated sensors
 	def setup_sensors(self):
-		# self.sensors = []
+		if not config.get("sensors"):
+			logging.info("No sensors configured")
+			return
 		for sensor in config.get("sensors"):
 			try:
 				logging.info("Trying to register sensor: %s" % sensor["id"])
@@ -414,6 +416,7 @@ class Worker:
 	# Initialize all the actions
 	def setup_actions(self):
 		if not config.get("actions"):
+			logging.info("No actions configured")
 			return
 		for action in config.get("actions"):
 			try:
