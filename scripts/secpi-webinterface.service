@@ -1,0 +1,17 @@
+[Unit]
+Description=SecPi Webinterface
+After=syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=simple
+User=
+Group=
+PIDFile=/var/run/secpi-webinterface.pid
+WorkingDirectory=/opt/secpi
+ExecStart=/opt/secpi/webinterface/main.py /opt/secpi
+Restart=on-failure
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
