@@ -6,7 +6,7 @@ config.load("/opt/secpi/manager/config.json")
 
 import database as db
 
-db.connect()
+db.connect("/opt/secpi")
 
 pi_name = raw_input("Enter worker name: ")
 pi_ip = raw_input("Enter worker IP: ")
