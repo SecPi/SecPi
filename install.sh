@@ -45,21 +45,14 @@ function create_folder(){
 	fi
 }
 # generates and signs a certificate with the passed name
-# second parameter is client/server
+# second parameter is extension (client/server)
 function gen_and_sign_cert(){
 	# generate key
 	openssl genrsa -out $CERT_PATH/$1.key.pem 2048
 	# generate csr
-	openssl req -new -key $CERT_PATH/$1.key.pem -out $CERT_PATH/$1.req.pem -outform PEM -subj /CN=$1/ -nodes
+	openssl req -config $CERT_PATH/ca/openssl.cnf -new -key $CERT_PATH/$1.key.pem -out $CERT_PATH/$1.req.pem -outform PEM -subj /CN=$1/ -nodes
 	# sign cert
-	if [ $2 = "server" ]
-	then
-		openssl ca -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch -extensions server_ca_extensions
-	elif [ $2 = "client" ]
-		openssl ca -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch -extensions client_ca_extensions
-	else
-		openssl ca -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch
-	fi
+	openssl ca -config $CERT_PATH/ca/openssl.cnf -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch -extensions $2
 }
 
 
@@ -135,9 +128,18 @@ create_folder $TMP_PATH/alarms $SECPI_USER $SECPI_GROUP
 
 
 # generate certificates for rabbitmq
-mkdir $CERT_PATH
+create_folder $CERT_PATH $SECPI_USER $SECPI_GROUP
+create_folder $CERT_PATH/ca $SECPI_USER $SECPI_GROUP
+create_folder $CERT_PATH/ca/private $SECPI_USER $SECPI_GROUP
+create_folder $CERT_PATH/ca/crl $SECPI_USER $SECPI_GROUP
+create_folder $CERT_PATH/ca/newcerts $SECPI_USER $SECPI_GROUP
+touch $CERT_PATH/ca/index.txt
+echo 1000 > $CERT_PATH/ca/serial
+
+cp scripts/openssl.cnf $CERT_PATH/ca/
+
 # generate ca cert
-openssl req -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/cacert.pem -keyout $CERT_PATH/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
+openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
 
 # generate mq server certificate
 gen_and_sign_cert mq-server.$CA_DOMAIN server
@@ -151,7 +153,7 @@ read -d '' JSON_CONFIG << EOF
 		"master_port": $MQ_PORT,
 		"user": "$MQ_USER",
 		"password": "$MQ_PWD",
-		"cacert": "cacert.pem",
+		"cacert": "ca/cacert.pem",
 EOF
 
 read -d '' JSON_END << EOF
@@ -190,7 +192,7 @@ EOF
 	},
 	"server_cert": "$WEB_CERT_NAME.$CA_DOMAIN.cert.pem",
 	"server_key": "$WEB_CERT_NAME.$CA_DOMAIN.key.pem",
-	"server_ca_chain": "cacert.pem"
+	"server_ca_chain": "ca/cacert.pem"
 EOF
 
 	echo $JSON_CONFIG > $SECPI_PATH/manager/config.json
