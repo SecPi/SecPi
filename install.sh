@@ -188,7 +188,7 @@ EOF
 	
 	read -d '' JSON_WEB << EOF
 		"certfile": "webui.$CA_DOMAIN.cert.pem",
-		"keyfile": "webui.$CA_DOMAIN.cert.pem"
+		"keyfile": "webui.$CA_DOMAIN.key.pem"
 	},
 	"server_cert": "$WEB_CERT_NAME.$CA_DOMAIN.cert.pem",
 	"server_key": "$WEB_CERT_NAME.$CA_DOMAIN.key.pem",
@@ -246,8 +246,8 @@ then
 	chmod 755 $SECPI_PATH/worker/worker.py
 	
 	read -d '' JSON_WORKER << EOF
-		"certfile": "$WORKER_CERT_PATH",
-		"keyfile": "$WORKER_KEY_PATH"
+		"certfile": "worker1.$CA_DOMAIN.cert.pem",
+		"keyfile": "worker1.$CA_DOMAIN.key.pem"
 	}
 EOF
 
