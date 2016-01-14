@@ -74,7 +74,7 @@ read MQ_IP
 echo "Enter RabbitMQ Server Port (default: 5671)"
 read MQ_PORT
 
-if [ MQ_PORT = ""]
+if [ $MQ_PORT = ""]
 then
 	MQ_PORT="5671"
 fi
@@ -88,7 +88,7 @@ read MQ_PWD
 echo "Enter certificate authority domain (for rabbitmq and webserver, default: secpi.local)"
 read CA_DOMAIN
 
-if [ CA_DOMAIN = ""]
+if [ $CA_DOMAIN = ""]
 then
 	CA_DOMAIN="secpi.local"
 fi
@@ -219,9 +219,9 @@ EOF
 	cp scripts/secpi-manager /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-manager
 	
-	cp scripts/secpi-manager.service /etc/systemd/system/
-	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-manager.service
-	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-manager.service
+	#cp scripts/secpi-manager.service /etc/systemd/system/
+	#sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-manager.service
+	#sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-manager.service
 	
 	update-rc.d secpi-manager defaults
 	
@@ -230,9 +230,9 @@ EOF
 	cp scripts/secpi-webinterface /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-webinterface
 	
-	cp scripts/secpi-webinterface.service /etc/systemd/system/
-	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-webinterface.service
-	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-webinterface.service
+	#cp scripts/secpi-webinterface.service /etc/systemd/system/
+	#sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-webinterface.service
+	#sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-webinterface.service
 	
 	update-rc.d secpi-webinterface defaults
 fi
@@ -261,9 +261,9 @@ EOF
 	cp scripts/secpi-worker /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-worker
 	
-	cp scripts/secpi-worker.service /etc/systemd/system/
-	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-worker.service
-	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-worker.service
+	#cp scripts/secpi-worker.service /etc/systemd/system/
+	#sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-worker.service
+	#sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-worker.service
 	
 	update-rc.d secpi-worker defaults
 	
