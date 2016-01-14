@@ -274,6 +274,8 @@ fi
 systemctl daemon-reload > /dev/null 2>&1
 
 
+cp scripts/gen_cert.sh $SECPI_PATH
+
 ################################################################################################
 
 echo "Installing python requirements..."
