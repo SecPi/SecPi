@@ -12,7 +12,7 @@ class Twitter(Notifier):
 		self.consumer_secret = params["consumer_secret"]
 		self.access_token = params["access_token"]
 		self.access_token_secret = params["access_token_secret"]
-		self.recipient = params["recipient"]
+		self.recipients = [rec.strip() for rec in params["recipient"].split(",")]
 
 		auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
 		auth.set_access_token(self.access_token, self.access_token_secret)
@@ -25,9 +25,8 @@ class Twitter(Notifier):
 		info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
 
 		try:
-			self.api.send_direct_message(self.recipient,text=info_str)
+			for recipient in self.recipients:
+				self.api.send_direct_message(recipient,text=info_str)
+				logging.info("Twitter: Message to %s was sent successfully" % recipient)
 		except tweepy.error.TweepError, t:
-			logging.error("Wasn't able to send message: %s" % t)
-			return
-
-		logging.info("Twitter: Direct message sent")
+				logging.error("Twitter: Wasn't able to send message to %s: %s" % (recipient, t))
