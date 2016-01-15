@@ -41,10 +41,12 @@ class Dropbox_Dropper(Notifier):
 					try:
 						logging.info("Dropbox: Trying to upload file %s to %s" % (file, dropbox_dir))
 						res = self.dbx.files_upload(data, "%s/%s" % (dropbox_dir, file))
+						logging.info("Dropbox: Upload of file %s succeeded" % file)
 					except dropbox.exceptions.ApiError as d:
 						logging.error("Dropbox: API error: %s" % d)
+					except Exception, e: # currently this catches wrong authorization, we should change this
+						logging.error("Dropbox: Wasn't able to upload file: %s" % e)
 					f.close()
-			logging.info("Dropbox: Upload succeeded")
 		else:
 			logging.error("Dropbox: Wasn't able to notify because there was an initialization error")
 
