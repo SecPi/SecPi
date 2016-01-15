@@ -260,6 +260,7 @@ class Worker:
 		if self.corr_id == properties.correlation_id: #we got the right config
 			try:
 				new_conf = json.loads(body)
+				new_conf["rabbitmq"] = config.get("rabbitmq")
 			except Exception, e:
 				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e)
 				time.sleep(60) #sleep for X seconds and then ask again
