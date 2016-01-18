@@ -73,10 +73,12 @@ app.controller('FlashController', ['FlashService', '$timeout', function(FlashSer
 		FlashService.flash(message,type);
 	}
 	self.cancelTimeout = function(id){
+		self.messages[id].pinned = true;
 		FlashService.cancelTimeout(id);
 	}
 	
 	self.removeFlash = function(id){
+		self.messages[id].pinned = false;
 		self.messages[id].timeout = $timeout(function(){ FlashService.removeFlash(id); }, 1000);
 	};
 	
