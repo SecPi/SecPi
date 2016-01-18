@@ -11,13 +11,13 @@
 	<div ng-show="actCtrl.active_setups.length == 0">
 		Inactive: <select name="activate_setup" id="activate_setup"
 			ng-options="sup.name for sup in actCtrl.inactive_setups track by sup.id"
-			ng-model="actCtrl.activate_setup"></select>
+			ng-model="actCtrl.activate_setup"><option value="" disabled selected hidden>Please Choose</option></select>
 			<input type="button" ng-click="actCtrl.activate()" value="activate" />
 	</div>
 	<div ng-show="actCtrl.active_setups.length > 0">
 		Active: <select name="deactivate_setup" id="deactivate_setup"
 			ng-options="sup.name for sup in actCtrl.active_setups track by sup.id"
-			ng-model="actCtrl.deactivate_setup"></select>
+			ng-model="actCtrl.deactivate_setup"><option value="" disabled selected hidden>Please Choose</option></select>
 			<input type="button" ng-click="actCtrl.deactivate()" value="deactivate" />
 	</div>
 </div>
