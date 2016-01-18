@@ -47,7 +47,7 @@
 	</footer>
 
 	<div ng-controller="FlashController as flashCtrl" id="flash_container">
-		<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null">
+		<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null" ng-attr-id="{{ 'flash-msg-' + msg.id }}" ng-mouseenter="flashCtrl.cancelTimeout(msg.id)" ng-mouseleave="flashCtrl.removeFlash(msg.id)">
 			{{msg.message}}
 		</div>
 	</div>

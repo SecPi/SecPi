@@ -118,6 +118,11 @@ h1 {
 	box-shadow: 5px 5px 25px -5px black;
 }
 
+.flash_message:hover {
+	border-width: 3px;
+	font-weight: bold;
+}
+
 .flash_message.info {
 	color: #1BCF3F;
 	border-color: #1BCF3F;
