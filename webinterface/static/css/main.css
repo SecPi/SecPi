@@ -125,6 +125,13 @@ h1 {
 	height: 16px;
 }
 
+.flash_message .pin_straight {
+	background: url('/static/img/icons/pin-straight.png') no-repeat;
+	float: right;
+	width: 16px;
+	height: 16px;
+}
+
 .flash_message.info {
 	color: #1BCF3F;
 	border-color: #1BCF3F;

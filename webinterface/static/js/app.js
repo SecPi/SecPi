@@ -19,7 +19,7 @@ app.service('FlashService', ['$log', '$timeout',function($log, $timeout){
 		if(!time){
 			time = 5000;
 		}
-		msg = {message: message, type: type, id:id}
+		msg = {message: message, type: type, id:id, showpin: false}
 		self.flash_messages[id] = msg;
 		
 		msg.timeout = $timeout(self.removeFlash, time, true, id)	
@@ -72,16 +72,27 @@ app.controller('FlashController', ['FlashService', '$timeout', function(FlashSer
 	self.flash = function(message,type){
 		FlashService.flash(message,type);
 	}
-	self.cancelTimeout = function(id){
-		self.messages[id].pinned = true;
+	
+	self.enter = function(id){
+		self.messages[id].showpin=true;
 		FlashService.cancelTimeout(id);
 	}
 	
-	self.removeFlash = function(id){
-		self.messages[id].pinned = false;
-		self.messages[id].timeout = $timeout(function(){ FlashService.removeFlash(id); }, 1000);
-	};
+	self.leave = function(id){
+		self.messages[id].showpin=false;
+		if(!self.messages[id].pinned){ // not pinned, start hide timeout
+			self.messages[id].timeout = $timeout(function(){ FlashService.removeFlash(id); }, 1000);
+		}
+	}
 	
+	self.togglePin = function(id){
+		if(self.messages[id].pinned){
+			self.messages[id].pinned = false;
+		}
+		else{
+			self.messages[id].pinned = true;
+		}
+	}
 }])
 
 app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($http, $log, $scope, $timeout, $attrs, FlashService, HTTPService){
