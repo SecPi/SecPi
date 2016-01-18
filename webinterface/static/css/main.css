@@ -123,6 +123,7 @@ h1 {
 	float: right;
 	width: 16px;
 	height: 16px;
+	cursor: pointer;
 }
 
 .flash_message .pin_straight {
@@ -130,6 +131,7 @@ h1 {
 	float: right;
 	width: 16px;
 	height: 16px;
+	cursor: pointer;
 }
 
 .flash_message.info {
