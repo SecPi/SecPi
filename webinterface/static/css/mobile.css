@@ -1,17 +1,8 @@
 body {
 	font-size: 3em;
 }
-#container {
-	width: 100%;
-/*	margin: 0 auto;  */
-	background: white;
-	min-height: 100%;
-	
-}
 
 #nav {
-	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
-	position: fixed;
 	width: 100%;
 }
 
@@ -28,6 +19,7 @@ h1.header {
 
 
 #main {
+	width: 100%;
 	padding: 15px;
 	margin-top: 200px;
 }
