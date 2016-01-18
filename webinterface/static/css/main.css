@@ -1,32 +1,36 @@
 html {
-  background-color: #a0a0a0;
+	background-color: #a0a0a0;
+	/* 70px header + 25px footer + 40px padding content */
+	height: calc(100% - 135px); 
+	height: -moz-calc(100% - 135px);
+	height: -o-calc(100% - 135px);
+	height: -webkit-calc(100% - 135px);
 }
 
 body {
 	margin: 0;
 	font-family: Helvetica, Arial, sans-serif;
+	height: 100%;
 }
 
-#container {
-	width: 70%;
-	margin: 0 auto;  
-	background: white;
-	box-shadow: 0px 0px 20px 0px black;
-	min-height: 100%;
-}
 
 #nav {
 	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
 	position: fixed;
-	width: 70%;
+	width: 100%;
 	top: 0px;
 }
 
 #main {
 	padding: 20px 40px;
+	margin: 70px auto 25px auto;
+	width: 70%;
 	
-	margin-top: 92px;
-	margin-bottom: 25px;
+	background: white;
+	box-shadow: 0px 0px 20px 0px black;
+	min-height: 100%;
+	
+	overflow-x: auto;
 }
 
 
@@ -35,7 +39,7 @@ footer {
     background: linear-gradient(to bottom, #006600 20%, #008800 80%);
     bottom: 0;
     position: fixed;
-    width: 70%;
+    width: 100%;
     text-align: center;
     color: white;
     vertical-align: middle;
@@ -48,8 +52,7 @@ h1.header {
 	font-size: 50px;
 	font-style: italic;
 	position: absolute;
-	margin-top: 6px;
-	margin-left: 20px;
+	margin: 6px 20px;
 }
 
 
@@ -275,8 +278,9 @@ h1 {
 	border: 1px solid transparent;
 	height: 30px;
 	transition: all 0.3s;
-	text-align: center;
+	text-align: left;
 	/*border-left: 2px solid black;*/
+	padding: 3px 5px;
 }
 
 .list th {
@@ -325,7 +329,7 @@ h1 {
 
 
 .tabrow li {
-	margin: 60px 0px 0px 0px;
+	margin: 38px 0px 0px 0px;
 	padding: 3px 11px;
 	border: 1px solid #AAA;
 	background: #e0e0e0;

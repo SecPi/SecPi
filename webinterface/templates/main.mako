@@ -22,7 +22,7 @@
 	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
 <body>
-<div id="container">
+
 	<div id="nav">
 		<h1 class="header">SecPi</h1>
 		<%include file="nav.mako" args="active_tab=active_tab"/>
@@ -37,14 +37,16 @@
 		% endif
 		${self.body()}
 	</div>
+
 	<footer>
 		SecPi, a project by Martin Liebl and Philip W&ouml;lfel
 	</footer>
-</div>
-<div ng-controller="FlashController as flashCtrl" id="flash_container">
-	<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null">
-		{{msg.message}}
+
+	<div ng-controller="FlashController as flashCtrl" id="flash_container">
+		<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null">
+			{{msg.message}}
+		</div>
 	</div>
-</div>
+	
 </body>
 </html>
