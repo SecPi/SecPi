@@ -65,7 +65,6 @@ class Worker:
 			logging.info("Setup done!")
 	
 	def connect(self):
-		#logging.info("Setting up queues")
 		logging.debug("Initalizing network connection")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
@@ -94,6 +93,7 @@ class Worker:
 
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
+		# INIT CONFIG MODE
 		if not config.get('pi_id'): # when we have no pi id we only have to define the initial config setup
 			# init config queue
 			result = self.channel.queue_declare(exclusive=True)
@@ -101,7 +101,7 @@ class Worker:
 			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=self.callback_queue)
 			self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
 			self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
-		else: # only connect to the other queues when we got the initial configuration/ a pi id
+		else: # only connect to the other queues when we got the initial configuration, OPERATIVE MODE
 			#declare all the queues
 			self.channel.queue_declare(queue=utils.QUEUE_ACTION+str(config.get('pi_id')))
 			self.channel.queue_declare(queue=utils.QUEUE_CONFIG+str(config.get('pi_id')))
@@ -121,9 +121,10 @@ class Worker:
 				disconnected = False
 				self.channel.start_consuming() # blocking call
 			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
-				logging.error("Lost connection to manager")
+				logging.error("Lost connection to rabbitmq service on manager")
 				disconnected = True
 				time.sleep(10) # reconnect timer
+				logging.info("Trying to reconnect...")
 				self.connect()
 				self.clear_message_queue() #could this make problems if the manager replies too fast?
 	
@@ -179,6 +180,11 @@ class Worker:
 	# Try to resend the messages which couldn't be sent before
 	def clear_message_queue(self):
 		logging.info("Trying to clear message queue")
+
+		if not self.message_queue: # queue is already empty
+			logging.info("Message queue was empty, nothing to clear")
+			return
+
 		for message in self.message_queue:
 			if(message["json"]):
 				if self.send_json_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfully
@@ -461,11 +467,10 @@ class Worker:
 		except OSError as oe:
 			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), oe))
 
-	def connection_cleanup(self): # not used yet
+	def connection_cleanup(self):
 		self.channel.close()
 		self.connection.close()
 
-	
 	
 
 if __name__ == '__main__':

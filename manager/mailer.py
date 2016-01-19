@@ -11,7 +11,6 @@ class Mailer(Notifier):
 
 	def __init__(self, id, params):
 		super(Mailer, self).__init__(id, params)
-		logging.basicConfig(format='%(asctime)s | %(levelname)s:  %(message)s', level=logging.DEBUG)
 		
 		try:
 			# SMTP Server config + data dir

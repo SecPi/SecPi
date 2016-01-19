@@ -33,6 +33,8 @@ class Manager:
 		except Exception as e:
 			print("Error while trying to load config file for logging")
 
+		logging.info("Initializing manager")
+
 		try:
 			config.load(PROJECT_PATH +"/manager/config.json")
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
@@ -55,6 +57,23 @@ class Manager:
 		self.holddown_state = False
 		self.holddown_timer = 30
 
+		self.connect()
+
+		# debug output, setups & state
+		setups = db.session.query(db.objects.Setup).all()
+		rebooted = False
+		for setup in setups:
+			print("name: %s active:%s" % (setup.name, setup.active_state))
+			if setup.active_state:
+				rebooted = True
+
+		if rebooted:
+			self.setup_notifiers()
+
+		logging.info("Setup done!")
+
+	def connect(self):
+		logging.debug("Initializing connection to rabbitmq service")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
 			host=config.get('rabbitmq')['master_ip'],
@@ -67,9 +86,17 @@ class Manager:
 				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
 			}
 		)
-		# TODO: add exception
-		self.connection = pika.BlockingConnection(parameters=parameters)
-		self.channel = self.connection.channel()
+		
+		connected = False
+		while not connected: #retry if establishing a connection fails
+			try:
+				self.connection = pika.BlockingConnection(parameters=parameters)
+				self.channel = self.connection.channel()
+				connected = True
+				logging.info("Connection to rabbitmq service established")
+			except pika.exceptions.AMQPConnectionError as pe: # if connection can't be established
+				logging.error("Wasn't able to connect to rabbitmq service: %s" % pe)
+				time.sleep(30)
 
 		#define exchange
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
@@ -94,28 +121,27 @@ class Manager:
 			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ACTION+str(pi.id))
 			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_CONFIG+str(pi.id))
 
-		# debug output, setups & state
-		setups = db.session.query(db.objects.Setup).all()
-		rebooted = False
-		for setup in setups:
-			print("name: %s active:%s" % (setup.name, setup.active_state))
-			if setup.active_state:
-				rebooted = True
-
-		if rebooted:
-			self.setup_notifiers()
-
 		#define callbacks for alarm and data queues
 		self.channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
 		self.channel.basic_consume(self.got_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
 		self.channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
 		self.channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
 		self.channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
-		logging.info("Setup done!")
 
 	
 	def start(self):
-		self.channel.start_consuming()
+		disconnected = True
+		while disconnected:
+			try:
+				disconnected = False
+				self.channel.start_consuming() # blocking call
+			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
+				logging.error("Lost connection to rabbitmq service")
+				disconnected = True
+				time.sleep(10) # reconnect timer
+				logging.info("Trying to reconnect...")
+				self.connect()
+	
 		
 	def __del__(self):
 		try:
