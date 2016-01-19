@@ -46,8 +46,23 @@ input[type=button]:hover, select:hover {
 	######### Flash Messages #########
 */
 
+#flash_container {
+	right: auto;
+	width: 100%;
+}
+
 .flash_message {
 	width: auto;
+}
+
+@keyframes flash_anim_in {
+	from {botom: -50px}
+	to {bottom: 0px}
+}
+
+@keyframes flash_anim_out {
+	from {bottom: 0px}
+	to {bottom: -50px}
 }
 
 
