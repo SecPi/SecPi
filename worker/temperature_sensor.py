@@ -16,11 +16,11 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 			self.max = int(params["max"])
 			self.bouncetime = int(params["bouncetime"])
 			self.device_id = params["device_id"]
-		except ValueError, v: # if one configuration parameter can't be parsed as int
+		except ValueError as v: # if one configuration parameter can't be parsed as int
 			logging.error("TemperatureSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % v)
 			self.corrupted = True
 			return
-		except KeyError, k: # if config parameters are missing in the file
+		except KeyError as k: # if config parameters are missing
 			logging.error("TemperatureSensor: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s" % k)
 			self.corrupted = True
 			return

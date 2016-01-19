@@ -10,11 +10,11 @@ class Speaker(Action):
 		try:
 			self.path_to_audio = params["path_to_audio"]
 			self.repetitions = int(params["repetitions"]) #TODO: change| why did i write this??
-		except ValueError, e: # if repetitions can't be parsed as int
+		except ValueError as e: # if repetitions can't be parsed as int
 			logging.error("Speaker: Wasn't able to initialize the device, please check your configuration: %s" % e)
 			self.corrupted = True
 			return
-		except KeyError, k: # if config parameters are missing in file
+		except KeyError as k: # if config parameters are missing in file
 			logging.error("Speaker: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % k)
 			self.corrupted = True
 			return
@@ -26,7 +26,7 @@ class Speaker(Action):
 		pygame.mixer.init()
 		try:
 			pygame.mixer.music.load(self.path_to_audio)
-		except Exception, e: # audio file doesn't exist or is not playable
+		except Exception as e: # audio file doesn't exist or is not playable
 			logging.error("Speaker: Wasn't able to load audio file: %s" % e)
 			pygame.mixer.quit()
 			return

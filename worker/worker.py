@@ -38,8 +38,8 @@ class Worker:
 		
 		try: #TODO: this should be nicer...		
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
-		except Exception, e:
-			print "Error while trying to load config file for logging"
+		except Exception as e:
+			print("Error while trying to load config file for logging")
 
 		logging.info("Initializing worker")
 
@@ -88,7 +88,7 @@ class Worker:
 				self.channel = self.connection.channel()
 				connected = True
 				logging.info("Connection to manager established")
-			except pika.exceptions.AMQPConnectionError, e: # if connection can't be established
+			except pika.exceptions.AMQPConnectionError as e: # if connection can't be established
 				logging.error("Wasn't able to open a connection to the manager: %s" % e)
 				time.sleep(30)
 
@@ -261,7 +261,7 @@ class Worker:
 			try:
 				new_conf = json.loads(body)
 				new_conf["rabbitmq"] = config.get("rabbitmq")
-			except Exception, e:
+			except Exception as e:
 				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e)
 				time.sleep(60) #sleep for X seconds and then ask again
 				self.fetch_init_config()
@@ -286,7 +286,7 @@ class Worker:
 			else:
 				logging.info("No data to zip")
 				return False
-		except OSError, e:
+		except OSError as e:
 			self.post_err("Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), e))
 			logging.error("Wasn't able to prepare data for manager: %s" % e)
 
@@ -301,7 +301,7 @@ class Worker:
 				elif os.path.isdir(file_path):
 					shutil.rmtree(file_path)
 			logging.info("Cleaned up files")
-		except OSError, e:
+		except OSError as e:
 			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
 			logging.error("Wasn't able to clean up data directory: %s" % e)
 
@@ -361,7 +361,7 @@ class Worker:
 				f = open('%s/worker/config.json'%(PROJECT_PATH),'w') # TODO: pfad
 				f.write(json.dumps(new_config))
 				f.close()
-			except Exception, e:
+			except Exception as e:
 				logging.exception("Wasn't able to write config file:\n%s" % e)
 			
 			# set new config
@@ -383,7 +383,7 @@ class Worker:
 		
 		try:
 			new_conf = json.loads(body)
-		except Exception, e:
+		except Exception as e:
 			logging.exception("Wasn't able to read JSON config from manager:\n%s" % e) 
 		
 		# we don't get the rabbitmq config sent to us, so add the current one
@@ -403,7 +403,7 @@ class Worker:
 				s = self.class_for_name(sensor["module"], sensor["class"])
 				sen = s(sensor["id"], sensor["params"], self)
 				sen.activate()
-			except Exception, e:
+			except Exception as e:
 				self.post_err("Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (config.get('pi_id'), sensor["class"],e))
 			else:
 				self.sensors.append(sen)
@@ -428,7 +428,7 @@ class Worker:
 				logging.info("Trying to register action: %s" % action["id"])
 				a = self.class_for_name(action["module"], action["class"])
 				act = a(action["id"], action["params"])
-			except Exception, e: #AttributeError, KeyError
+			except Exception as e: #AttributeError, KeyError
 				self.post_err("Pi with id '%s' wasn't able to register action '%s':\n%s" % (config.get('pi_id'), action["class"],e))
 			else:
 				self.actions.append(act)
@@ -458,7 +458,7 @@ class Worker:
 			if not os.path.isdir(data_path): #check if directory structure already exists
 				os.makedirs(data_path)
 				logging.debug("Created SecPi data directory")
-		except OSError, e:
+		except OSError as e:
 			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e))
 
 	def connection_cleanup(self): # not used yet

@@ -30,8 +30,8 @@ class Manager:
 	def __init__(self):
 		try: #TODO: this should be nicer...		
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
-		except Exception, e:
-			print "Error while trying to load config file for logging"
+		except Exception as e:
+			print("Error while trying to load config file for logging")
 
 		try:
 			config.load(PROJECT_PATH +"/manager/config.json")
@@ -98,7 +98,7 @@ class Manager:
 		setups = db.session.query(db.objects.Setup).all()
 		rebooted = False
 		for setup in setups:
-			print "name: %s active:%s" % (setup.name, setup.active_state)
+			print("name: %s active:%s" % (setup.name, setup.active_state))
 			if setup.active_state:
 				rebooted = True
 

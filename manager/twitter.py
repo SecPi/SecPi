@@ -14,7 +14,7 @@ class Twitter(Notifier):
 			self.access_token = params["access_token"]
 			self.access_token_secret = params["access_token_secret"]
 			self.recipients = [rec.strip() for rec in params["recipient"].split(",")]
-		except KeyError, k:
+		except KeyError as k:
 			logging.error("Twitter: Error while trying to initialize notifier, it seems there is a config parameter missing: %s" % k)
 			self.corrupted = True
 			return
@@ -24,7 +24,7 @@ class Twitter(Notifier):
 			auth.set_access_token(self.access_token, self.access_token_secret)
 
 			self.api = tweepy.API(auth)
-		except Exception, e:
+		except Exception as e:
 			logging.error("Twitter: Error while trying to initialize notifier: %s" % e)
 			self.corrupted = True
 			return
@@ -40,7 +40,7 @@ class Twitter(Notifier):
 				for recipient in self.recipients:
 					self.api.send_direct_message(recipient,text=info_str)
 					logging.info("Twitter: Message to %s was sent successfully" % recipient)
-			except tweepy.error.TweepError, t:
+			except tweepy.error.TweepError as t:
 					logging.error("Twitter: Wasn't able to send message to %s: %s" % (recipient, t))
 		else:
 			logging.error("Twitter: Wasn't able to notify because there was an initialization error")

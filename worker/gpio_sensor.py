@@ -11,11 +11,11 @@ class GPIOSensor(Sensor):
 		try:
 			self.gpio = int(params["gpio"])
 			self.bouncetime = int(self.params['bouncetime'])
-		except ValueError, v: # if one configuration parameter can't be parsed as int
+		except ValueError as v: # if one configuration parameter can't be parsed as int
 			logging.error("GPIOSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % v)
 			self.corrupted = True
 			return
-		except KeyError, k: # if config parameters are missing in the file
+		except KeyError as k: # if config parameters are missing in the file
 			logging.error("GPIOSensor: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s" % k)
 			self.corrupted = True
 			return
@@ -27,7 +27,7 @@ class GPIOSensor(Sensor):
 		try:
 			GPIO.setup(self.gpio, GPIO.IN)
 			GPIO.add_event_detect(self.gpio, GPIO.RISING, callback=self.cb_alarm, bouncetime=self.bouncetime)
-		except ValueError, v: # GPIO pin number or bouncetime is not in valid range
+		except ValueError as v: # GPIO pin number or bouncetime is not in valid range
 			logging.error("GPIOSensor: The given pin number or bouncetime is not in a valid range: %s" % v)
 			return
 		logging.debug("GPIOSensor: Registered sensor at pin %s!" % self.gpio)
@@ -36,7 +36,7 @@ class GPIOSensor(Sensor):
 		try:
 			GPIO.remove_event_detect(self.gpio)
 			GPIO.cleanup(self.gpio)
-		except ValueError, v: # GPIO pin number is not in valid range
+		except ValueError as v: # GPIO pin number is not in valid range
 			logging.error("GPIOSensor: The given pin number is not in a valid range: %s" % v)
 		logging.debug("GPIOSensor: Removed sensor at pin %s!" % self.gpio)
 	

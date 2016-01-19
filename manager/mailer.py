@@ -21,11 +21,11 @@ class Mailer(Notifier):
 			self.smtp_user = params["smtp_user"]
 			self.smtp_pass = params["smtp_pass"]
 			self.smtp_security = params["smtp_security"]
-		except KeyError, k:
+		except KeyError as k: # if config parameters are missing
 			logging.error("Mailer: Wasn't able to initialize the notifier, it seems there is a config parameter missing: %s" % k)
 			self.corrupted = True
 			return
-		except ValueError, v:
+		except ValueError as v: # if one configuration parameter can't be parsed as int
 			logging.error("Mailer: Wasn't able to initialize the notifier, please check your configuration: %s" % v)
 			self.corrupted = True
 			return
@@ -98,7 +98,7 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception, e:
+		except Exception as e:
 			logging.error(e)
 
 	def send_mail_ssl(self):
@@ -112,7 +112,7 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception, e:
+		except Exception as e:
 			logging.error(e)
 
 	def send_mail_nossl(self):
@@ -126,7 +126,7 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception, e:
+		except Exception as e:
 			logging.error(e)
 
 	def send_mail_noauth_nossl(self):
@@ -138,7 +138,7 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception, e:
+		except Exception as e:
 			logging.error(e)
 	
 	def send_mail_noauth_ssl(self):
@@ -150,7 +150,7 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception, e:
+		except Exception as e:
 			logging.error(e)
 	
 	def send_mail_noauth_starttls(self):
@@ -163,7 +163,7 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception, e:
+		except Exception as e:
 			logging.error(e)
 
 

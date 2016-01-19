@@ -10,14 +10,14 @@ class Dropbox_Dropper(Notifier):
 		super(Dropbox_Dropper, self).__init__(id, params)
 		try:
 			self.access_token = params["access_token"]
-		except KeyError, k:
+		except KeyError as k: # if config parameters are missing
 			logging.error("Dropxbox: Error while trying to initialize notifier, it seems there is a config parameter missing: %s" % k)
 			self.corrupted = True
 			return
 
 		try:
 			self.dbx = dropbox.Dropbox(self.access_token)
-		except Exception, e:
+		except Exception as e:
 			logging.error("Dropbox: Error while connecting to Dropbox service: %s" % e)
 			self.corrupted = True
 			return
@@ -44,7 +44,7 @@ class Dropbox_Dropper(Notifier):
 						logging.info("Dropbox: Upload of file %s succeeded" % file)
 					except dropbox.exceptions.ApiError as d:
 						logging.error("Dropbox: API error: %s" % d)
-					except Exception, e: # currently this catches wrong authorization, we should change this
+					except Exception as e: # currently this catches wrong authorization, we should change this
 						logging.error("Dropbox: Wasn't able to upload file: %s" % e)
 					f.close()
 		else:
