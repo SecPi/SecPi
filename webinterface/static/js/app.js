@@ -3,7 +3,7 @@
 
 var app = angular.module("SecPi", ['ngAnimate']);
 
-app.service('FlashService', function($log, $timeout){
+app.service('FlashService', ['$log', '$timeout',function($log, $timeout){
 	var self = this;
 	
 	self.TYPE_INFO = 'info';
@@ -19,11 +19,17 @@ app.service('FlashService', function($log, $timeout){
 		if(!time){
 			time = 5000;
 		}
-		msg = {message: message, type: type, id:id}
+		msg = {message: message, type: type, id:id, showpin: false}
 		self.flash_messages[id] = msg;
 		
-		$timeout(self.removeFlash, time, true, id)
+		msg.timeout = $timeout(self.removeFlash, time, true, id)	
 	};
+	
+	self.cancelTimeout = function(id){
+		if(self.flash_messages.hasOwnProperty(id)){
+			$timeout.cancel(self.flash_messages[id].timeout)
+		}
+	}
 	
 	self.removeFlash = function(id){
 		if(self.flash_messages.hasOwnProperty(id)){
@@ -34,7 +40,7 @@ app.service('FlashService', function($log, $timeout){
 	self.handle_error = function(response){
 		self.flash(('Error with status ' +response.status +' while retrieving data!'), self.TYPE_ERR);
 	}
-});
+}]);
 
 
 app.service('HTTPService', ['$http', 'FlashService', function($http, FlashService){
@@ -58,13 +64,34 @@ app.service('HTTPService', ['$http', 'FlashService', function($http, FlashServic
 	
 }]);
 
-app.controller('FlashController', ['FlashService', function(FlashService){
+app.controller('FlashController', ['FlashService', '$timeout', function(FlashService, $timeout){
 	var self = this;
 	
 	self.messages = FlashService.flash_messages;
 	
 	self.flash = function(message,type){
 		FlashService.flash(message,type);
+	}
+	
+	self.enter = function(id){
+		self.messages[id].showpin=true;
+		FlashService.cancelTimeout(id);
+	}
+	
+	self.leave = function(id){
+		self.messages[id].showpin=false;
+		if(!self.messages[id].pinned){ // not pinned, start hide timeout
+			self.messages[id].timeout = $timeout(function(){ FlashService.removeFlash(id); }, 1000);
+		}
+	}
+	
+	self.togglePin = function(id){
+		if(self.messages[id].pinned){
+			self.messages[id].pinned = false;
+		}
+		else{
+			self.messages[id].pinned = true;
+		}
 	}
 }])
 

@@ -47,7 +47,8 @@
 	</footer>
 
 	<div ng-controller="FlashController as flashCtrl" id="flash_container">
-		<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null">
+		<div class="flash_message" ng-repeat="msg in flashCtrl.messages" ng-class="msg.type" ng-show="msg.message != null" ng-attr-id="{{ 'flash-msg-' + msg.id }}" ng-mouseenter="flashCtrl.enter(msg.id)" ng-mouseleave="flashCtrl.leave(msg.id)">
+			<span ng-show="msg.showpin" ng-class="msg.pinned?'pin_straight':'pin'" ng-click="flashCtrl.togglePin(msg.id)"></span>
 			{{msg.message}}
 		</div>
 	</div>

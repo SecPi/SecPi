@@ -1,14 +1,14 @@
 {
 	"rabbitmq":{
 		"master_ip": "<ip>",
-		"master_port": 5671,
+		"master_port": <port>,
 		"user": "<user>",
 		"password": "<pwd>",
 		"cacert": "ca/cacert.pem",
-		"certfile": "client/webui.cert.pem",
-		"keyfile": "client/webui.key.pem"
+		"certfile": "<certfile>",
+		"keyfile": "<keyfile>"
 	},
-	"server_cert": "webinterface.cert.pem",
-	"server_key": "webinterface.key.pem",
-	"server_ca_chain": "cacert.pem"
+	"server_cert": "<server_cert>",
+	"server_key": "<server_key>",
+	"server_ca_chain": "ca/cacert.pem"
 }

@@ -145,22 +145,6 @@ openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -
 gen_and_sign_cert mq-server.$CA_DOMAIN server
 
 
-
-read -d '' JSON_CONFIG << EOF
-{
-	"rabbitmq":{
-		"master_ip": "$MQ_IP",
-		"master_port": $MQ_PORT,
-		"user": "$MQ_USER",
-		"password": "$MQ_PWD",
-		"cacert": "ca/cacert.pem",
-EOF
-
-read -d '' JSON_END << EOF
-}
-EOF
-
-
 echo "Current SecPi folder: $PWD"
 echo "Copying to $SECPI_PATH..."
 
@@ -175,33 +159,22 @@ then
 	cp -R manager/ $SECPI_PATH/
 	echo "Copying webinterface..."
 	cp -R webinterface/ $SECPI_PATH/
-
-	chmod 755 $SECPI_PATH/webinterface/main.py
-	chmod 755 $SECPI_PATH/manager/manager.py
 	
 	echo "Creating config..."
-	read -d '' JSON_MGR << EOF
-		"certfile": "manager.$CA_DOMAIN.cert.pem",
-		"keyfile": "manager.$CA_DOMAIN.key.pem"
-	}
-EOF
 	
-	read -d '' JSON_WEB << EOF
-		"certfile": "webui.$CA_DOMAIN.cert.pem",
-		"keyfile": "webui.$CA_DOMAIN.key.pem"
-	},
-	"server_cert": "$WEB_CERT_NAME.$CA_DOMAIN.cert.pem",
-	"server_key": "$WEB_CERT_NAME.$CA_DOMAIN.key.pem",
-	"server_ca_chain": "ca/cacert.pem"
-EOF
-
-	echo $JSON_CONFIG > $SECPI_PATH/manager/config.json
-	echo $JSON_MGR >> $SECPI_PATH/manager/config.json
-	echo $JSON_END >> $SECPI_PATH/manager/config.json
+	sed -i "s/<ip>/$MQ_IP/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
+	sed -i "s/<port>/$MQ_PORT/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
+	sed -i "s/<user>/$MQ_USER/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
+	sed -i "s/<pwd>/$MQ_PWD/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
 	
-	echo $JSON_CONFIG > $SECPI_PATH/webinterface/config.json
-	echo $JSON_WEB >> $SECPI_PATH/webinterface/config.json
-	echo $JSON_END >> $SECPI_PATH/webinterface/config.json
+	sed -i "s/<certfile>/manager.$CA_DOMAIN.cert.pem/" $SECPI_PATH/manager/config.json
+	sed -i "s/<keyfile>/manager.$CA_DOMAIN.key.pem/" $SECPI_PATH/manager/config.json
+	
+	sed -i "s/<certfile>/webui.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
+	sed -i "s/<keyfile>/webui.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
+	sed -i "s/<server_cert>/$WEB_CERT_NAME.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
+	sed -i "s/<server_key>/$WEB_CERT_NAME.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
+	
 
 	echo "Generating rabbitmq certificates..."
 	gen_and_sign_cert manager.$CA_DOMAIN client
@@ -235,6 +208,10 @@ EOF
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-webinterface.service
 	
 	update-rc.d secpi-webinterface defaults
+	
+	# set permissions
+	chmod 755 $SECPI_PATH/webinterface/main.py
+	chmod 755 $SECPI_PATH/manager/manager.py
 fi
 
 
@@ -243,17 +220,14 @@ if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 3 ]
 then
 	echo "Copying worker..."
 	cp -R worker/ $SECPI_PATH/
-	chmod 755 $SECPI_PATH/worker/worker.py
 	
-	read -d '' JSON_WORKER << EOF
-		"certfile": "worker1.$CA_DOMAIN.cert.pem",
-		"keyfile": "worker1.$CA_DOMAIN.key.pem"
-	}
-EOF
-
-	echo $JSON_CONFIG > $SECPI_PATH/worker/config.json
-	echo $JSON_WORKER >> $SECPI_PATH/worker/config.json
-	echo $JSON_END >> $SECPI_PATH/worker/config.json
+	sed -i "s/<ip>/$MQ_IP/" $SECPI_PATH/worker/config.json
+	sed -i "s/<port>/$MQ_PORT/" $SECPI_PATH/worker/config.json
+	sed -i "s/<user>/$MQ_USER/" $SECPI_PATH/worker/config.json
+	sed -i "s/<pwd>/$MQ_PWD/" $SECPI_PATH/worker/config.json
+	
+	sed -i "s/<certfile>/worker1.$CA_DOMAIN.cert.pem/" $SECPI_PATH/worker/config.json
+	sed -i "s/<keyfile>/worker1.$CA_DOMAIN.key.pem/" $SECPI_PATH/worker/config.json
 	
 	gen_and_sign_cert worker1.$CA_DOMAIN client
 	
@@ -268,7 +242,11 @@ EOF
 	update-rc.d secpi-worker defaults
 	
 	
+	# set permissions
+	chmod 755 $SECPI_PATH/worker/worker.py
 fi
+
+chown -R $SECPI_USER:$SECPI_GROUP $SECPI_PATH
 
 # reload systemd, but don't write anything if systemctl doesn't exist
 systemctl daemon-reload > /dev/null 2>&1
