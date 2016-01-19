@@ -88,8 +88,8 @@ class Worker:
 				self.channel = self.connection.channel()
 				connected = True
 				logging.info("Connection to manager established")
-			except pika.exceptions.AMQPConnectionError as e: # if connection can't be established
-				logging.error("Wasn't able to open a connection to the manager: %s" % e)
+			except pika.exceptions.AMQPConnectionError as pe: # if connection can't be established
+				logging.error("Wasn't able to open a connection to the manager: %s" % pe)
 				time.sleep(30)
 
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
@@ -286,9 +286,9 @@ class Worker:
 			else:
 				logging.info("No data to zip")
 				return False
-		except OSError as e:
-			self.post_err("Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), e))
-			logging.error("Wasn't able to prepare data for manager: %s" % e)
+		except OSError as oe:
+			self.post_err("Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (config.get('pi_id'), oe))
+			logging.error("Wasn't able to prepare data for manager: %s" % oe)
 
 	# Remove all the data that was created during the alarm, unlink == remove
 	def cleanup_data(self):
@@ -301,9 +301,9 @@ class Worker:
 				elif os.path.isdir(file_path):
 					shutil.rmtree(file_path)
 			logging.info("Cleaned up files")
-		except OSError as e:
-			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), e))
-			logging.error("Wasn't able to clean up data directory: %s" % e)
+		except OSError as oe:
+			self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (config.get('pi_id'), oe))
+			logging.error("Wasn't able to clean up data directory: %s" % oe)
 
 	# callback method which processes the actions which originate from the manager
 	def got_action(self, ch, method, properties, body):
@@ -458,8 +458,8 @@ class Worker:
 			if not os.path.isdir(data_path): #check if directory structure already exists
 				os.makedirs(data_path)
 				logging.debug("Created SecPi data directory")
-		except OSError as e:
-			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), e))
+		except OSError as oe:
+			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), oe))
 
 	def connection_cleanup(self): # not used yet
 		self.channel.close()

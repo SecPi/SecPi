@@ -21,12 +21,12 @@ class Mailer(Notifier):
 			self.smtp_user = params["smtp_user"]
 			self.smtp_pass = params["smtp_pass"]
 			self.smtp_security = params["smtp_security"]
-		except KeyError as k: # if config parameters are missing
-			logging.error("Mailer: Wasn't able to initialize the notifier, it seems there is a config parameter missing: %s" % k)
+		except KeyError as ke: # if config parameters are missing
+			logging.error("Mailer: Wasn't able to initialize the notifier, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
-		except ValueError as v: # if one configuration parameter can't be parsed as int
-			logging.error("Mailer: Wasn't able to initialize the notifier, please check your configuration: %s" % v)
+		except ValueError as ve: # if one configuration parameter can't be parsed as int
+			logging.error("Mailer: Wasn't able to initialize the notifier, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
 

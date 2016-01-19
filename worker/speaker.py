@@ -10,12 +10,12 @@ class Speaker(Action):
 		try:
 			self.path_to_audio = params["path_to_audio"]
 			self.repetitions = int(params["repetitions"]) #TODO: change| why did i write this??
-		except ValueError as e: # if repetitions can't be parsed as int
-			logging.error("Speaker: Wasn't able to initialize the device, please check your configuration: %s" % e)
+		except ValueError as ve: # if repetitions can't be parsed as int
+			logging.error("Speaker: Wasn't able to initialize the device, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
-		except KeyError as k: # if config parameters are missing in file
-			logging.error("Speaker: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % k)
+		except KeyError as ke: # if config parameters are missing in file
+			logging.error("Speaker: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
 

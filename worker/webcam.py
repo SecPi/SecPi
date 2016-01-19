@@ -14,12 +14,12 @@ class Webcam(Action):
 			self.path = params["path"]
 			self.resolution = (int(params["resolution_x"]), int(params["resolution_y"]))
 			self.data_path = params["data_path"]
-		except ValueError as e: # if resolution can't be parsed as int
-			logging.error("Webcam: Wasn't able to initialize the device, please check your configuration: %s" % e)
+		except ValueError as ve: # if resolution can't be parsed as int
+			logging.error("Webcam: Wasn't able to initialize the device, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
-		except KeyError as k: # if config parameters are missing in file
-			logging.error("Webcam: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % k)
+		except KeyError as ke: # if config parameters are missing in file
+			logging.error("Webcam: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
 
@@ -32,10 +32,10 @@ class Webcam(Action):
 		logging.debug("Webcam: Trying to take pictures")
 		try:
 			self.cam.start()
-		except SystemError as e: # device path wrong
+		except SystemError as se: # device path wrong
 			logging.error("Webcam: Wasn't able to find video device at device path: %s" % self.path)
 			return
-		except AttributeError as a: # init failed, taking pictures won't work -> shouldn't happen but anyway...
+		except AttributeError as ae: # init failed, taking pictures won't work -> shouldn't happen but anyway...
 			logging.error("Webcam: Couldn't take pictures because video device wasn't initialized properly")
 			return
 

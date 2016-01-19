@@ -98,7 +98,7 @@ class Root(object):
 			self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
 			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
 		except Exception as e:
-			cherrypy.log("Error connecting to Queue! %s"%e)
+			cherrypy.log("Error connecting to Queue! %s" % e)
 	
 	@property
 	def db(self):
@@ -159,14 +159,14 @@ class Root(object):
 						ooff = { 'active_state': True }
 						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
-						return {'status':'error', 'message': "Error activating %s! No connection to queue server!"%su.name }
+						return {'status':'error', 'message': "Error activating %s! No connection to queue server!" % su.name }
 						
 				except Exception as e:
 					su.active_state = False;
 					self.db.commit()
-					return {'status':'error', 'message': "Error activating! %s"%e }
+					return {'status':'error', 'message': "Error activating! %s" % e }
 				else:
-					return {'status': 'success', 'message': "Activated setup %s!"%su.name}
+					return {'status': 'success', 'message': "Activated setup %s!" % su.name}
 				
 			return {'status':'error', 'message': "Invalid ID!" }
 		
@@ -193,9 +193,9 @@ class Root(object):
 				except Exception as e:
 					su.active_state = True;
 					self.db.commit()
-					return {'status':'error', 'message': "Error activating! %s"%e }
+					return {'status':'error', 'message': "Error activating! %s" % e }
 				else:
-					return {'status': 'success', 'message': "Deactivated setup %s!"%su.name}
+					return {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
 			
 			return {'status':'error', 'message': "Invalid ID!" }
 		
@@ -215,7 +215,7 @@ class Root(object):
 				else: # exit_code != 0
 					return {'status':'error', 'message': "Error changing login credentials!"}
 			except Exception as e:
-				return {'status':'error', 'message': "Error changing login credentials: %s"%e }
+				return {'status':'error', 'message': "Error changing login credentials: %s" % e }
 
 
 def run():

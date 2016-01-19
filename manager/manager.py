@@ -315,8 +315,8 @@ class Manager:
 		try:
 			for notifier in self.notifiers:
 				notifier.notify(info)
-		except Exception as ex:
-			logging.exception("Error notifying: %s"%ex)
+		except Exception as e:
+			logging.exception("Error notifying: %s" % e)
 
 	def holddown(self):
 		self.holddown_state = True

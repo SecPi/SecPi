@@ -11,20 +11,20 @@ class Buzzer(Action):
 		try:
 			self.duration = int(params["duration"])
 			self.gpio_pin = int(params["gpio_pin"])
-		except KeyError as k: # if config parameters are missing in file
-			logging.error("Buzzer: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % k)
+		except KeyError as ke: # if config parameters are missing in file
+			logging.error("Buzzer: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
-		except ValueError as v: # if a parameter can't be parsed as int
-			logging.error("Buzzer: Wasn't able to initialize the device, please check your configuration: %s" % v)
+		except ValueError as ve: # if a parameter can't be parsed as int
+			logging.error("Buzzer: Wasn't able to initialize the device, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
 
 		try:
 			GPIO.setmode(GPIO.BCM)
 			GPIO.setup(self.gpio_pin, GPIO.OUT)
-		except ValueError as v: # GPIO pin number is not in valid range
-			logging.error("Buzzer: The given pin number is not in a valid range: %s" % v)
+		except ValueError as ve: # GPIO pin number is not in valid range
+			logging.error("Buzzer: The given pin number is not in a valid range: %s" % ve)
 			self.corrupted = True
 			return
 		logging.debug("Buzzer: Audio device initialized")
