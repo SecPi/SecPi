@@ -43,7 +43,7 @@ class Mailer(Notifier):
 			self.message.attach(MIMEText(info_str, "plain"))
 			
 			self.prepare_mail_attachments()
-			Mailer: 
+			
 			if self.smtp_security == "STARTTLS":
 				self.send_mail_starttls()
 			elif self.smtp_security == "SSL":
