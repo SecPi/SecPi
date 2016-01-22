@@ -343,6 +343,9 @@ class Manager:
 				notifier.notify(info)
 		except Exception as e:
 			logging.exception("Error notifying: %s" % e)
+			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="Error notifying: %s" % e)
+			db.session.add(lo)
+			db.session.commit()
 
 	def holddown(self):
 		self.holddown_state = True
