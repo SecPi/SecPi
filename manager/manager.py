@@ -192,6 +192,13 @@ class Manager:
 		db.session.add(log_entry)
 		db.session.commit()
 	
+	# helper method to create error log entry
+	def log_msg(self, msg, level):
+		logging.info(msg)
+		log_entry = db.objects.LogEntry(level=level, message=str(msg), sender="Manager")
+		db.session.add(log_entry)
+		db.session.commit()
+	
 	
 	def got_config_request(self, ch, method, properties, body):
 		ip_addresses = json.loads(body)
@@ -333,19 +340,14 @@ class Manager:
 				break
 		# continue code execution
 		if self.received_data_counter < self.num_of_workers:
-			logging.info("TIMEOUT: Only %d out of %d workers replied with data" % (self.received_data_counter, self.num_of_workers))
-			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers))
-			db.session.add(lo)
-			db.session.commit()
+			log_msg("TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers), utils.LEVEL_INFO)
 		
 		try:
 			for notifier in self.notifiers:
 				notifier.notify(info)
 		except Exception as e:
-			logging.exception("Error notifying: %s" % e)
-			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="Error notifying: %s" % e)
-			db.session.add(lo)
-			db.session.commit()
+			log_err("Error notifying: %s" % e)
+			
 
 	def holddown(self):
 		self.holddown_state = True
