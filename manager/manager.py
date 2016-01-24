@@ -286,10 +286,10 @@ class Manager:
 			# create log entry for db
 			if not late_arrival:
 				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-				log_msg("New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
+				self.log_msg("New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
 			else:
 				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Late Alarm: %s" %msg['message'])
-				log_msg("Old alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
+				self.log_msg("Old alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
 			
 			db.session.add(al)
 			db.session.commit()
@@ -307,7 +307,7 @@ class Manager:
 			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify, args=[notif_info])
 			timeout_thread.start()
 		else: # --> holddown state
-			log_msg("Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']), utils.LEVEL_INFO)
+			self.log_msg("Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']), utils.LEVEL_INFO)
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Alarm during holddown state: %s" % msg['message'])
 			db.session.add(al)
 			db.session.commit()
@@ -338,7 +338,7 @@ class Manager:
 				break
 		# continue code execution
 		if self.received_data_counter < self.num_of_workers:
-			log_msg("TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers), utils.LEVEL_INFO)
+			self.log_msg("TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers), utils.LEVEL_INFO)
 		
 		
 		for notifier in self.notifiers:
