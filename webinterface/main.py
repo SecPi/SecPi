@@ -62,6 +62,8 @@ config.load(PROJECT_PATH +"/webinterface/config.json")
 class Root(object):
 
 	def __init__(self):
+		cherrypy.log("Initializing Webserver")
+		
 		cherrypy.config.update({'request.error_response': self.handle_error})
 		cherrypy.config.update({'error_page.404': self.error_404})
 		cherrypy.config.update({'error_page.401': self.error_401})
@@ -98,7 +100,12 @@ class Root(object):
 			self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
 			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
 		except Exception as e:
-			cherrypy.log("Error connecting to Queue! %s" % e)
+			cherrypy.log("Error connecting to Queue! %s" % e, traceback=True)
+	
+	def log_msg(self, msg, level):
+		log_entry = db.objects.LogEntry(level=level, message=str(msg), sender="Webinterface")
+		self.db.add(log_entry)
+		self.db.commit()
 	
 	@property
 	def db(self):
@@ -164,7 +171,7 @@ class Root(object):
 				except Exception as e:
 					su.active_state = False;
 					self.db.commit()
-					cherrypy.error("Error activating! %s"%str(e))
+					cherrypy.log("Error activating! %s"%str(e), traceback=True)
 					return {'status':'error', 'message': "Error activating! %s" % e }
 				else:
 					return {'status': 'success', 'message': "Activated setup %s!" % su.name}
@@ -194,7 +201,7 @@ class Root(object):
 				except Exception as e:
 					su.active_state = True;
 					self.db.commit()
-					cherrypy.error("Error deactivating! %s"%str(e))
+					cherrypy.log("Error deactivating! %s"%str(e), traceback=True)
 					return {'status':'error', 'message': "Error deactivating! %s" % e }
 				else:
 					return {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
