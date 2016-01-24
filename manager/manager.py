@@ -63,7 +63,7 @@ class Manager:
 		setups = db.session.query(db.objects.Setup).all()
 		rebooted = False
 		for setup in setups:
-			print("name: %s active:%s" % (setup.name, setup.active_state))
+			logging.debug("name: %s active:%s" % (setup.name, setup.active_state))
 			if setup.active_state:
 				rebooted = True
 
@@ -187,7 +187,7 @@ class Manager:
 	
 	# helper method to create error log entry
 	def log_err(self, msg):
-		logging.error(msg)
+		logging.exception(msg)
 		log_entry = db.objects.LogEntry(level=utils.LEVEL_ERR, message=str(msg), sender="Manager")
 		db.session.add(log_entry)
 		db.session.commit()
@@ -286,12 +286,12 @@ class Manager:
 			# create log entry for db
 			if not late_arrival:
 				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
-				lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
+				log_msg("New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
 			else:
 				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Late Alarm: %s" %msg['message'])
-				lo = db.objects.LogEntry(level=utils.LEVEL_WARN, sender="Manager", message="Old alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']))
+				log_msg("Old alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
+			
 			db.session.add(al)
-			db.session.add(lo)
 			db.session.commit()
 			
 			# TODO: add information about late arrival of alarm
@@ -307,11 +307,9 @@ class Manager:
 			timeout_thread = threading.Thread(name="thread-timeout", target=self.notify, args=[notif_info])
 			timeout_thread.start()
 		else: # --> holddown state
-			logging.info("Received alarm but manager is in holddown state: %s" % body)
+			log_msg("Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']), utils.LEVEL_INFO)
 			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Alarm during holddown state: %s" % msg['message'])
-			lo = db.objects.LogEntry(level=utils.LEVEL_INFO, sender="Manager", message="Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']))
 			db.session.add(al)
-			db.session.add(lo)
 			db.session.commit()
 
 	# initialize the notifiers
@@ -342,11 +340,12 @@ class Manager:
 		if self.received_data_counter < self.num_of_workers:
 			log_msg("TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers), utils.LEVEL_INFO)
 		
-		try:
-			for notifier in self.notifiers:
+		
+		for notifier in self.notifiers:
+			try:
 				notifier.notify(info)
-		except Exception as e:
-			log_err("Error notifying: %s" % e)
+			except Exception as e:
+				log_err("Error notifying %u: %s" % (notifier.id, e))
 			
 
 	def holddown(self):
