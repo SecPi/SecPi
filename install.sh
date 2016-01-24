@@ -68,16 +68,21 @@ then
 		if [ $2 = "worker" ] || [ $2 = "all" ]
 		then
 			find worker/ -name '*.py' | cpio -updm $SECPI_PATH
-		elif [ $2 = "manager" ] || [ $2 = "all" ]
+		fi
+		
+		if [ $2 = "manager" ] || [ $2 = "all" ]
 		then
 			find manager/ -name '*.py' | cpio -updm $SECPI_PATH
 		fi
-		elif [ $2 = "webinterface" ] || [ $2 = "all" ]
+		
+		if [ $2 = "webinterface" ] || [ $2 = "all" ]
 		then
 			find webinterface/ -name '*.py' | cpio -updm $SECPI_PATH
 		fi
+		
 		# only copy files in update mode
 		exit 0
+	fi
 fi
 
 
