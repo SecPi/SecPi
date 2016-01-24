@@ -67,17 +67,26 @@ then
 		find tools/ -name '*.py' | cpio -updm $SECPI_PATH
 		if [ $2 = "worker" ] || [ $2 = "all" ]
 		then
+			/etc/init.d/secpi-worker stop
 			find worker/ -name '*.py' | cpio -updm $SECPI_PATH
+			chmod 755 $SECPI_PATH/worker/worker.py
+			/etc/init.d/secpi-worker start
 		fi
 		
 		if [ $2 = "manager" ] || [ $2 = "all" ]
 		then
+			/etc/init.d/secpi-manager stop
 			find manager/ -name '*.py' | cpio -updm $SECPI_PATH
+			chmod 755 $SECPI_PATH/manager/manager.py
+			/etc/init.d/secpi-manager start
 		fi
 		
 		if [ $2 = "webinterface" ] || [ $2 = "all" ]
 		then
+			/etc/init.d/secpi-webinterface stop
 			find webinterface/ -name '*.py' | cpio -updm $SECPI_PATH
+			chmod 755 $SECPI_PATH/webinterface/main.py
+			/etc/init.d/secpi-webinterface start
 		fi
 		
 		# only copy files in update mode
