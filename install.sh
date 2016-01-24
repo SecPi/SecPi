@@ -56,6 +56,31 @@ function gen_and_sign_cert(){
 }
 
 
+# got at least two arguments
+# --update <worker|manager|webinterface|all>
+# -u <worker|manager|webinterface|all>
+if [ $# -ge 2 ]
+then
+	if [ $1 = "-u" ] || [ $1 = "--update" ]
+	then
+		# copy tools folder
+		find tools/ -name '*.py' | cpio -updm $SECPI_PATH
+		if [ $2 = "worker" ] || [ $2 = "all" ]
+		then
+			find worker/ -name '*.py' | cpio -updm $SECPI_PATH
+		elif [ $2 = "manager" ] || [ $2 = "all" ]
+		then
+			find manager/ -name '*.py' | cpio -updm $SECPI_PATH
+		fi
+		elif [ $2 = "webinterface" ] || [ $2 = "all" ]
+		then
+			find webinterface/ -name '*.py' | cpio -updm $SECPI_PATH
+		fi
+		# only copy files in update mode
+		exit 0
+fi
+
+
 echo "Please input the user which SecPi should use:"
 read SECPI_USER
 
