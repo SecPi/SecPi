@@ -7,6 +7,7 @@ from os import listdir
 from os import path
 import datetime
 import math
+import zipfile
 
 
 # our stuff
@@ -55,7 +56,7 @@ class AlarmDataPage():
 	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def list(self):
 		dirs = []
-		
+		# TODO: error management
 		for d in listdir(self.datapath):
 			dp = path.join(self.datapath, d)
 			if path.isdir(dp):
@@ -64,12 +65,31 @@ class AlarmDataPage():
 					"path": dp,
 					"mtime": datetime.datetime.fromtimestamp(path.getmtime(dp)).strftime('%d.%m.%Y %H:%M:%S'),
 					"size": path.getsize(dp),
-					"hsize": self.human_size(self.get_size(dp)),
-					"files": listdir(dp)
+					"hsize": self.human_size(self.get_size(dp))
 				})
 		
 		
 		return {'status': 'success', 'data': dirs}
+		
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
+	def listFiles(self):
+		if(hasattr(cherrypy.request, 'json')):
+			if('folder' in cherrypy.request.json and cherrypy.request.json['folder']!=''):
+				fp = path.join(self.datapath, cherrypy.request.json['folder'])
+				try:
+					files = [f for f in listdir(fp) if path.isfile(path.join(fp, f))]
+					return {'status': 'success', 'data': files}
+				except Exception as e:
+					return {'status': 'error', 'message': "Couldn't list files! %s"%e}
+				
+			else:
+				return {'status': 'error', 'message': "Invalid folder name!"}
+		else:
+			return {'status': 'error', 'message': "No folder name given!"}
+		
+		
 
 	@cherrypy.expose
 	def download(self, name):
@@ -81,3 +101,25 @@ class AlarmDataPage():
 			cherrypy.response.status = 404
 			return tmpl.render(page_title="File not found!")
 
+
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out(handler=utils.json_handler)
+	def extract(self):
+		if(hasattr(cherrypy.request, 'json')):
+			if('dir' in cherrypy.request.json and cherrypy.request.json['dir']!='' and 'name' in cherrypy.request.json and cherrypy.request.json['name']!=''):
+				dir = cherrypy.request.json['dir']
+				name = cherrypy.request.json['name']
+				
+				fdir = path.join(self.datapath, dir)
+				fp = path.join(fdir, name)
+				if(path.exists(fp)):
+					with zipfile.ZipFile(fp, "r") as z:
+						z.extractall(fdir)
+						return {'status': 'success', 'message': "File %s/%s extracted!"%(dir, name)}
+				else:
+					return {'status': 'error', 'message': "File doesn't exist!"}
+			else:
+				return {'status': 'error', 'message': "Invalid filename!"}
+		else:
+			return {'status': 'error', 'message': "No filename given!"}

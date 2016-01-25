@@ -17,8 +17,17 @@
 		</tr>
 	</table>
 	<div id="folder_content" ng-show="dataCtrl.cur_folder">
-		<p ng-repeat="fi in dataCtrl.cur_folder.files">
+		<p ng-repeat="fi in dataCtrl.files">
 			<a href="/alarmdata/download?name={{dataCtrl.cur_folder.name}}/{{fi}}">{{fi}}</a>
+			
+			<span ng-switch on="fi.slice(fi.lastIndexOf('.')+1)">
+				<span ng-switch-when="zip">
+					<img src="/static/img/icons/zipfile.png" class="pointer" ng-click="dataCtrl.extractFile(dataCtrl.cur_folder.name, fi)" title="Extract ZIP File" alt="Extract ZIP File" />
+				</span>
+				<span ng-switch-default>
+					
+				</span>
+			</span>
 		</p>
 	</div>
 </div>

@@ -588,9 +588,11 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	
 	self.folders = [];
 	self.cur_folder = null;
+	self.files = null;
 	
 	self.showFolder = function(id){
 		self.cur_folder = self.folders[id]
+		self.fetchFiles(self.cur_folder.name)
 		self.dialog.dialog('option', 'title', self.cur_folder.name);
 		self.dialog.dialog("open");
 	}
@@ -608,6 +610,27 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 			}
 		);
 	}
+	
+	self.fetchFiles = function(folder){
+		HTTPService.post('/alarmdata/listFiles', {'folder':folder},
+			function(data,msg){
+				self.files = data;
+			}
+		);
+	}
+	
+	
+	self.extractFile = function(folder, name){
+		HTTPService.post('/alarmdata/extract', {'dir':folder, 'name':name},
+			function(data,msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO);
+				self.fetchFiles(folder);
+			}
+		);
+	}
+	
+	
+	
 	
 	self.fetchFolders();
 	
