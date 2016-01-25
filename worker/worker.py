@@ -36,7 +36,7 @@ class Worker:
 		self.zip_directory = "/var/tmp/secpi"
 		self.message_queue = [] # stores messages which couldn't be sent
 		
-		try: #TODO: this should be nicer...		
+		try:
 			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
 		except Exception as e:
 			print("Error while trying to load config file for logging")
@@ -320,7 +320,7 @@ class Worker:
 			if late_arrival:
 				logging.info("Received old action from manager:%s" % body)
 				return # we don't have to send a message to the data queue since the timeout will be over anyway
-			# DONE: threading
+			
 			# http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
 			logging.info("Received action from manager:%s" % body)
 			threads = []
@@ -329,10 +329,8 @@ class Worker:
 				t = threading.Thread(name='thread-%s'%(act.id), target=act.execute)
 				threads.append(t)
 				t.start()
-				# act.execute()
 		
 			# wait for threads to finish
-			#TODO: think about timeout, also regarding speakers	
 			for t in threads:
 				t.join()
 		
@@ -346,7 +344,6 @@ class Worker:
 				logging.info("No data to send")
 				# Send empty message which acts like a finished
 				self.send_msg(utils.QUEUE_DATA, "")
-			# TODO: send finished
 		else:
 			logging.debug("Received action but wasn't active")
 
@@ -364,7 +361,7 @@ class Worker:
 			# TODO: check valid config file?!
 			# write config to file
 			try:
-				f = open('%s/worker/config.json'%(PROJECT_PATH),'w') # TODO: pfad
+				f = open('%s/worker/config.json'%(PROJECT_PATH),'w')
 				f.write(json.dumps(new_config))
 				f.close()
 			except Exception as e:
