@@ -63,9 +63,9 @@ class AlarmDataPage():
 				dirs.append({
 					"name": d,
 					"path": dp,
-					"mtime": datetime.datetime.fromtimestamp(path.getmtime(dp)).strftime('%d.%m.%Y %H:%M:%S'),
-					"size": path.getsize(dp),
-					"hsize": self.human_size(self.get_size(dp))
+					"mtime": datetime.datetime.fromtimestamp(path.getmtime(dp)).strftime('%d.%m.%Y %H:%M:%S')
+					# "size": path.getsize(dp),
+					# "hsize": self.human_size(self.get_size(dp))
 				})
 		
 		

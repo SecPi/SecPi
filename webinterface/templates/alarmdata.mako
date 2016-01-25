@@ -8,12 +8,10 @@
 		<tr>
 			<th>Name</th>
 			<th>Time</th>
-			<th>Size</th>
 		</tr>
 		<tr ng-repeat="f in dataCtrl.folders">
 			<td class="data_click" ng-click="dataCtrl.showFolder($index)">{{f.name}}</td>
 			<td>{{f.mtime}}</td>
-			<td>{{f.hsize}}</td>
 		</tr>
 	</table>
 	<div id="folder_content" ng-show="dataCtrl.cur_folder">
