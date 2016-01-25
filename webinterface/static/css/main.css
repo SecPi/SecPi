@@ -315,19 +315,27 @@ h1 {
 	text-decoration: underline;
 }
 
-#file_img {
+#img_container {
 	position: fixed;
 	z-index: 10000;
-	width: 70%;
-	height: 70%;
-	top: 50px;
 	
+	top: 50px;
+	text-align: center;
+	
+	height: 80%;
+	width: 80%;
+}
+
+#file_img {
 	border-color: #888;
 	border-style: solid;
 	border-width: 3px;
 	border-radius: 10px;
 	
 	box-shadow: 0px 0px 40px 0px black;
+	
+	max-height: 100%;
+	max-width: 100%;
 }
 
 

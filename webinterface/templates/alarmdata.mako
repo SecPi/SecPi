@@ -34,7 +34,7 @@
 			</span>
 		</p>
 	</div>
-	<div ng-show="dataCtrl.img">
+	<div ng-show="dataCtrl.img" id="img_container">
 		<img id="file_img" ng-src="{{dataCtrl.img}}" ng-click="dataCtrl.img=null" class="pointer" />
 	</div>
 </div>
