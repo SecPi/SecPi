@@ -113,7 +113,7 @@ read MQ_IP
 echo "Enter RabbitMQ Server Port (default: 5671)"
 read MQ_PORT
 
-if [ $MQ_PORT = ""]
+if [ "$MQ_PORT" = ""]
 then
 	MQ_PORT="5671"
 fi
@@ -127,7 +127,7 @@ read MQ_PWD
 echo "Enter certificate authority domain (for rabbitmq and webserver, default: secpi.local)"
 read CA_DOMAIN
 
-if [ $CA_DOMAIN = ""]
+if [ "$CA_DOMAIN" = ""]
 then
 	CA_DOMAIN="secpi.local"
 fi
@@ -183,6 +183,9 @@ openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -
 # generate mq server certificate
 gen_and_sign_cert mq-server.$CA_DOMAIN server
 
+# add rabbitmq user and set permissions
+rabbitmqctl add_user $MQ_USER $MQ_PWD
+rabbitmqctl set_permissions $MQ_USER "secpi.*" "secpi.*" "secpi.*"
 
 echo "Current SecPi folder: $PWD"
 echo "Copying to $SECPI_PATH..."
