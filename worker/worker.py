@@ -481,8 +481,9 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		logging.info('Shutting down worker!')
 		# TODO: cleanup?
-		w.cleanup_actions()
-		w.cleanup_sensors()
+		if(w):
+			w.cleanup_actions()
+			w.cleanup_sensors()
 		try:
 			sys.exit(0)
 		except SystemExit:
