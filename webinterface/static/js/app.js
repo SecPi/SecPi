@@ -51,11 +51,15 @@ app.service('HTTPService', ['$http', 'FlashService', function($http, FlashServic
 			function (response) {
 				// success
 				if(response.data['status'] == 'success'){
-					success_func(response.data['data'], response.data['message']);
+					if(typeof success_func !== 'undefined'){
+						success_func(response.data['data'], response.data['message']);
+					}
 				}
 				else{
-					FlashService.flash(response.data['message'], FlashService.TYPE_ERR);
-					err_func();
+					FlashService.flash(response.data['message'], FlashService.TYPE_ERR, 5000);
+					if(typeof err_func !== 'undefined'){
+						err_func();
+					}
 				}
 			},
 			FlashService.handle_error
@@ -561,23 +565,71 @@ app.controller('TestController', ['$http', '$log', '$interval', 'FlashService', 
 }]);
 
 
-app.controller('CredentialsController', ['$http', '$log', '$interval', 'FlashService', 'HTTPService', function($http, $log, $interval, FlashService, HTTPService){
+app.controller('CredentialsController', ['$log', 'FlashService', 'HTTPService', function($log, FlashService, HTTPService){
 	var self = this;
 
-	//self.ftypes = ["info", "warn", "error"]
-	//self.msgtime = 5000;
-	//self.msgtext = "Login Credentials have been changed!";
 	self.username = "admin";
 	self.password = "";
 		
 	self.changeCredentials = function(){
-		HTTPService.post('change_login', {"username": self.username, "password": self.password},
+		HTTPService.post('/change_login', {"username": self.username, "password": self.password},
 			function(data,msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO);
 			}
 		);
 		
 	}
+	
+}]);
+
+
+app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTPService', function($log, $timeout, FlashService, HTTPService){
+	var self = this;
+	
+	self.folders = [];
+	self.cur_folder = null;
+	
+	self.showFolder = function(id){
+		self.cur_folder = self.folders[id]
+		self.dialog.dialog('option', 'title', self.cur_folder.name);
+		self.dialog.dialog("open");
+	}
+	
+	self.hideFolder = function(){
+		self.cur_folder = null;
+		self.dialog.dialog("close");
+	}
+	
+	
+	self.fetchFolders = function(){
+		HTTPService.post('/alarmdata/list', {},
+			function(data,msg){
+				self.folders = data;
+			}
+		);
+	}
+	
+	self.fetchFolders();
+	
+	$timeout(function(){
+		self.dialog = $( "#folder_content" ).dialog({
+			autoOpen: false,
+			height: 300,
+			width: 350,
+			modal: true,
+			dialogClass: "fixed_pos",
+			position: {
+				my: "center center",
+				at: "center center",
+				of: window
+			},
+			buttons: {
+				Cancel: function() {
+					self.hideFolder();
+				}
+			}
+		});
+	}, 100)
 	
 }]);
 

@@ -57,6 +57,9 @@ from sites.logs import LogEntriesPage
 from sites.setupszones import SetupsZonesPage
 from sites.workersactions import WorkersActionsPage
 
+from sites.alarmdata import AlarmDataPage
+
+
 config.load(PROJECT_PATH +"/webinterface/config.json")
 
 class Root(object):
@@ -79,6 +82,8 @@ class Root(object):
 		self.logs = LogEntriesPage()
 		self.setupszones = SetupsZonesPage();
 		self.workersactions = WorkersActionsPage();
+		
+		self.alarmdata = AlarmDataPage();
 		
 		try:
 			credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])

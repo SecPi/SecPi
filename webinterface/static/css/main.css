@@ -90,10 +90,10 @@ span.clear {
 	display: block;
 }
 
-
 h1 {
 	margin-top: 10px;
 }
+
 /*
 	######### Flash Messages #########
 */
@@ -277,6 +277,42 @@ h1 {
 
 .log_entry.ng-leave.ng-leave-active {
 	opacity:0;
+}
+
+/*
+	######### Alarm Data Table #########
+*/
+#alarmdata {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: 100%;
+	margin: 5px;
+}
+
+
+#alarmdata td, th{
+	border: 1px solid transparent;
+	height: 30px;
+	transition: all 0.3s;
+	text-align: left;
+	/*border-left: 2px solid black;*/
+	padding: 3px 5px;
+}
+
+#alarmdata th {
+	background: #bbb;
+	font-weight: bold;
+	height: 35px;
+}
+
+#alarmdata tr:nth-child(odd) td { background: #DFDFDF; }
+#alarmdata tr:nth-child(even) td { background: #F1F1F1; }
+
+#alarmdata .data_click {
+	cursor: pointer;
+}
+#alarmdata .data_click:hover {
+	text-decoration: underline;
 }
 
 
