@@ -321,6 +321,13 @@ h1 {
 	width: 70%;
 	height: 70%;
 	top: 50px;
+	
+	border-color: #888;
+	border-style: solid;
+	border-width: 3px;
+	border-radius: 10px;
+	
+	box-shadow: 0px 0px 40px 0px black;
 }
 
 
