@@ -50,6 +50,7 @@ class Manager:
 		
 		self.notifiers = []
 		self.received_data_counter = 0
+		self.alarm_dir = "/var/tmp/secpi/alarms"
 		self.current_alarm_dir = "/var/tmp/secpi/alarms"
 		self.data_timeout = 10
 		self.num_of_workers = 0
@@ -265,8 +266,7 @@ class Manager:
 			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)
 			holddown_thread.start()
 
-			# TODO: adapt dir for current alarm
-			self.current_alarm_dir = "/var/tmp/secpi/alarms/%s" % time.strftime("/%Y%m%d_%H%M%S")
+			self.current_alarm_dir = "%s/%s" % (self.alarm_dir, time.strftime("/%Y%m%d_%H%M%S"))
 			os.makedirs(self.current_alarm_dir) #TODO: exception handling
 			logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
 			self.received_data_counter = 0
