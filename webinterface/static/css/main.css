@@ -315,6 +315,14 @@ h1 {
 	text-decoration: underline;
 }
 
+#file_img {
+	position: fixed;
+	z-index: 10000;
+	width: 70%;
+	height: 70%;
+	top: 50px;
+}
+
 
 /*
 	######### Data Table #########

@@ -22,11 +22,20 @@
 				<span ng-switch-when="zip">
 					<img src="/static/img/icons/zipfile.png" class="pointer" ng-click="dataCtrl.extractFile(dataCtrl.cur_folder.name, fi)" title="Extract ZIP File" alt="Extract ZIP File" />
 				</span>
-				<span ng-switch-default>
-					
+				<span ng-switch-when="jpg">
+					<img src="/static/img/icons/image.png" class="pointer" ng-click="dataCtrl.showImg(dataCtrl.cur_folder.name, fi, 'jpg')" title="Show Image" alt="Show Image" />
+				</span>
+				<span ng-switch-when="png">
+					<img src="/static/img/icons/image.png" class="pointer" ng-click="dataCtrl.showImg(dataCtrl.cur_folder.name, fi, 'png')" title="Show Image" alt="Show Image" />
+				</span>
+				<span ng-switch-when="gif">
+					<img src="/static/img/icons/image.png" class="pointer" ng-click="dataCtrl.showImg(dataCtrl.cur_folder.name, fi, 'gif')" title="Show Image" alt="Show Image" />
 				</span>
 			</span>
 		</p>
+	</div>
+	<div ng-show="dataCtrl.img">
+		<img id="file_img" ng-src="{{dataCtrl.img}}" ng-click="dataCtrl.img=null" class="pointer" />
 	</div>
 </div>
 

@@ -89,7 +89,17 @@ class AlarmDataPage():
 		else:
 			return {'status': 'error', 'message': "No folder name given!"}
 		
-		
+	
+	@cherrypy.expose
+	def show_img(self, name, mimetype):
+		fp = path.join(self.datapath, name)
+		if(path.exists(fp)):
+			return serve_file(fp, mimetype, name)
+		else:
+			tmpl = self.lookup.get_template("404.mako")
+			cherrypy.response.status = 404
+			return tmpl.render(page_title="File not found!")
+	
 
 	@cherrypy.expose
 	def download(self, name):

@@ -589,6 +589,7 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	self.folders = [];
 	self.cur_folder = null;
 	self.files = null;
+	self.img = null;
 	
 	self.showFolder = function(id){
 		self.cur_folder = self.folders[id]
@@ -629,7 +630,9 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 		);
 	}
 	
-	
+	self.showImg = function(folder, name, type){
+		self.img = "/alarmdata/show_img?name=" +folder+"/"+name +"&mimetype=image/"+type
+	}
 	
 	
 	self.fetchFolders();
