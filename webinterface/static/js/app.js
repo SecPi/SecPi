@@ -640,8 +640,8 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	$timeout(function(){
 		self.dialog = $( "#folder_content" ).dialog({
 			autoOpen: false,
-			height: 300,
-			width: 350,
+			height: 350,
+			width: 400,
 			modal: true,
 			dialogClass: "fixed_pos",
 			position: {

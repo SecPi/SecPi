@@ -74,6 +74,9 @@ h1.header {
 
 .fixed_pos {
 	position: fixed !important;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 #log_div {
