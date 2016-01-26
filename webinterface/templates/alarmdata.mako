@@ -1,6 +1,6 @@
 <%inherit file="main.mako"/>
 
-<%def name="active_tab()"><% return "alarmdata" %></%def>
+<%def name="active_tab()"><% return "data" %></%def>
 
 <div ng-controller="AlarmDataController as dataCtrl">
 	<input type="button" value="fetch" ng-click="dataCtrl.fetchFolders()" />

@@ -2,6 +2,7 @@
 
 <ul class="tabrow">
 	<li id="home"><a href="/">Home</a></li>
+	<li id="data"><a href="/alarmdata">Alarm Data</a></li>
 	<li id="setups"><a href="/setups">Setups</a></li>
 	<li id="alarms"><a href="/alarms">Alarms</a></li>
 	<li id="workers"><a href="/workers">Workers</a></li>
