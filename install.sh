@@ -85,6 +85,7 @@ then
 		then
 			/etc/init.d/secpi-webinterface stop
 			find webinterface/ -name '*.py' | cpio -updm $SECPI_PATH
+			find webinterface/ -name '*.sh' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.css' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.js' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.mako' | cpio -updm $SECPI_PATH
