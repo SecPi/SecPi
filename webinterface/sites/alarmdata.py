@@ -68,6 +68,7 @@ class AlarmDataPage():
 					# "hsize": self.human_size(self.get_size(dp))
 				})
 		
+		dirs.sort(key=lambda dir: dir['name'])
 		
 		return {'status': 'success', 'data': dirs}
 		
