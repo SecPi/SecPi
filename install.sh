@@ -131,19 +131,29 @@ read MQ_USER
 echo "Enter RabbitMQ Password"
 read MQ_PWD
 
-echo "Enter certificate authority domain (for rabbitmq and webserver, default: secpi.local)"
-read CA_DOMAIN
 
-if [ "$CA_DOMAIN" = ""]
+echo "Generate CA and certificates? [yes/no]"
+read CREATE_CA
+
+if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 then
-	CA_DOMAIN="secpi.local"
+	echo "Enter certificate authority domain (for rabbitmq and webserver, default: secpi.local)"
+	read CA_DOMAIN
+
+	if [ "$CA_DOMAIN" = ""]
+	then
+		CA_DOMAIN="secpi.local"
+	fi
 fi
 
 if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 2 ]
 then
-	echo "Enter name for webserver certificate (excluding $CA_DOMAIN)"
-	read WEB_CERT_NAME
-	
+	if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
+	then
+		echo "Enter name for webserver certificate (excluding $CA_DOMAIN)"
+		read WEB_CERT_NAME
+	fi
+		
 	echo "Enter user for webinterface:"
 	read WEB_USER
 	
@@ -173,26 +183,44 @@ create_folder $TMP_PATH/alarms $SECPI_USER $SECPI_GROUP
 
 
 
-# generate certificates for rabbitmq
+
 create_folder $CERT_PATH $SECPI_USER $SECPI_GROUP
-create_folder $CERT_PATH/ca $SECPI_USER $SECPI_GROUP
-create_folder $CERT_PATH/ca/private $SECPI_USER $SECPI_GROUP
-create_folder $CERT_PATH/ca/crl $SECPI_USER $SECPI_GROUP
-create_folder $CERT_PATH/ca/newcerts $SECPI_USER $SECPI_GROUP
-touch $CERT_PATH/ca/index.txt
-echo 1000 > $CERT_PATH/ca/serial
 
-cp scripts/openssl.cnf $CERT_PATH/ca/
 
-# generate ca cert
-openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
+if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
+then
+	# generate certificates for rabbitmq
+	create_folder $CERT_PATH/ca $SECPI_USER $SECPI_GROUP
+	create_folder $CERT_PATH/ca/private $SECPI_USER $SECPI_GROUP
+	create_folder $CERT_PATH/ca/crl $SECPI_USER $SECPI_GROUP
+	create_folder $CERT_PATH/ca/newcerts $SECPI_USER $SECPI_GROUP
+	touch $CERT_PATH/ca/index.txt
+	echo 1000 > $CERT_PATH/ca/serial
 
-# generate mq server certificate
-gen_and_sign_cert mq-server.$CA_DOMAIN server
+	cp scripts/openssl.cnf $CERT_PATH/ca/
+
+	# generate ca cert
+	openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
+
+	# generate mq server certificate
+	gen_and_sign_cert mq-server.$CA_DOMAIN server
+fi
+
+
 
 # add rabbitmq user and set permissions
 rabbitmqctl add_user $MQ_USER $MQ_PWD
+if [ $? -ne 0 ];
+then
+	echo "Error adding RabbitMQ user!"
+	exit 1
+fi
 rabbitmqctl set_permissions $MQ_USER "secpi.*" "secpi.*" "secpi.*"
+if [ $? -ne 0 ];
+then
+	echo "Error setting RabbitMQ permissions!"
+	exit 1
+fi
 
 echo "Current SecPi folder: $PWD"
 echo "Copying to $SECPI_PATH..."
@@ -216,21 +244,24 @@ then
 	sed -i "s/<user>/$MQ_USER/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
 	sed -i "s/<pwd>/$MQ_PWD/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
 	
-	sed -i "s/<certfile>/manager.$CA_DOMAIN.cert.pem/" $SECPI_PATH/manager/config.json
-	sed -i "s/<keyfile>/manager.$CA_DOMAIN.key.pem/" $SECPI_PATH/manager/config.json
 	
-	sed -i "s/<certfile>/webui.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
-	sed -i "s/<keyfile>/webui.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
-	sed -i "s/<server_cert>/$WEB_CERT_NAME.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
-	sed -i "s/<server_key>/$WEB_CERT_NAME.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
+	if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
+	then
+		sed -i "s/<certfile>/manager.$CA_DOMAIN.cert.pem/" $SECPI_PATH/manager/config.json
+		sed -i "s/<keyfile>/manager.$CA_DOMAIN.key.pem/" $SECPI_PATH/manager/config.json
+		
+		sed -i "s/<certfile>/webui.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
+		sed -i "s/<keyfile>/webui.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
+		sed -i "s/<server_cert>/$WEB_CERT_NAME.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
+		sed -i "s/<server_key>/$WEB_CERT_NAME.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
 	
-
-	echo "Generating rabbitmq certificates..."
-	gen_and_sign_cert manager.$CA_DOMAIN client
-	gen_and_sign_cert webui.$CA_DOMAIN client
-	
-	echo "Generating webserver certificate..."
-	gen_and_sign_cert $WEB_CERT_NAME.$CA_DOMAIN server
+		echo "Generating rabbitmq certificates..."
+		gen_and_sign_cert manager.$CA_DOMAIN client
+		gen_and_sign_cert webui.$CA_DOMAIN client
+		
+		echo "Generating webserver certificate..."
+		gen_and_sign_cert $WEB_CERT_NAME.$CA_DOMAIN server
+	fi
 
 	echo "Creating htdigest file..."
 	webinterface/create_htdigest.sh $SECPI_PATH/webinterface/.htdigest $WEB_USER $WEB_PWD
@@ -275,10 +306,12 @@ then
 	sed -i "s/<user>/$MQ_USER/" $SECPI_PATH/worker/config.json
 	sed -i "s/<pwd>/$MQ_PWD/" $SECPI_PATH/worker/config.json
 	
-	sed -i "s/<certfile>/worker1.$CA_DOMAIN.cert.pem/" $SECPI_PATH/worker/config.json
-	sed -i "s/<keyfile>/worker1.$CA_DOMAIN.key.pem/" $SECPI_PATH/worker/config.json
-	
-	gen_and_sign_cert worker1.$CA_DOMAIN client
+	if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
+	then
+		sed -i "s/<certfile>/worker1.$CA_DOMAIN.cert.pem/" $SECPI_PATH/worker/config.json
+		sed -i "s/<keyfile>/worker1.$CA_DOMAIN.key.pem/" $SECPI_PATH/worker/config.json
+		gen_and_sign_cert worker1.$CA_DOMAIN client
+	fi
 	
 	echo "Copying startup scripts..."
 	cp scripts/secpi-worker /etc/init.d/
