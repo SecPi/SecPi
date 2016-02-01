@@ -339,8 +339,7 @@ class Manager:
 
 	# timeout thread which sends the received data from workers
 	def notify(self, info):
-		timeout = 30 # TODO: make this configurable
-		for i in range(0, timeout):
+		for i in range(0, self.data_timeout):
 			if self.received_data_counter < self.num_of_workers: #not all data here yet
 				logging.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
 				time.sleep(1)
@@ -351,7 +350,7 @@ class Manager:
 		if self.received_data_counter < self.num_of_workers:
 			self.log_msg("TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers), utils.LEVEL_INFO)
 		
-		
+		# let the notifiers do their work
 		for notifier in self.notifiers:
 			try:
 				notifier.notify(info)
