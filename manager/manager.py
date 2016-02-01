@@ -40,7 +40,7 @@ class Manager:
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
 			logging.exception("Wasn't able to load config file, exiting...")
 			quit()
-		
+
 		try:
 			db.connect(PROJECT_PATH)
 			db.setup()
@@ -222,13 +222,16 @@ class Manager:
 		self.channel.basic_publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
 
 	# callback method for when the manager recieves data after a worker executed its actions
-	def got_data(self, ch, method, properties, body): #TODO: error management
+	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
 		newFile_bytes = bytearray(body)
 		if newFile_bytes: #only write data when body is not empty
-			newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
-			newFile.write(newFile_bytes)
-			logging.info("Data written")
+			try:
+				newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
+				newFile.write(newFile_bytes)
+				logging.info("Data written")
+			except IOError as ie: # File can't be written, e.g. permissions wrong, directory doesn't exist
+				logging.exception("Wasn't able to write received data: %s" % ie)
 		self.received_data_counter += 1
 
 	# callback for log messages
@@ -272,11 +275,14 @@ class Manager:
 			holddown_thread.start()
 
 			self.current_alarm_dir = "%s/%s" % (self.alarm_dir, time.strftime("/%Y%m%d_%H%M%S"))
-			os.makedirs(self.current_alarm_dir) #TODO: exception handling
-			logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+			try:
+				os.makedirs(self.current_alarm_dir)
+				logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+			except OSError as oe: # directory can't be created, e.g. permissions wrong, or already exists
+				logging.exception("Wasn't able to create directory for current alarm: %s" % oe)
 			self.received_data_counter = 0
 
-			# interate over workers and send "execute"
+			# iterate over workers and send "execute"
 			workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 			self.num_of_workers = len(workers)
 			action_message = { "msg": "execute",
