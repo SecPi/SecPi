@@ -40,7 +40,7 @@ class Manager:
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
 			logging.exception("Wasn't able to load config file, exiting...")
 			quit()
-		
+
 		try:
 			db.connect(PROJECT_PATH)
 			db.setup()
@@ -52,11 +52,16 @@ class Manager:
 		self.received_data_counter = 0
 		self.alarm_dir = "/var/tmp/secpi/alarms"
 		self.current_alarm_dir = "/var/tmp/secpi/alarms"
-		self.data_timeout = 10
-		self.num_of_workers = 0
-		self.mail_enabled = False
+		try:
+			self.data_timeout = int(config.get("data_timeout"))
+			self.holddown_timer = int(config.get("holddown_timer"))
+		except Exception: # if not specified in the config file we set default values for timeouts
+			logging.debug("Couldn't find config parameters for timeouts in config file, using default values for timeouts")
+			self.data_timeout = 10
+			self.holddown_timer = 30
 		self.holddown_state = False
-		self.holddown_timer = 30
+		self.num_of_workers = 0
+
 
 		self.connect()
 
@@ -217,13 +222,16 @@ class Manager:
 		self.channel.basic_publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
 
 	# callback method for when the manager recieves data after a worker executed its actions
-	def got_data(self, ch, method, properties, body): #TODO: error management
+	def got_data(self, ch, method, properties, body):
 		logging.info("Got data")
 		newFile_bytes = bytearray(body)
 		if newFile_bytes: #only write data when body is not empty
-			newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
-			newFile.write(newFile_bytes)
-			logging.info("Data written")
+			try:
+				newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
+				newFile.write(newFile_bytes)
+				logging.info("Data written")
+			except IOError as ie: # File can't be written, e.g. permissions wrong, directory doesn't exist
+				logging.exception("Wasn't able to write received data: %s" % ie)
 		self.received_data_counter += 1
 
 	# callback for log messages
@@ -267,11 +275,14 @@ class Manager:
 			holddown_thread.start()
 
 			self.current_alarm_dir = "%s/%s" % (self.alarm_dir, time.strftime("/%Y%m%d_%H%M%S"))
-			os.makedirs(self.current_alarm_dir) #TODO: exception handling
-			logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+			try:
+				os.makedirs(self.current_alarm_dir)
+				logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+			except OSError as oe: # directory can't be created, e.g. permissions wrong, or already exists
+				logging.exception("Wasn't able to create directory for current alarm: %s" % oe)
 			self.received_data_counter = 0
 
-			# interate over workers and send "execute"
+			# iterate over workers and send "execute"
 			workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 			self.num_of_workers = len(workers)
 			action_message = { "msg": "execute",
@@ -328,8 +339,7 @@ class Manager:
 
 	# timeout thread which sends the received data from workers
 	def notify(self, info):
-		timeout = 30 # TODO: make this configurable
-		for i in range(0, timeout):
+		for i in range(0, self.data_timeout):
 			if self.received_data_counter < self.num_of_workers: #not all data here yet
 				logging.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
 				time.sleep(1)
@@ -340,7 +350,7 @@ class Manager:
 		if self.received_data_counter < self.num_of_workers:
 			self.log_msg("TIMEOUT: Only %d out of %d workers replied with data"%(self.received_data_counter, self.num_of_workers), utils.LEVEL_INFO)
 		
-		
+		# let the notifiers do their work
 		for notifier in self.notifiers:
 			try:
 				notifier.notify(info)
