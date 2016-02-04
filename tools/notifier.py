@@ -10,3 +10,7 @@ class Notifier(object):
 	@abc.abstractmethod
 	def notify(self, info):
 		return
+
+	@abc.abstractmethod
+	def cleanup(self):
+		return

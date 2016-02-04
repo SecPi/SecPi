@@ -44,3 +44,6 @@ class Twitter(Notifier):
 					logging.error("Twitter: Wasn't able to send message to %s: %s" % (recipient, te))
 		else:
 			logging.error("Twitter: Wasn't able to notify because there was an initialization error")
+
+	def cleanup(self):
+		logging.debug("Twitter: No cleanup necessary at the moment")

@@ -246,8 +246,7 @@ class Manager:
 	def got_on_off(self, ch, method, properties, body):
 		msg = json.loads(body)
 		
-		# TODO: destructor for notifier?
-		self.notifiers = []
+		self.cleanup_notifiers()
 		
 		if(msg['active_state'] == True):
 			self.setup_notifiers()
@@ -355,15 +354,22 @@ class Manager:
 			try:
 				notifier.notify(info)
 			except Exception as e:
-				log_err("Error notifying %u: %s" % (notifier.id, e))
+				self.log_err("Error notifying %u: %s" % (notifier.id, e))
 			
-
+	# go into holddown state, while in this state subsequent alarms are interpreted as one alarm
 	def holddown(self):
 		self.holddown_state = True
 		for i in range(0, self.holddown_timer):
 			time.sleep(1)
-		logging.info("Holddown is over") #TODO: change to debug message
+		logging.debug("Holddown is over")
 		self.holddown_state = False
+
+	# cleanup the notifiers
+	def cleanup_notifiers(self):
+		for n in self.notifiers:
+			n.cleanup()
+
+		self.notifiers = [] 
 
 	def prepare_config(self, pi_id):
 		logging.info("Preparing config for worker with id %s" % pi_id)
@@ -431,6 +437,8 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		logging.info("Shutting down manager!")
 		# TODO: cleanup?
+		if(mg):
+			mg.cleanup_notifiers()
 		try:
 			sys.exit(0)
 		except SystemExit:

@@ -165,5 +165,6 @@ class Mailer(Notifier):
 		except Exception as e:
 			logging.error(e)
 
-
+	def cleanup(self):
+		logging.debug("Mailer: No cleanup necessary at the moment")
 

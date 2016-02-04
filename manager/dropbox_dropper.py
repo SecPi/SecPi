@@ -60,3 +60,6 @@ class Dropbox_Dropper(Notifier):
 		# TODO: check if subdirs is empty
 		latest_subdir = max(subdirs, key=os.path.getmtime)
 		return latest_subdir
+
+	def cleanup(self):
+		logging.debug("Dropbox: No cleanup necessary at the moment")
