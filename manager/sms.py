@@ -13,8 +13,7 @@ class Sms(Notifier):
 			self.baud = int(params.get("baud", 115200))
 			self.network_timeout = int(params.get("network_timeout", 60))
 			self.pin = params.get("pin", None)
-			#self.recipient = params["recipient"] # TODO: change to list
-			self.recipient = "06803247015"
+			self.recipient = params["recipient"] # TODO: change to list
 		except KeyError as ke: # if config parameters are missing
 			logging.error("Sms: Wasn't able to initialize the notifier, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
