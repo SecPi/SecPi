@@ -120,9 +120,11 @@ read MQ_IP
 echo "Enter RabbitMQ Server Port (default: 5671)"
 read MQ_PORT
 
-if [ "$MQ_PORT" = ""]
+#if [ "$MQ_PORT" = ""]
+if [ -z "$MQ_PORT" ]
 then
 	MQ_PORT="5671"
+	echo "Setting port to default value"
 fi
 
 echo "Enter RabbitMQ User"
@@ -140,9 +142,11 @@ then
 	echo "Enter certificate authority domain (for rabbitmq and webserver, default: secpi.local)"
 	read CA_DOMAIN
 
-	if [ "$CA_DOMAIN" = ""]
+	#if [ "$CA_DOMAIN" = ""]
+	if [ -z "$CA_DOMAIN" ]
 	then
 		CA_DOMAIN="secpi.local"
+		echo "Setting CA domain to default value"
 	fi
 fi
 
