@@ -235,14 +235,18 @@ class Worker:
 			self.post_err("Couldn't find class %s: %s"%(class_name, ae))
 	
 	
-	# function which returns the configured ipv4 addresses as a list
+	# function which returns the configured ip addresses (v4 & v6) as a list
 	def get_ip_addresses(self):
 		result = []
 		for interface in netifaces.interfaces(): # interate through interfaces: eth0, eth1, wlan0...
-			if (not interface == "lo") and (netifaces.AF_INET in netifaces.ifaddresses(interface)): # filter loopback, and active ipv4
+			if (interface != "lo") and (netifaces.AF_INET in netifaces.ifaddresses(interface)): # filter loopback, and active ipv4
 				for ip_address in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
-					logging.debug("Adding %s IP to result" % ip_address['addr']) #change to debug
+					logging.debug("Adding %s IP to result" % ip_address['addr'])
 					result.append(ip_address['addr'])
+			if (interface != "lo") and (netifaces.AF_INET6 in netifaces.ifaddresses(interface)): # filter loopback, and active ipv6
+				for ipv6_address in netifaces.ifaddresses(interface)[netifaces.AF_INET6]:
+					logging.debug("Adding %s IP to result" % ipv6_address['addr'])
+					result.append(ipv6_address['addr'])
 
 		return result
 
@@ -257,7 +261,7 @@ class Worker:
 											  content_type='application/json')
 			self.send_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
 		else:
-			logging.error("Wasn't able to find any IPv4 address, please check your network configuration. Exiting...")
+			logging.error("Wasn't able to find any IP address(es), please check your network configuration. Exiting...")
 			quit()
 
 	# callback function which is executed when the manager replies with the initial config which is then applied
