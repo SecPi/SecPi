@@ -214,7 +214,12 @@ class Manager:
 		worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.address.in_(ip_addresses)).first()
 		if worker:
 			pi_id = worker.id
-			logging.info("Found worker id %s for IP address %s" % (pi_id, worker.address))
+			logging.debug("Found worker id %s for IP address %s" % (pi_id, worker.address))
+		else: # wasn't able to find worker with given ip address(es)
+			logging.error("Wasn't able to find worker for given IP adress(es)")
+			reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id)
+			self.channel.basic_publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body="")
+			return
 		
 		config = self.prepare_config(pi_id)
 		logging.info("Sending intial config to worker with id %s" % pi_id)
