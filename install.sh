@@ -56,6 +56,19 @@ function gen_and_sign_cert(){
 	openssl ca -config $CERT_PATH/ca/openssl.cnf -in $CERT_PATH/$1.req.pem -out $CERT_PATH/$1.cert.pem -notext -batch -extensions $2
 }
 
+function check_requirements(){
+	if ! hash pip 2>/dev/null;
+	then
+		echo "Dependency pip is missing"
+		exit 5
+	fi
+
+	if ! hash rabbitmqctl 2>/dev/null;
+	then
+		echo "Dependency rabbitmq is missing"
+		exit 5
+	fi
+}
 
 # got at least two arguments
 # --update <worker|manager|webinterface|all>
@@ -102,6 +115,7 @@ then
 	fi
 fi
 
+check_requirements
 
 echo "Please input the user which SecPi should use: (default: root)"
 read SECPI_USER
