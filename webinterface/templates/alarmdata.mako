@@ -3,16 +3,20 @@
 <%def name="active_tab()"><% return "data" %></%def>
 
 <div ng-controller="AlarmDataController as dataCtrl">
-	<input type="button" value="fetch" ng-click="dataCtrl.fetchFolders()" />
-	<table id="alarmdata">
-		<tr>
-			<th>Name</th>
-			<th>Time</th>
-		</tr>
-		<tr ng-repeat="f in dataCtrl.folders">
-			<td class="data_click" ng-click="dataCtrl.showFolder($index)">{{f.name}}</td>
-			<td>{{f.mtime}}</td>
-		</tr>
+	<input type="button" value="fetch" class="btn btn-success" ng-click="dataCtrl.fetchFolders()" />
+	<table id="alarmdata" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Time</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="f in dataCtrl.folders">
+				<td class="data_click" ng-click="dataCtrl.showFolder($index)">{{f.name}}</td>
+				<td>{{f.mtime}}</td>
+			</tr>
+		</tbody>
 	</table>
 	<div id="folder_content" ng-show="dataCtrl.cur_folder">
 		<p ng-repeat="fi in dataCtrl.files">

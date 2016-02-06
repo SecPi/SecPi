@@ -1,0 +1,21 @@
+<div class="btn-group" uib-dropdown>
+
+  <!-- button style dropdown -->
+  <button type="button" 
+          class="btn btn-success"
+          ng-bind="ngModel.name || default">
+  </button>
+  <button type="button" class="btn btn-success dropdown-toggle" uib-dropdown-toggle>
+    <span class="caret"></span>
+  </button>
+
+
+  <!-- dropdown items -->
+  <ul class="dropdown-menu" role="menu"> 
+    <li ng-repeat="item in items">
+      <a href="#" ng-bind="item.name" 
+         ng-click="select(item)"></a>
+    </li> 
+  </ul>
+  
+</div>

@@ -1,7 +1,7 @@
 
 
 
-var app = angular.module("SecPi", ['ngAnimate']);
+var app = angular.module("SecPi", ['ngAnimate', 'ui.bootstrap']);
 
 app.service('FlashService', ['$log', '$timeout',function($log, $timeout){
 	var self = this;
@@ -412,7 +412,6 @@ app.controller('ActivateController', ['$http', '$log', '$interval', 'FlashServic
 		}	
 	}
 	
-	
 	self.fetch_active();
 	self.fetch_inactive();
 }]);
@@ -659,3 +658,31 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	
 }]);
 
+// http://stackoverflow.com/questions/28050980/how-can-i-modify-an-angularjs-bootstrap-dropdown-select-so-that-it-does-not-us
+app.directive('dropdown', function() {
+    return {
+      restrict: 'E',
+      require: '^ngModel',
+      scope: {
+        ngModel: '=', // selection
+        items: '=',   // items to select from
+        callback: '&' // callback
+      },
+      link: function(scope, element, attrs) {
+        element.on('click', function(event) {
+          event.preventDefault();
+        });
+        
+        scope.default = 'Please select item';
+  
+        // selection changed handler
+        scope.select = function(item) {
+          scope.ngModel = item;
+          if (scope.callback) {
+            scope.callback({ item: item });
+          }
+        };
+      },
+      templateUrl: '/static/html/dropdown-template.html'
+    };
+  })

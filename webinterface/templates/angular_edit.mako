@@ -9,15 +9,19 @@
 
 	## <img src="/static/img/icons/loading.gif" ng-show="dataCtrl.loading" /><br />
 
-	<table class="list">
-		<tr>
-			<th ng-repeat="(k, v) in dataCtrl.getFields('list')">{{v['name']}}</th>
-			<th class="edit_col"><img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" ng-show="dataCtrl.edit_active" class="pointer" /><img src="/static/img/icons/refresh.png" ng-click="dataCtrl.getList()" class="pointer" /></th>
-		</tr>
-		<tr ng-repeat="obj in dataCtrl.data">
-			<td ng-repeat="(k, v) in dataCtrl.getFields('list')">{{obj[k]}}</td>
-			<td class="edit_col"><img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="dataCtrl.delete($index)" ng-show="dataCtrl.edit_active" class="pointer" /><img src="/static/img/icons/edit.png" alt="edit" title="edit" ng-click="dataCtrl.showEdit($index)" ng-show="dataCtrl.edit_active" class="pointer" /></td>
-		</tr>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th ng-repeat="(k, v) in dataCtrl.getFields('list')">{{v['name']}}</th>
+				<th class="edit_col"><img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" ng-show="dataCtrl.edit_active" class="pointer" /><img src="/static/img/icons/refresh.png" ng-click="dataCtrl.getList()" class="pointer" /></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="obj in dataCtrl.data">
+				<td ng-repeat="(k, v) in dataCtrl.getFields('list')">{{obj[k]}}</td>
+				<td class="edit_col"><img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="dataCtrl.delete($index)" ng-show="dataCtrl.edit_active" class="pointer" /><img src="/static/img/icons/edit.png" alt="edit" title="edit" ng-click="dataCtrl.showEdit($index)" ng-show="dataCtrl.edit_active" class="pointer" /></td>
+			</tr>
+		</tbody>
 	</table>
 
 	<div id="edit-form-div" title="Edit ${basetitle}">

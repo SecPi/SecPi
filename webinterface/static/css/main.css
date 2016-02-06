@@ -10,6 +10,7 @@ html {
 body {
 	margin: 0;
 	font-family: Helvetica, Arial, sans-serif;
+	font-size: 16px;
 	height: 100%;
 }
 
@@ -285,32 +286,6 @@ h1 {
 /*
 	######### Alarm Data Table #########
 */
-#alarmdata {
-	border-collapse: collapse;
-	border-spacing: 0;
-	width: 100%;
-	margin: 5px;
-}
-
-
-#alarmdata td, th{
-	border: 1px solid transparent;
-	height: 30px;
-	transition: all 0.3s;
-	text-align: left;
-	/*border-left: 2px solid black;*/
-	padding: 3px 5px;
-}
-
-#alarmdata th {
-	background: #bbb;
-	font-weight: bold;
-	height: 35px;
-}
-
-#alarmdata tr:nth-child(odd) td { background: #DFDFDF; }
-#alarmdata tr:nth-child(even) td { background: #F1F1F1; }
-
 #alarmdata .data_click {
 	cursor: pointer;
 }
@@ -344,38 +319,6 @@ h1 {
 }
 
 
-/*
-	######### Data Table #########
-*/
-.list {
-	border-collapse: collapse;
-	border-spacing: 0;
-	width: 100%;
-	margin: 5px;
-}
-
-
-.list td, th{
-	border: 1px solid transparent;
-	height: 30px;
-	transition: all 0.3s;
-	text-align: left;
-	/*border-left: 2px solid black;*/
-	padding: 3px 5px;
-}
-
-.list th {
-	background: #bbb;
-	font-weight: bold;
-	height: 35px;
-}
-
-.list tr:nth-child(odd) td { background: #DFDFDF; }
-.list tr:nth-child(even) td { background: #F1F1F1; }
-
-.list .edit_col {
-	min-width: 35px;
-}
 
 /*
 	######### Icons #########

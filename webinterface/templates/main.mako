@@ -14,6 +14,9 @@
 	<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.min.css" />
 	<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.theme.min.css" />
 	
+	<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css" />
+	<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-theme.css" />
+	
 	<link rel="stylesheet" type="text/css" media="only screen and (max-width: 480px), only screen and (max-device-width: 480px)" href="/static/css/mobile.css" />
 	<link rel="stylesheet" type="text/css" media="only screen and (min-width: 480px) and (max-width: 640px), only screen and (min-device-width: 480px) and (max-width: 640px)" href="/static/css/mobile.css" />
 	
@@ -22,6 +25,9 @@
 	
 	<script type="text/javascript" src="/static/js/angular.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-animate.js"></script>
+	
+	<script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/static/js/ui-bootstrap-tpls-1.1.2.min.js"></script>
 	
 	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
@@ -34,11 +40,6 @@
 	</div>
 	
 	<div id="main">
-		% if flash_message is not None and not flash_message == "":
-			<div id="flash_message" class="${flash_type}">
-				${flash_message}
-			</div>
-		% endif
 		${self.body()}
 	</div>
 
