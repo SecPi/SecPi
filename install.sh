@@ -18,6 +18,7 @@ SECPI_PATH="/opt/secpi"
 LOG_PATH="/var/log/secpi"
 TMP_PATH="/var/tmp/secpi"
 CERT_PATH="$SECPI_PATH/certs"
+RMQ_CONFIG="/etc/rabbitmq/rabbitmq.config"
 
 # creates a folder and sets permissions to given user and group
 function create_folder(){
@@ -192,6 +193,25 @@ then
 	then
 		WEB_PWD="admin"
 		echo "Setting password to default value"
+	fi
+
+	echo "Should we take care of rabbitmq.config file? [yes/no]"
+	echo "Select no if you already have an existing rabbitmq setup."
+	read CREATE_RMQ_CONFIG
+
+	if [ "$CREATE_RMQ_CONFIG" = "yes" ] || [ "$CREATE_RMQ_CONFIG" = "y" ];
+	then
+		if [ ! -d /etc/rabbitmq ];
+		then
+			echo "Error, /etc/rabbitmq/ doesn't exist... is RabbitMQ installed?"
+			exit 1
+		fi
+		echo "Copying rabbitmq.config file..."
+		cp scripts/rabbitmq.config $RMQ_CONFIG
+
+		sed -i "s/<port>/$MQ_PORT/" $RMQ_CONFIG
+		sed -i "s/<certfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.cert.pem/" $RMQ_CONFIG
+		sed -i "s/<keyfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.key.pem/" $RMQ_CONFIG
 	fi
 fi
 
