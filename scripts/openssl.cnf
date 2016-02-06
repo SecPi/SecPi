@@ -19,7 +19,7 @@ crl               = $dir/ca/crl/ca.crl.pem
 crl_extensions    = crl_ext
 default_crl_days  = 30
 
-default_md        = sha256
+default_md        = sha1
 
 name_opt          = ca_default
 cert_opt          = ca_default
@@ -41,7 +41,7 @@ emailAddress            = optional
 [ req ]
 default_bits = 2048
 default_keyfile = /opt/secpi/certs/ca/private/cakey.pem
-default_md = sha256
+default_md = sha1
 prompt = yes
 distinguished_name = root_ca_distinguished_name
 x509_extensions = root_ca_extensions

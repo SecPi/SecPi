@@ -102,11 +102,23 @@ then
 fi
 
 
-echo "Please input the user which SecPi should use:"
+echo "Please input the user which SecPi should use: (default: root)"
 read SECPI_USER
 
-echo "Please input the group which SecPi should use:"
+if [ -z "$SECPI_USER" ]
+then
+	SECPI_USER="root"
+	echo "Setting user to default value"
+fi
+
+echo "Please input the group which SecPi should use: (default: root)"
 read SECPI_GROUP
+
+if [ -z "$SECPI_GROUP" ]
+then
+	SECPI_GROUP="root"
+	echo "Setting user to default value"
+fi
 
 echo "Select installation type:"
 echo "[1] Complete installation (manager, webui, worker)"
@@ -127,8 +139,14 @@ then
 	echo "Setting port to default value"
 fi
 
-echo "Enter RabbitMQ User"
+echo "Enter RabbitMQ User (default: secpi)"
 read MQ_USER
+
+if [ -z "$MQ_USER" ]
+then
+	MQ_USER="secpi"
+	echo "Setting user to default value"
+fi
 
 echo "Enter RabbitMQ Password"
 read MQ_PWD
@@ -158,11 +176,23 @@ then
 		read WEB_CERT_NAME
 	fi
 		
-	echo "Enter user for webinterface:"
+	echo "Enter user for webinterface: (default: admin)"
 	read WEB_USER
+
+	if [ -z "$WEB_USER" ]
+	then
+		WEB_USER="admin"
+		echo "Setting user to default value"
+	fi
 	
-	echo "Enter password for webinterface:"
+	echo "Enter password for webinterface: (default: admin)"
 	read WEB_PWD
+
+	if [ -z "$WEB_PWD" ]
+	then
+		WEB_PWD="admin"
+		echo "Setting password to default value"
+	fi
 fi
 
 
