@@ -98,6 +98,25 @@ h1 {
 	margin-top: 10px;
 }
 
+.edit_form {
+	padding: 10px;	
+}
+
+.edit_form h3 {
+	text-align: center;
+	margin: 5px;
+	margin-bottom: 10px;
+}
+
+.edit_form .modal_buttons {
+	text-align: center;
+	padding: 5px;
+}
+
+.edit_form td {
+	padding: 2px;
+}
+
 /*
 	######### Flash Messages #########
 */

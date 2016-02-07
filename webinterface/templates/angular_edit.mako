@@ -19,32 +19,8 @@
 		<tbody>
 			<tr ng-repeat="obj in dataCtrl.data">
 				<td ng-repeat="(k, v) in dataCtrl.getFields('list')">{{obj[k]}}</td>
-				<td class="edit_col"><img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="dataCtrl.delete($index)" ng-show="dataCtrl.edit_active" class="pointer" /><img src="/static/img/icons/edit.png" alt="edit" title="edit" ng-click="dataCtrl.showEdit($index)" ng-show="dataCtrl.edit_active" class="pointer" /></td>
+				<td class="edit_col"><img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="dataCtrl.showDelete($index)" ng-show="dataCtrl.edit_active" class="pointer" /><img src="/static/img/icons/edit.png" alt="edit" title="edit" ng-click="dataCtrl.showEdit($index)" ng-show="dataCtrl.edit_active" class="pointer" /></td>
 			</tr>
 		</tbody>
 	</table>
-
-	<div id="edit-form-div" title="Edit ${basetitle}">
-	<form id="edit-form" ng-submit="dataCtrl.saveEdit()">
-		<table>
-			<tr ng-repeat="(k, v) in dataCtrl.form_fields">
-				<td>{{v['name']}}</td>
-				<td>
-					<span ng-switch on="v['type']">
-						<span ng-switch-when="bool">
-							<input type="checkbox" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
-						</span>
-						<span ng-switch-when="number">
-							<input type="number" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
-						</span>
-						<span ng-switch-default>
-							<input type="text" name="k" id="k" ng-model="dataCtrl.edit_data[k]" />
-						</span>
-					</span>
-				</td>
-			</tr>
-		</table>
-	</form>
-	</div>
 </div>
-

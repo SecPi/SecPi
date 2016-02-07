@@ -17,29 +17,6 @@
 }
 
 
-input[type=button], select {
-	font-size: 1em;
-	color: white;
-	
-	width: 100%;
-	padding: 5px;
-	margin: 5px auto;
-	
-	background: linear-gradient(to bottom, #008800 20%, #006600 80%);
-	
-	border-style: solid;
-	border-width: 2px;
-	border-radius: 10px;
-	
-}
-
-input[type=button]:active, select:active {
-	background: linear-gradient(to bottom, #006600 20%, #008800 80%);
-}
-
-input[type=button]:hover, select:hover {
-	border-color: #f93;
-}
 
 
 /*

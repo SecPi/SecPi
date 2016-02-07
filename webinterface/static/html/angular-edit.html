@@ -1,0 +1,27 @@
+<div class="edit_form" title="Edit">
+	<h3>Edit {{dataModCtrl.dataCtrl.basetitle}}</h3>
+	<form ng-submit="dataModCtrl.dataCtrl.saveEdit()">
+		<table>
+			<tr ng-repeat="(k, v) in dataModCtrl.dataCtrl.form_fields">
+				<td>{{v['name']}}</td>
+				<td>
+					<span ng-switch on="v['type']">
+						<span ng-switch-when="bool">
+							<input type="checkbox" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]=false" />
+						</span>
+						<span ng-switch-when="number">
+							<input type="number" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" />
+						</span>
+						<span ng-switch-default>
+							<input type="text" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" />
+						</span>
+					</span>
+				</td>
+			</tr>
+		</table>
+		<div class="modal_buttons">
+			<input type="button" class="btn btn-success" ng-click="dataModCtrl.dataCtrl.saveEdit()" value="Save" /> 
+			<input type="button" class="btn btn-warning" ng-click="dataModCtrl.dataCtrl.cancelEdit()" value="Cancel" /> 
+		</div>
+	</form>
+</div>

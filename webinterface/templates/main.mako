@@ -27,7 +27,7 @@
 	<script type="text/javascript" src="/static/js/angular-animate.js"></script>
 	
 	<script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="/static/js/ui-bootstrap-tpls-1.1.2.min.js"></script>
+	<script type="text/javascript" src="/static/js/ui-bootstrap-tpls-1.1.2.js"></script>
 	
 	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
