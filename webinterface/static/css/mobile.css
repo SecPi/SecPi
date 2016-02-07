@@ -47,8 +47,43 @@
 	######### Tab Interface #########
 */
 .tabrow {
-	visibility: hidden;
+	text-align: center;
+	list-style-type: none;
+	margin-top: 70px;
+	padding: 0;
+	line-height: 24px;
+	position: static;
+}
+.nav-state1 {
 	display: none;
 }
 
+.nav-state2 {
+	display: block;
+}
 
+#navbutton {
+	display: block;
+}
+
+.tabrow li {
+	margin: 0px 0px 0px 0px;
+	border: 0px solid #AAA;
+	border-bottom: 2px solid #aaa;
+	
+	display: list-item;
+	position: static;
+	z-index: 0;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
+
+.tabrow li.selected {
+	border-bottom: 2px solid #aaa;
+}
+
+
+.tabrow li.selected:hover {
+	background-color: #ccc;
+	border-bottom: 2px solid #aaa;
+}

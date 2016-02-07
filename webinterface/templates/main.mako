@@ -26,14 +26,14 @@
 	<script type="text/javascript" src="/static/js/angular.min.js"></script>
 	<script type="text/javascript" src="/static/js/angular-animate.js"></script>
 	
-	<script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/static/js/bootstrap.js"></script>
 	<script type="text/javascript" src="/static/js/ui-bootstrap-tpls-1.1.2.js"></script>
 	
 	<script type="text/javascript" src="/static/js/app.js"></script>
 </head>
 <body>
 
-	<div id="nav">
+	<div id="nav" ng-controller="NavController as navCtrl">
 		<h1 class="header">SecPi</h1>
 		<%include file="nav.mako" args="active_tab=active_tab"/>
 		<%block name="subnav" />

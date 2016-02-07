@@ -669,6 +669,17 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	
 }]);
 
+app.controller('NavController', ['$uibModal', '$log', '$scope', '$timeout', 'FlashService', 'HTTPService', function($uibModal, $log, $scope, $timeout, FlashService, HTTPService){
+	var self = this;
+	
+	self.showing = true;
+	
+	self.toggle = function(){
+		$log.log("toggle")
+		self.showing = !self.showing;
+	}
+}]);
+
 // http://stackoverflow.com/questions/28050980/how-can-i-modify-an-angularjs-bootstrap-dropdown-select-so-that-it-does-not-us
 app.directive('dropdown', function() {
 	return {

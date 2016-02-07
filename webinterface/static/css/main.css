@@ -21,6 +21,7 @@ body {
 	width: 100%;
 	top: 0px;
 	height: 70px;
+	z-index: 100;
 }
 
 #main {
@@ -361,6 +362,41 @@ h1 {
 /*
 	######### Tab Interface #########
 */
+
+#navbutton {
+	float: right;
+	width: 21px;
+	height: 21px;
+	margin: 20px;
+	background-color: transparent;
+    background-image: none;
+    border: 1px solid #fff;
+    border-radius: 4px;
+	display: block;
+	z-index: 105;
+	padding: 5px 5px;
+	display: none;
+}
+
+.icon-bar {
+    display: block;
+    width: 19px;
+    height: 1px;
+    border-radius: 1px;
+    border: 1px solid #fff;
+    margin-bottom: 3px;
+    margin-top: 3px;
+    background-color: #fff;
+}
+
+.nav-state1 {
+	display: block;
+}
+
+.nav-state2 {
+	display: none;
+}
+
 .tabrow {
 	text-align: center;
 	list-style: none;
@@ -371,7 +407,10 @@ h1 {
 }
 
 
+
 .tabrow li {
+	text-align: center;
+	
 	margin: 38px 0px 0px 0px;
 	padding: 3px 11px;
 	border: 1px solid #AAA;
@@ -384,6 +423,7 @@ h1 {
 	border-top-right-radius: 6px;
 }
 
+
 .tabrow li.selected {
 	background: #ffffff;
 	color: #000000;
@@ -391,9 +431,19 @@ h1 {
 	border-bottom-color: #FFF;
 }
 
+.tabrow li.selected:hover {
+	background-color: #ccc;
+	border-bottom: 1px solid #ccc;
+}
+
+.tabrow li:hover {
+	background-color: #ccc;
+}
+
 .tabrow li a {
 	color: #505050;
 	text-decoration: none;
 	font-size: 16;
 	font-weight: bold;
+	display: block;
 }
