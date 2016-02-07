@@ -47,19 +47,22 @@
 	######### Tab Interface #########
 */
 .tabrow {
+	clear: both;
 	text-align: center;
-	list-style-type: none;
+	list-style: none;
+	margin: auto;
 	margin-top: 70px;
 	padding: 0;
 	line-height: 24px;
 	position: static;
 	width: 100%;
 	display: block;
+	overflow: hidden;
 }
 
 .nav-state1 {
 	animation-name: nav_anim_out;
-	animation-duration: 0.2s;
+	animation-duration: 0.4s;
 	animation-timing-function: linear;
 	animation-delay: 0s;
 	animation-iteration-count: 1;
@@ -68,7 +71,7 @@
 
 .nav-state2 {
 	animation-name: nav_anim_in;
-	animation-duration: 0.2s;
+	animation-duration: 0.4s;
 	animation-timing-function: linear;
 	animation-delay: 0s;
 	animation-iteration-count: 1;
@@ -76,13 +79,25 @@
 }
 
 @keyframes nav_anim_in {
-	from {opacity: 0;}
-	to {opacity: 1;}
+	from {
+		height: 0px;
+		opacity: 0;
+		}
+	to {
+		height: 500px;
+		opacity: 1;
+	}
 }
 
 @keyframes nav_anim_out {
-	from {opacity: 1;}
-	to {opacity: 0;}
+	from {
+		height: 500px;
+		opacity: 1;
+		}
+	to {
+		height: 0px;
+		opacity: 0;
+	}
 }
 
 #navbutton {
