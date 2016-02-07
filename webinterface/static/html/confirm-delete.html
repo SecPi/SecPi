@@ -1,7 +1,7 @@
 <div class="edit_form" title="Edit">
 	<h3>Delete {{dataModCtrl.dataCtrl.basetitle}}</h3>
 	Do you really want to delete {{dataModCtrl.dataCtrl.basetitle}} #{{dataModCtrl.dataCtrl.delID}}?
-	<form ng-submit="dataModCtrl.dataCtrl.saveEdit()">
+	<form ng-submit="dataModCtrl.dataCtrl.delete()">
 		<div class="modal_buttons">
 			<input type="button" class="btn btn-danger" ng-click="dataModCtrl.dataCtrl.delete()" value="Delete" /> 
 			<input type="button" class="btn btn-warning" ng-click="dataModCtrl.dataCtrl.cancelDelete()" value="Cancel" /> 

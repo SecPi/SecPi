@@ -433,7 +433,12 @@ app.controller('ConfigController', ['$log', 'FlashService', 'HTTPService', funct
 }]);
 
 
-app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($log, $timeout, $attrs, FlashService, HTTPService){
+function RelationshipModalController($uibModalInstance, rlCtrl){
+	var self = this;
+	self.rlCtrl = rlCtrl;
+}
+
+app.controller('RelationshipController', ['$log', '$timeout', '$attrs', '$uibModal', 'FlashService', 'HTTPService', function($log, $timeout, $attrs, $uibModal, FlashService, HTTPService){
 	var self = this;
 	
 	if (!$attrs.leftclass) throw new Error("No left class defined!");
@@ -449,6 +454,8 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 	self.lefts_rights = [];
 	self.lefts = [];
 	self.rights = [];
+	self.left_del = -1;
+	self.right_del = -1;
 	
 	
 	self.edit_active = true;
@@ -482,7 +489,15 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 	}
 	
 	self.showAdd = function(){
-		self.dialog.dialog("open");
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/rel-edit.html',
+			controller: ['$uibModalInstance', 'rlCtrl', RelationshipModalController],
+			controllerAs: 'rlModCtrl',
+			size: 'sm',
+			resolve: {
+				rlCtrl: function(){ return self }
+			}
+		});
 	}
 	
 	self.save = function(){
@@ -493,7 +508,7 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 			function(data, msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO);
 				self.fetchData();
-				self.dialog.dialog( "close" );
+				self.dialog.close(msg);
 			}
 		);
 		
@@ -501,48 +516,35 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 	}
 	
 	self.cancel = function(){
-		self.dialog.dialog( "close" );
-		
+		self.dialog.close("canceled");
 	}
 	
-	self.delete = function(left_id, right_id){
-		if(confirm("Do you really want to delete this association?")){
-			var dat = {};
-			dat[self.leftclass+"_id"] = left_id;
-			dat[self.rightclass+"_id"] = right_id;
-			HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/delete', dat,
-				function(data, msg){
-					FlashService.flash(msg, FlashService.TYPE_INFO);
-					self.fetchData();
-				}
-			);
-		}
-	}
-	
-	
-	$timeout(function(){
-		self.dialog = $( "#sz-form" ).dialog({
-			autoOpen: false,
-			height: 200,
-			width: 200,
-			modal: true,
-			dialogClass: "fixed_pos",
-			position: {
-				my: "center center",
-				at: "center center",
-				of: window
-			},
-			buttons: {
-				"Save": function(){
-					self.save();
-				},
-				Cancel: function() {
-					self.cancel();
-				}
+	self.showDelete = function(left_id, right_id){
+		self.left_del = left_id;
+		self.right_del = right_id;
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/confirm-rel-delete.html',
+			controller: ['$uibModalInstance', 'rlCtrl', RelationshipModalController],
+			controllerAs: 'rlModCtrl',
+			size: 'sm',
+			resolve: {
+				rlCtrl: function(){ return self }
 			}
 		});
-		$(".ui-dialog-titlebar-close").remove();
-	}, 100)
+	}
+	
+	self.delete = function(){
+		var dat = {};
+		dat[self.leftclass+"_id"] = self.left_del;
+		dat[self.rightclass+"_id"] = self.right_del;
+		HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/delete', dat,
+			function(data, msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO);
+				self.fetchData();
+				self.dialog.close(msg);
+			}
+		);
+	}
 	
 	self.fetchData();
 }]);
