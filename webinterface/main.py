@@ -15,6 +15,7 @@ import traceback
 import logging
 import logging.config
 import subprocess
+import time
 
 
 # web framework
@@ -80,33 +81,59 @@ class Root(object):
 		self.notifiers = NotifiersPage()
 		self.params = ParamsPage()
 		self.logs = LogEntriesPage()
-		self.setupszones = SetupsZonesPage();
-		self.workersactions = WorkersActionsPage();
+		self.setupszones = SetupsZonesPage()
+		self.workersactions = WorkersActionsPage()
 		
-		self.alarmdata = AlarmDataPage();
+		self.alarmdata = AlarmDataPage()
 		
-		try:
-			credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-			parameters = pika.ConnectionParameters(credentials=credentials,
-				host=config.get('rabbitmq')['master_ip'],
-				port=5671,
-				ssl=True,
-				socket_timeout=10,
-				ssl_options = {
-					"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-					"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-					"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-				}
-			)
-			connection = pika.BlockingConnection(parameters=parameters)
-			self.channel = connection.channel()
-			self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
+		self.connect()
+		cherrypy.log("Finished initialization")
+			
+	def connect(self, num_tries=3):
+		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
+		parameters = pika.ConnectionParameters(credentials=credentials,
+			host=config.get('rabbitmq')['master_ip'],
+			port=5671,
+			ssl=True,
+			socket_timeout=10,
+			ssl_options = {
+				"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
+				"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
+				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
+			}
+		)
 
-			self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
-			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
-		except Exception as e:
-			cherrypy.log("Error connecting to Queue! %s" % e, traceback=True)
-	
+		connected = False
+		while not connected and num_tries > 0:
+			try:
+				cherrypy.log("Trying to connect to rabbitmq service...")
+				self.connection = pika.BlockingConnection(parameters=parameters)
+				self.channel = self.connection.channel()
+				connected = True
+				cherrypy.log("Connection to rabbitmq service established")
+			#except pika.exceptions.AMQPConnectionError as pe:
+			except Exception as e:
+				cherrypy.log("Error connecting to Queue! %s" % e, traceback=True)
+				num_tries-=1
+				time.sleep(30)
+
+		if not connected:
+			return False
+		# define exchange
+		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
+
+		# define queues
+		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
+		return True
+
+	def connection_cleanup(self):
+		try:
+			self.channel.close()
+			self.connection.close()
+		except pika.exceptions.ConnectionClosed:
+			cherrypy.log("Wasn't able to cleanup connection")
+
 	def log_msg(self, msg, level):
 		log_entry = db.objects.LogEntry(level=level, message=str(msg), sender="Webinterface")
 		self.db.add(log_entry)
@@ -172,16 +199,29 @@ class Root(object):
 						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
 						return {'status':'error', 'message': "Error activating %s! No connection to queue server!" % su.name }
-						
+				
+				except pika.exceptions.ConnectionClosed:
+					cherrypy.log("Reconnecting to RabbitMQ Server!")
+					reconnected = self.connect(5)
+					if reconnected:
+						cherrypy.log("Reconnect finished!")
+						su.active_state = True
+						self.db.commit()
+						ooff = { 'active_state': True }
+						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+						return {'status': 'success', 'message': "Activated setup %s!" % su.name}
+					else:
+						return {'status':'error', 'message': "Error activating %s! Wasn't able to reconnect!" % su.name }
+
 				except Exception as e:
-					su.active_state = False;
+					su.active_state = False
 					self.db.commit()
 					cherrypy.log("Error activating! %s"%str(e), traceback=True)
 					return {'status':'error', 'message': "Error activating! %s" % e }
 				else:
 					return {'status': 'success', 'message': "Activated setup %s!" % su.name}
-				
-			return {'status':'error', 'message': "Invalid ID!" }
+			else:
+				return {'status':'error', 'message': "Invalid ID!" }
 		
 		return {'status': 'error', 'message': 'No data recieved!'}
 
@@ -290,7 +330,7 @@ def run():
 	)
 	sqlalchemy_plugin.subscribe()
 	sqlalchemy_plugin.create()
-	
+
 	cherrypy.engine.start()
 	cherrypy.engine.block()
 
