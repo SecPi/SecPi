@@ -1,5 +1,6 @@
 import logging
 import gsmmodem # TODO: add to requirements.txt and usb_modeswitch to debian dependencies
+import serial.serialutil
 
 from tools.notifier import Notifier
 
@@ -36,9 +37,9 @@ class Sms(Notifier):
 		except gsmmodem.exceptions.TimeoutException: # maybe because it can't access the sim? not sure yet
 			logging.exception("Sms: Timeout while establishing serial connection to usb modem")
 			self.corrupted = True
-		# except serial.serialutil.SerialException: # wrong device path
-		# 	logging.exception("Sms: Wasn't able to open specified port")
-		# 	self.corrupted = True
+		except serial.serialutil.SerialException: # wrong device path
+			logging.exception("Sms: Wasn't able to open specified port")
+			self.corrupted = True
 		except gsmmodem.exceptions.CmeError: # no SIM inside?
 			logging.exception("Sms: Wasn't able to access SIM, maybe there is none?")
 			self.corrupted = True

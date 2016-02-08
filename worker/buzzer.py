@@ -55,4 +55,9 @@ class Buzzer(Action):
 
 	def cleanup(self):
 		if not self.corrupted:
-			GPIO.cleanup(self.gpio_pin)
+			try:
+				GPIO.cleanup(self.gpio_pin)
+			except ValueError as ve: # GPIO pin number is not in valid range
+				logging.error("Buzzer: The given pin number is not in a valid range: %s" % ve)
+			else:
+				logging.debug("Buzzer: Cleaned up buzzer action")
