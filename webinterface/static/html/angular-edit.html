@@ -7,7 +7,7 @@
 				<td>
 					<span ng-switch on="v['type']">
 						<span ng-switch-when="bool">
-							<input type="checkbox" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]=false" />
+							<input type="checkbox" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]?dataModCtrl.dataCtrl.edit_data[k]=true:dataModCtrl.dataCtrl.edit_data[k]=false" />
 						</span>
 						<span ng-switch-when="number">
 							<input type="number" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" />
