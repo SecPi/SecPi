@@ -300,6 +300,20 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	}
 	
 	
+	self.copy = function(copyId){
+		self.loading = true;
+		HTTPService.post(self.baseclass+'/add', self.data[copyId],
+			function(data, msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO)
+				self.getList();
+				self.loading = false;
+			},
+			function(){
+				self.loading = false;
+			}
+		);
+	}
+	
 	self.fetchFields();
 	self.getList();
 	

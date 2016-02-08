@@ -352,6 +352,9 @@ h1 {
 .icon_edit {
 	background: url('/static/img/icons/edit.png') no-repeat 13px 3px transparent;
 }
+.icon_copy {
+	background: url('/static/img/icons/copy.png') no-repeat 13px 3px transparent;
+}
 
 .icon_list {
 	background: url('/static/img/icons/list.png') no-repeat 13px 3px transparent;
