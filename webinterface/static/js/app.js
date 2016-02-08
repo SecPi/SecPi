@@ -593,7 +593,12 @@ app.controller('CredentialsController', ['$log', 'FlashService', 'HTTPService', 
 }]);
 
 
-app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTPService', function($log, $timeout, FlashService, HTTPService){
+function AlarmDataModalController($uibModalInstance, dataCtrl){
+	var self = this;
+	self.dataCtrl = dataCtrl;
+}
+
+app.controller('AlarmDataController', ['$log', '$timeout', '$uibModal', 'FlashService', 'HTTPService', function($log, $timeout, $uibModal, FlashService, HTTPService){
 	var self = this;
 	
 	self.folders = [];
@@ -604,13 +609,21 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	self.showFolder = function(id){
 		self.cur_folder = self.folders[id]
 		self.fetchFiles(self.cur_folder.name)
-		self.dialog.dialog('option', 'title', self.cur_folder.name);
-		self.dialog.dialog("open");
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/alarmdata-dialog.html',
+			controller: ['$uibModalInstance', 'dataCtrl', AlarmDataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'lg',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.hideFolder() })
 	}
 	
 	self.hideFolder = function(){
 		self.cur_folder = null;
-		self.dialog.dialog("close");
+		self.dialog.close("close");
 	}
 	
 	
@@ -646,26 +659,6 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	
 	
 	self.fetchFolders();
-	
-	$timeout(function(){
-		self.dialog = $( "#folder_content" ).dialog({
-			autoOpen: false,
-			height: 350,
-			width: 400,
-			modal: true,
-			dialogClass: "fixed_pos",
-			position: {
-				my: "center center",
-				at: "center center",
-				of: window
-			},
-			buttons: {
-				Cancel: function() {
-					self.hideFolder();
-				}
-			}
-		});
-	}, 100)
 	
 }]);
 
