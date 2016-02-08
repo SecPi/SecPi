@@ -94,7 +94,7 @@ class Mailer(Notifier):
 			smtp.starttls()
 			logging.debug("Mailer: Logging in...")
 			smtp.login(self.smtp_user, self.smtp_pass)
-			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
@@ -108,7 +108,7 @@ class Mailer(Notifier):
 			smtp.ehlo()
 			logging.debug("Mailer: Logging in...")
 			smtp.login(self.smtp_user, self.smtp_pass)
-			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
@@ -122,7 +122,7 @@ class Mailer(Notifier):
 			smtp.ehlo()
 			logging.debug("Mailer: Logging in...")
 			smtp.login(self.smtp_user, self.smtp_pass)
-			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
@@ -134,7 +134,7 @@ class Mailer(Notifier):
 			logging.debug("Mailer: Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
-			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
@@ -146,7 +146,7 @@ class Mailer(Notifier):
 			logging.debug("Mailer: Establishing connection to SMTP server...")
 			smtp = smtplib.SMTP_SSL(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
-			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
@@ -159,7 +159,7 @@ class Mailer(Notifier):
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
 			smtp.starttls()
-			smtp.sendmail(self.message["From"], self.message["To"], self.message.as_string())
+			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
