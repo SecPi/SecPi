@@ -4,7 +4,7 @@ then
 	exit 1
 fi
 
-$CERT_PATH="/opt/secpi/certs"
+CERT_PATH="/opt/secpi/certs"
 
 # generate key
 openssl genrsa -out $CERT_PATH/$1.key.pem 2048
