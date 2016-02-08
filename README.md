@@ -2,6 +2,7 @@
 
 A Raspberry Pi alarm system written in python.
 
+Please visit the [wiki pages](https://github.com/SecPi/SecPi/wiki) for more information
 
 ### Fugue Icons
 (C) 2012 Yusuke Kamiyamane. All rights reserved.
