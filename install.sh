@@ -188,7 +188,7 @@ if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 2 ]
 then
 	if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 	then
-		echo "Enter name for webserver certificate (excluding $CA_DOMAIN)"
+		echo "Enter name for webserver certificate (excluding $CA_DOMAIN; The names 'manager', 'webui', 'mq-server' and 'worker1' are already reserved for RabbitMQ certificates)"
 		read WEB_CERT_NAME
 	fi
 		
@@ -267,6 +267,7 @@ then
 	echo 1000 > $CERT_PATH/ca/serial
 
 	cp scripts/openssl.cnf $CERT_PATH/ca/
+	cp scripts/gen_cert.sh $SECPI_PATH
 
 	# generate ca cert
 	openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
@@ -276,20 +277,6 @@ then
 fi
 
 
-
-# add rabbitmq user and set permissions
-rabbitmqctl add_user $MQ_USER $MQ_PWD
-if [ $? -ne 0 ];
-then
-	echo "Error adding RabbitMQ user!"
-	exit 1
-fi
-rabbitmqctl set_permissions $MQ_USER "secpi.*" "secpi.*" "secpi.*"
-if [ $? -ne 0 ];
-then
-	echo "Error setting RabbitMQ permissions!"
-	exit 1
-fi
 
 echo "Current SecPi folder: $PWD"
 echo "Copying to $SECPI_PATH..."
@@ -361,6 +348,20 @@ then
 	# set permissions
 	chmod 755 $SECPI_PATH/webinterface/main.py
 	chmod 755 $SECPI_PATH/manager/manager.py
+	
+	# add rabbitmq user and set permissions
+	rabbitmqctl add_user $MQ_USER $MQ_PWD
+	if [ $? -ne 0 ];
+	then
+		echo "Error adding RabbitMQ user!"
+		exit 1
+	fi
+	rabbitmqctl set_permissions $MQ_USER "secpi.*" "secpi.*" "secpi.*"
+	if [ $? -ne 0 ];
+	then
+		echo "Error setting RabbitMQ permissions!"
+		exit 1
+	fi
 fi
 
 
@@ -402,8 +403,6 @@ chown -R $SECPI_USER:$SECPI_GROUP $SECPI_PATH
 # reload systemd, but don't write anything if systemctl doesn't exist
 systemctl daemon-reload > /dev/null 2>&1
 
-
-cp scripts/gen_cert.sh $SECPI_PATH
 
 ################################################################################################
 
