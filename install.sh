@@ -103,6 +103,7 @@ then
 			find webinterface/ -name '*.css' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.js' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.mako' | cpio -updm $SECPI_PATH
+			find webinterface/ -name '*.html' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.png' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.jpg' | cpio -updm $SECPI_PATH
 			find webinterface/ -name '*.gif' | cpio -updm $SECPI_PATH
