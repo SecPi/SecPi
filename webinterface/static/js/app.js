@@ -302,16 +302,21 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	
 	self.copy = function(copyId){
 		self.loading = true;
-		HTTPService.post(self.baseclass+'/add', self.data[copyId],
-			function(data, msg){
-				FlashService.flash(msg, FlashService.TYPE_INFO)
-				self.getList();
-				self.loading = false;
-			},
-			function(){
-				self.loading = false;
+		self.form_fields = self.getFields('add')
+		self.edit_data = jQuery.extend(true, {}, self.data[copyId])
+		self.edit_id = -1;
+		self.orig_data = self.data[copyId];
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/angular-edit.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'sm',
+			resolve: {
+				dataCtrl: function(){ return self }
 			}
-		);
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.cancelEdit() })
+		self.loading = false;
 	}
 	
 	self.fetchFields();
