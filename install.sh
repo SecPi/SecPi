@@ -137,8 +137,8 @@ then
 fi
 
 echo "Select installation type:"
-echo "[1] Complete installation (manager, webui, worker)"
-echo "[2] Management installation (manager, webui)"
+echo "[1] Complete installation (manager, webinterface, worker)"
+echo "[2] Management installation (manager, webinterface)"
 echo "[3] Worker installation (worker only)"
 read INSTALL_TYPE
 

@@ -18,7 +18,7 @@ then
 	then
 		cd worker
 		python worker.py $PROJECT_PATH
-	elif [ $1 = "webui" ]
+	elif [ $1 = "webinterface" ]
 	then
 		cd webinterface
 		python main.py $PROJECT_PATH
@@ -28,10 +28,10 @@ then
 		python setup.py $PROJECT_PATH
 	#	python test.py
 	else
-		echo "Usage: startup.sh <manager|worker|webui|setup>"
+		echo "Usage: startup.sh <manager|worker|webinterface|setup>"
 	fi
 
 else
-	echo "Usage: startup.sh <manager|worker|webui|setup>"
+	echo "Usage: startup.sh <manager|worker|webinterface|setup>"
 
 fi

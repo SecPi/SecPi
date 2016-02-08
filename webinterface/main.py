@@ -253,8 +253,8 @@ def run():
 		'server.ssl_certificate':'%s/certs/%s'%(PROJECT_PATH, config.get("server_cert")),
 		'server.ssl_private_key':'%s/certs/%s'%(PROJECT_PATH, config.get("server_key")),
 		'server.ssl_certificate_chain':'%s/certs/%s'%(PROJECT_PATH, config.get("server_ca_chain")),
-		'log.error_file': "/var/log/secpi/webui.log",
-		'log.access_file': "/var/log/secpi/webui_access.log",
+		'log.error_file': "/var/log/secpi/webinterface.log",
+		'log.access_file': "/var/log/secpi/webinterface_access.log",
 		'log.screen': False
 	})
 	
