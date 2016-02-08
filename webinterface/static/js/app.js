@@ -1,7 +1,7 @@
 
 
 
-var app = angular.module("SecPi", ['ngAnimate']);
+var app = angular.module("SecPi", ['ngAnimate', 'ui.bootstrap']);
 
 app.service('FlashService', ['$log', '$timeout',function($log, $timeout){
 	var self = this;
@@ -99,7 +99,12 @@ app.controller('FlashController', ['FlashService', '$timeout', function(FlashSer
 	}
 }])
 
-app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($http, $log, $scope, $timeout, $attrs, FlashService, HTTPService){
+function DataModalController($uibModalInstance, dataCtrl){
+	var self = this;
+	self.dataCtrl = dataCtrl;
+}
+
+app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($uibModal, $http, $log, $scope, $timeout, $attrs, FlashService, HTTPService){
 	var self = this;
 	
 	if (!$attrs.baseclass) throw new Error("No class defined!");
@@ -183,11 +188,19 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	
 	self.showEdit = function(id){
 		self.form_fields = self.getFields('update')
-		self.dialog.dialog('option', 'title', 'Edit '+self.basetitle);
-		self.edit_data = self.data[id];
+		self.edit_data = jQuery.extend(true, {}, self.data[id])
 		self.edit_id = id;
-		self.orig_data = jQuery.extend(true, {}, self.data[id])
-		self.dialog.dialog("open");
+		self.orig_data = self.data[id];
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/angular-edit.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'sm',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.cancelEdit() })
 	};
 	
 	self.saveEdit = function(){
@@ -205,7 +218,7 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 					self.edit_data = null;
 					self.edit_id = -1;
 					
-					self.dialog.dialog( "close" );
+					self.dialog.close(msg)
 					self.loading = false;
 				},
 				function(){
@@ -217,10 +230,11 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 			HTTPService.post(self.baseclass+'/update', self.edit_data,
 				function(data, msg){
 					FlashService.flash(msg, FlashService.TYPE_INFO)
+					self.data[self.edit_id] = self.edit_data;
 					self.orig_data = null;
 					self.edit_data = null;
 					self.edit_id = -1;
-					self.dialog.dialog( "close" );
+					self.dialog.close(msg)
 					self.loading = false;
 				},
 				function(){
@@ -232,64 +246,78 @@ app.controller('DataController', ['$http', '$log', '$scope', '$timeout', '$attrs
 	
 	self.cancelEdit = function(){
 		$log.log("cancel "+self.edit_id);
-		self.data[self.edit_id] = self.orig_data;
 		self.orig_data = null;
 		self.edit_data = null;
 		self.edit_id = -1;
-		$scope.$apply();
-		self.dialog.dialog( "close" );
+		self.dialog.close("Canceled edit!");
 	};
 	
 	self.showNew = function(){
 		self.form_fields = self.getFields('add')
-		self.dialog.dialog('option', 'title', 'Add '+self.basetitle);
 		self.edit_data = {};
 		self.edit_id = -1;
-		self.dialog.dialog("open");
-	};
-	
-	self.delete = function(delId){
-		if(confirm("Do you really want to delete the Object with id "+ delId +"?")){
-			HTTPService.post(self.baseclass+'/delete', {id: self.data[delId]["id"]},
-				function(data, msg){
-					FlashService.flash(msg, FlashService.TYPE_INFO)
-					self.data.splice(delId, 1);
-					self.loading = false;
-				},
-				function(){
-					self.loading = false;
-				}
-			);
-		}
-	};
-	
-	
-	
-	$timeout(function(){
-		self.dialog = $( "#edit-form-div" ).dialog({
-			autoOpen: false,
-			height: 300,
-			width: 350,
-			modal: true,
-			dialogClass: "fixed_pos",
-			position: {
-				my: "center center",
-				at: "center center",
-				of: window
-			},
-			buttons: {
-				"Save": function(){
-					self.saveEdit();
-				},
-				Cancel: function() {
-					self.cancelEdit();
-				}
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/angular-edit.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'sm',
+			resolve: {
+				dataCtrl: function(){ return self }
 			}
 		});
-		$(".ui-dialog-titlebar-close").remove();
-	}, 100)
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.cancelEdit() })
+	};
+	
+	self.showDelete = function(delId){
+		self.delID = delId;
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/confirm-delete.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'sm',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+	};
+	
+	self.delete = function(){
+		HTTPService.post(self.baseclass+'/delete', {id: self.data[self.delID]["id"]},
+			function(data, msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO)
+				self.data.splice(self.delID, 1);
+				self.dialog.close("Canceled delete!")
+				self.loading = false;
+			},
+			function(){
+				self.loading = false;
+			}
+		);
+	}
+	
+	self.cancelDelete = function(){
+		self.dialog.close("Canceled delete!")
+	}
 	
 	
+	self.copy = function(copyId){
+		self.loading = true;
+		self.form_fields = self.getFields('add')
+		self.edit_data = jQuery.extend(true, {}, self.data[copyId])
+		self.edit_id = -1;
+		self.orig_data = self.data[copyId];
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/angular-edit.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'sm',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.cancelEdit() })
+		self.loading = false;
+	}
 	
 	self.fetchFields();
 	self.getList();
@@ -412,7 +440,6 @@ app.controller('ActivateController', ['$http', '$log', '$interval', 'FlashServic
 		}	
 	}
 	
-	
 	self.fetch_active();
 	self.fetch_inactive();
 }]);
@@ -425,7 +452,12 @@ app.controller('ConfigController', ['$log', 'FlashService', 'HTTPService', funct
 }]);
 
 
-app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($log, $timeout, $attrs, FlashService, HTTPService){
+function RelationshipModalController($uibModalInstance, rlCtrl){
+	var self = this;
+	self.rlCtrl = rlCtrl;
+}
+
+app.controller('RelationshipController', ['$log', '$timeout', '$attrs', '$uibModal', 'FlashService', 'HTTPService', function($log, $timeout, $attrs, $uibModal, FlashService, HTTPService){
 	var self = this;
 	
 	if (!$attrs.leftclass) throw new Error("No left class defined!");
@@ -441,6 +473,8 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 	self.lefts_rights = [];
 	self.lefts = [];
 	self.rights = [];
+	self.left_del = -1;
+	self.right_del = -1;
 	
 	
 	self.edit_active = true;
@@ -474,7 +508,15 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 	}
 	
 	self.showAdd = function(){
-		self.dialog.dialog("open");
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/rel-edit.html',
+			controller: ['$uibModalInstance', 'rlCtrl', RelationshipModalController],
+			controllerAs: 'rlModCtrl',
+			size: 'sm',
+			resolve: {
+				rlCtrl: function(){ return self }
+			}
+		});
 	}
 	
 	self.save = function(){
@@ -485,7 +527,7 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 			function(data, msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO);
 				self.fetchData();
-				self.dialog.dialog( "close" );
+				self.dialog.close(msg);
 			}
 		);
 		
@@ -493,48 +535,35 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', 'FlashSe
 	}
 	
 	self.cancel = function(){
-		self.dialog.dialog( "close" );
-		
+		self.dialog.close("canceled");
 	}
 	
-	self.delete = function(left_id, right_id){
-		if(confirm("Do you really want to delete this association?")){
-			var dat = {};
-			dat[self.leftclass+"_id"] = left_id;
-			dat[self.rightclass+"_id"] = right_id;
-			HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/delete', dat,
-				function(data, msg){
-					FlashService.flash(msg, FlashService.TYPE_INFO);
-					self.fetchData();
-				}
-			);
-		}
-	}
-	
-	
-	$timeout(function(){
-		self.dialog = $( "#sz-form" ).dialog({
-			autoOpen: false,
-			height: 200,
-			width: 200,
-			modal: true,
-			dialogClass: "fixed_pos",
-			position: {
-				my: "center center",
-				at: "center center",
-				of: window
-			},
-			buttons: {
-				"Save": function(){
-					self.save();
-				},
-				Cancel: function() {
-					self.cancel();
-				}
+	self.showDelete = function(left_id, right_id){
+		self.left_del = left_id;
+		self.right_del = right_id;
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/confirm-rel-delete.html',
+			controller: ['$uibModalInstance', 'rlCtrl', RelationshipModalController],
+			controllerAs: 'rlModCtrl',
+			size: 'sm',
+			resolve: {
+				rlCtrl: function(){ return self }
 			}
 		});
-		$(".ui-dialog-titlebar-close").remove();
-	}, 100)
+	}
+	
+	self.delete = function(){
+		var dat = {};
+		dat[self.leftclass+"_id"] = self.left_del;
+		dat[self.rightclass+"_id"] = self.right_del;
+		HTTPService.post('/' +self.leftclass +'s' +self.rightclass +'s/delete', dat,
+			function(data, msg){
+				FlashService.flash(msg, FlashService.TYPE_INFO);
+				self.fetchData();
+				self.dialog.close(msg);
+			}
+		);
+	}
 	
 	self.fetchData();
 }]);
@@ -583,7 +612,12 @@ app.controller('CredentialsController', ['$log', 'FlashService', 'HTTPService', 
 }]);
 
 
-app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTPService', function($log, $timeout, FlashService, HTTPService){
+function AlarmDataModalController($uibModalInstance, dataCtrl){
+	var self = this;
+	self.dataCtrl = dataCtrl;
+}
+
+app.controller('AlarmDataController', ['$log', '$timeout', '$uibModal', 'FlashService', 'HTTPService', function($log, $timeout, $uibModal, FlashService, HTTPService){
 	var self = this;
 	
 	self.folders = [];
@@ -594,13 +628,21 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	self.showFolder = function(id){
 		self.cur_folder = self.folders[id]
 		self.fetchFiles(self.cur_folder.name)
-		self.dialog.dialog('option', 'title', self.cur_folder.name);
-		self.dialog.dialog("open");
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/alarmdata-dialog.html',
+			controller: ['$uibModalInstance', 'dataCtrl', AlarmDataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'lg',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.hideFolder() })
 	}
 	
 	self.hideFolder = function(){
 		self.cur_folder = null;
-		self.dialog.dialog("close");
+		self.dialog.close("close");
 	}
 	
 	
@@ -637,25 +679,44 @@ app.controller('AlarmDataController', ['$log', '$timeout', 'FlashService', 'HTTP
 	
 	self.fetchFolders();
 	
-	$timeout(function(){
-		self.dialog = $( "#folder_content" ).dialog({
-			autoOpen: false,
-			height: 350,
-			width: 400,
-			modal: true,
-			dialogClass: "fixed_pos",
-			position: {
-				my: "center center",
-				at: "center center",
-				of: window
-			},
-			buttons: {
-				Cancel: function() {
-					self.hideFolder();
-				}
-			}
-		});
-	}, 100)
-	
 }]);
 
+app.controller('NavController', ['$uibModal', '$log', '$scope', '$timeout', 'FlashService', 'HTTPService', function($uibModal, $log, $scope, $timeout, FlashService, HTTPService){
+	var self = this;
+	
+	self.showing = true;
+	
+	self.toggle = function(){
+		$log.log("toggle")
+		self.showing = !self.showing;
+	}
+}]);
+
+// http://stackoverflow.com/questions/28050980/how-can-i-modify-an-angularjs-bootstrap-dropdown-select-so-that-it-does-not-us
+app.directive('dropdown', function() {
+	return {
+	  restrict: 'E',
+	  require: '^ngModel',
+	  scope: {
+		ngModel: '=', // selection
+		items: '=',   // items to select from
+		callback: '&' // callback
+	  },
+	  link: function(scope, element, attrs) {
+		element.on('click', function(event) {
+		  event.preventDefault();
+		});
+		
+		scope.default = 'Please select item';
+  
+		// selection changed handler
+		scope.select = function(item) {
+		  scope.ngModel = item;
+		  if (scope.callback) {
+			scope.callback({ item: item });
+		  }
+		};
+	  },
+	  templateUrl: '/static/html/dropdown-template.html'
+	};
+  })

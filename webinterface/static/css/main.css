@@ -10,6 +10,7 @@ html {
 body {
 	margin: 0;
 	font-family: Helvetica, Arial, sans-serif;
+	font-size: 16px;
 	height: 100%;
 }
 
@@ -20,6 +21,7 @@ body {
 	width: 100%;
 	top: 0px;
 	height: 70px;
+	z-index: 100;
 }
 
 #main {
@@ -95,6 +97,25 @@ span.clear {
 
 h1 {
 	margin-top: 10px;
+}
+
+.edit_form {
+	padding: 10px;	
+}
+
+.edit_form h3 {
+	text-align: center;
+	margin: 5px;
+	margin-bottom: 10px;
+}
+
+.edit_form .modal_buttons {
+	text-align: center;
+	padding: 5px;
+}
+
+.edit_form td {
+	padding: 2px;
 }
 
 /*
@@ -285,32 +306,6 @@ h1 {
 /*
 	######### Alarm Data Table #########
 */
-#alarmdata {
-	border-collapse: collapse;
-	border-spacing: 0;
-	width: 100%;
-	margin: 5px;
-}
-
-
-#alarmdata td, th{
-	border: 1px solid transparent;
-	height: 30px;
-	transition: all 0.3s;
-	text-align: left;
-	/*border-left: 2px solid black;*/
-	padding: 3px 5px;
-}
-
-#alarmdata th {
-	background: #bbb;
-	font-weight: bold;
-	height: 35px;
-}
-
-#alarmdata tr:nth-child(odd) td { background: #DFDFDF; }
-#alarmdata tr:nth-child(even) td { background: #F1F1F1; }
-
 #alarmdata .data_click {
 	cursor: pointer;
 }
@@ -344,38 +339,6 @@ h1 {
 }
 
 
-/*
-	######### Data Table #########
-*/
-.list {
-	border-collapse: collapse;
-	border-spacing: 0;
-	width: 100%;
-	margin: 5px;
-}
-
-
-.list td, th{
-	border: 1px solid transparent;
-	height: 30px;
-	transition: all 0.3s;
-	text-align: left;
-	/*border-left: 2px solid black;*/
-	padding: 3px 5px;
-}
-
-.list th {
-	background: #bbb;
-	font-weight: bold;
-	height: 35px;
-}
-
-.list tr:nth-child(odd) td { background: #DFDFDF; }
-.list tr:nth-child(even) td { background: #F1F1F1; }
-
-.list .edit_col {
-	min-width: 35px;
-}
 
 /*
 	######### Icons #########
@@ -389,9 +352,32 @@ h1 {
 .icon_edit {
 	background: url('/static/img/icons/edit.png') no-repeat 13px 3px transparent;
 }
+.icon_copy {
+	background: url('/static/img/icons/copy.png') no-repeat 13px 3px transparent;
+}
 
 .icon_list {
 	background: url('/static/img/icons/list.png') no-repeat 13px 3px transparent;
+}
+
+.loading {
+	position: fixed;
+	z-index: 10000;
+	
+	top:50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	
+	height: 30px;
+	width: 30px;
+	
+	background-color: #fff;
+	background-image: url('/static/img/icons/loading.gif');
+	background-repeat: no-repeat;
+	background-position: center center;
+	border: 1px solid #aaa;
+	border-radius: 3px;
 }
 
 
@@ -399,6 +385,45 @@ h1 {
 /*
 	######### Tab Interface #########
 */
+
+#navbutton {
+	float: right;
+	width: 21px;
+	height: 21px;
+	margin: 18px 18px 19px 0px;
+	background-color: transparent;
+    background-image: none;
+    border: 1px solid #fff;
+    border-radius: 4px;
+	display: block;
+	z-index: 105;
+	padding: 5px 5px;
+	display: none;
+}
+
+#navbutton:active {
+	background-color: #aaa;
+}
+
+.icon-bar {
+    display: block;
+    width: 19px;
+    height: 1px;
+    border-radius: 1px;
+    border: 1px solid #fff;
+    margin-bottom: 3px;
+    margin-top: 3px;
+    background-color: #fff;
+}
+
+.nav-state1 {
+	display: block;
+}
+
+.nav-state2 {
+	display: none;
+}
+
 .tabrow {
 	text-align: center;
 	list-style: none;
@@ -409,7 +434,10 @@ h1 {
 }
 
 
+
 .tabrow li {
+	text-align: center;
+	
 	margin: 38px 0px 0px 0px;
 	padding: 3px 11px;
 	border: 1px solid #AAA;
@@ -422,6 +450,7 @@ h1 {
 	border-top-right-radius: 6px;
 }
 
+
 .tabrow li.selected {
 	background: #ffffff;
 	color: #000000;
@@ -429,9 +458,19 @@ h1 {
 	border-bottom-color: #FFF;
 }
 
+.tabrow li.selected:hover {
+	background-color: #ccc;
+	border-bottom: 1px solid #ccc;
+}
+
+.tabrow li:hover {
+	background-color: #ccc;
+}
+
 .tabrow li a {
 	color: #505050;
 	text-decoration: none;
 	font-size: 16;
 	font-weight: bold;
+	display: block;
 }

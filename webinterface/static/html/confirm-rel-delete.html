@@ -1,0 +1,11 @@
+<div class="edit_form" title="Delete">
+	<h3>Delete Relationship</h3>
+	Do you really want to delete the following Relationship?<br />
+	{{rlModCtrl.rlCtrl.leftname}} #{{rlModCtrl.rlCtrl.left_del}} <--> {{rlModCtrl.rlCtrl.rightname}} #{{rlModCtrl.rlCtrl.right_del}}
+	<form ng-submit="rlModCtrl.rlCtrl.delete()">
+		<div class="modal_buttons">
+			<input type="button" class="btn btn-danger" ng-click="rlModCtrl.rlCtrl.delete()" value="Delete" /> 
+			<input type="button" class="btn btn-warning" ng-click="rlModCtrl.rlCtrl.cancel()" value="Cancel" /> 
+		</div>
+	</form>
+</div>

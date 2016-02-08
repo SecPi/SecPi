@@ -1,0 +1,11 @@
+<div class="edit_form" title="Add">
+	<h3>Add Relationship</h3>
+	{{rlModCtrl.rlCtrl.leftname}}: 
+	<dropdown ng-model="rlModCtrl.rlCtrl.left" items="rlModCtrl.rlCtrl.lefts"></dropdown><br /><br />
+	{{rlModCtrl.rlCtrl.rightname}}: 
+	<dropdown ng-model="rlModCtrl.rlCtrl.right" items="rlModCtrl.rlCtrl.rights"></dropdown><br /><br />
+	<div class="modal_buttons">
+		<input type="button" class="btn btn-success" ng-click="rlModCtrl.rlCtrl.save()" value="Save" /> 
+		<input type="button" class="btn btn-warning" ng-click="rlModCtrl.rlCtrl.cancel()" value="Cancel" /> 
+	</div>
+</div>
