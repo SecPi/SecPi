@@ -378,6 +378,10 @@ h1 {
 	display: none;
 }
 
+#navbutton:active {
+	background-color: #aaa;
+}
+
 .icon-bar {
     display: block;
     width: 19px;
