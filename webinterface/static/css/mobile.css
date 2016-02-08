@@ -17,6 +17,9 @@
 }
 
 
+.edit_form input[type="text"] {
+	width: 100%;
+}
 
 
 /*
