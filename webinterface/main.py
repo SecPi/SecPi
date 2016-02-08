@@ -201,13 +201,15 @@ class Root(object):
 						return {'status':'error', 'message': "Error activating %s! No connection to queue server!" % su.name }
 				
 				except pika.exceptions.ConnectionClosed:
-					self.connection_cleanup()
+					cherrypy.log("Reconnecting to RabbitMQ Server!")
 					reconnected = self.connect(5)
 					if reconnected:
+						cherrypy.log("Reconnect finished!")
 						su.active_state = True
 						self.db.commit()
 						ooff = { 'active_state': True }
 						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+						return {'status': 'success', 'message': "Activated setup %s!" % su.name}
 					else:
 						return {'status':'error', 'message': "Error activating %s! Wasn't able to reconnect!" % su.name }
 
@@ -218,8 +220,8 @@ class Root(object):
 					return {'status':'error', 'message': "Error activating! %s" % e }
 				else:
 					return {'status': 'success', 'message': "Activated setup %s!" % su.name}
-				
-			return {'status':'error', 'message': "Invalid ID!" }
+			else:
+				return {'status':'error', 'message': "Invalid ID!" }
 		
 		return {'status': 'error', 'message': 'No data recieved!'}
 
@@ -293,7 +295,7 @@ def run():
 		'server.ssl_certificate_chain':'%s/certs/%s'%(PROJECT_PATH, config.get("server_ca_chain")),
 		'log.error_file': "/var/log/secpi/webui.log",
 		'log.access_file': "/var/log/secpi/webui_access.log",
-		'log.screen': True
+		'log.screen': False
 	})
 	
 	app_config = {
