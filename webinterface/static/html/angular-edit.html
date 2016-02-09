@@ -18,6 +18,9 @@
 						<span ng-switch-when="fixed">
 							<input type="hidden" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]=v['default']" /> {{v['default']}}
 						</span>
+						<span ng-switch-when="password">
+							<input type="password" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]=v['default']" />
+						</span>
 						<span ng-switch-default>
 							<input type="text" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="v['default']!=null?dataModCtrl.dataCtrl.edit_data[k]=v['default']:''" />
 						</span>
