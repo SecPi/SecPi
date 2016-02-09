@@ -117,6 +117,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		self.query_filter = $attrs.queryfilter;
 	}
 	
+	self.dialogTitle = "Edit";
 	
 	self.data = [];
 	self.fields = {};
@@ -187,6 +188,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	};
 	
 	self.showEdit = function(id){
+		self.dialogTitle = "Edit";
 		self.form_fields = self.getFields('update')
 		self.edit_data = jQuery.extend(true, {}, self.data[id])
 		self.edit_id = id;
@@ -253,6 +255,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	};
 	
 	self.showNew = function(){
+		self.dialogTitle = "New";
 		self.form_fields = self.getFields('add')
 		self.edit_data = {};
 		self.edit_id = -1;
@@ -302,6 +305,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	
 	self.copy = function(copyId){
 		self.loading = true;
+		self.dialogTitle = "Copy";
 		self.form_fields = self.getFields('add')
 		self.edit_data = jQuery.extend(true, {}, self.data[copyId])
 		self.edit_id = -1;

@@ -1,5 +1,5 @@
 <div class="edit_form" title="Edit">
-	<h3>Edit {{dataModCtrl.dataCtrl.basetitle}}</h3>
+	<h3>{{dataModCtrl.dataCtrl.dialogTitle}} {{dataModCtrl.dataCtrl.basetitle}}</h3>
 	<form ng-submit="dataModCtrl.dataCtrl.saveEdit()">
 		<table>
 			<tr ng-repeat="(k, v) in dataModCtrl.dataCtrl.form_fields" ng-class="{'hidden':v['type']=='hidden'}">
