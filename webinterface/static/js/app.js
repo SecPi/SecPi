@@ -319,6 +319,39 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		self.loading = false;
 	}
 	
+	self.export = function(exportId){
+		self.export_data = JSON.stringify(self.data[exportId], null, '\t');
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/export.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'lg',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.cancelExport() })
+	}
+	
+	self.exportTable = function(){
+		self.export_data = JSON.stringify(self.data, null, '\t');
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/export.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'lg',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.cancelExport() })
+	}
+	
+	self.cancelExport = function(){
+		self.export_data = null;
+		self.dialog.close("closing");
+	}
+	
 	self.fetchFields();
 	self.getList();
 	

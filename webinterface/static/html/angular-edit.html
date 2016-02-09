@@ -10,7 +10,7 @@
 							<input type="checkbox" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]?dataModCtrl.dataCtrl.edit_data[k]=true:dataModCtrl.dataCtrl.edit_data[k]=false" />
 						</span>
 						<span ng-switch-when="number">
-							<input type="number" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="v['default']!=null?dataModCtrl.dataCtrl.edit_data[k]=v['default']:''" />
+							<input type="number" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="(dataModCtrl.dataCtrl.edit_data[k]==null&&v['default']!=null)?dataModCtrl.dataCtrl.edit_data[k]=v['default']:''" />
 						</span>
 						<span ng-switch-when="hidden">
 							<input type="hidden" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]=v['default']" />
@@ -18,8 +18,11 @@
 						<span ng-switch-when="fixed">
 							<input type="hidden" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="dataModCtrl.dataCtrl.edit_data[k]=v['default']" /> {{v['default']}}
 						</span>
+						<span ng-switch-when="password">
+							<input type="password" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="(dataModCtrl.dataCtrl.edit_data[k]==null&&v['default']!=null)?dataModCtrl.dataCtrl.edit_data[k]=v['default']:''" />
+						</span>
 						<span ng-switch-default>
-							<input type="text" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="v['default']!=null?dataModCtrl.dataCtrl.edit_data[k]=v['default']:''" />
+							<input type="text" name="k" id="k" ng-model="dataModCtrl.dataCtrl.edit_data[k]" ng-init="(dataModCtrl.dataCtrl.edit_data[k]==null&&v['default']!=null)?dataModCtrl.dataCtrl.edit_data[k]=v['default']:''" />
 						</span>
 					</span>
 				</td>
