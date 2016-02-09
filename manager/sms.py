@@ -1,5 +1,5 @@
 import logging
-import gsmmodem # TODO: add to requirements.txt and usb_modeswitch to debian dependencies
+import gsmmodem
 import serial.serialutil
 
 from tools.notifier import Notifier

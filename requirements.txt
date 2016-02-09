@@ -8,3 +8,4 @@ SQLAlchemy>=1.0.4
 tweepy
 logging
 netifaces
+python-gsmmodem
