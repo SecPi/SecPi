@@ -243,6 +243,19 @@ class Root(object):
 					else:
 						return {'status':'error', 'message': "Error deactivating %s! No connection to queue server!"%su.name }
 						
+				except pika.exceptions.ConnectionClosed:
+					cherrypy.log("Reconnecting to RabbitMQ Server!")
+					reconnected = self.connect(5)
+					if reconnected:
+						cherrypy.log("Reconnect finished!")
+						su.active_state = False
+						self.db.commit()
+						ooff = { 'active_state': False }
+						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+						return {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
+					else:
+						return {'status':'error', 'message': "Error deactivating %s! Wasn't able to reconnect!" % su.name }
+
 				except Exception as e:
 					su.active_state = True;
 					self.db.commit()
