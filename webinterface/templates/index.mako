@@ -5,7 +5,7 @@
 <h1>Welcome...</h1>
 ... to the SecPi control interface.
 
-<h1>Activate</h1>
+<h2>Activate</h2>
 
 <div ng-controller="ActivateController as actCtrl">
 	<div ng-show="actCtrl.active_setups.length == 0">
@@ -21,7 +21,7 @@
 </div>
 
 <div id="alarm_div">
-	<h1>Alarms</h1>
+	<h2>Alarms</h2>
 	<div ng-controller="AckController as alarmCtrl" ackclass="alarm">
 		<input type="button" value="stop refresh" class="btn btn-success" id="refresh_toggle_alarm" name="refresh_toggle_alarm" ng-click="alarmCtrl.toggleRefresh()" />
 		<input type="button" value="acknowledge all" class="btn btn-success" id="ack_alarm" name="ack_alarm" ng-click="alarmCtrl.ackAll()" />
@@ -33,7 +33,7 @@
 </div>
 
 <div id="log_div">
-	<h1>Logs</h1>
+	<h2>Log Messages</h2>
 	<div ng-controller="AckController as logCtrl" ackclass="log">
 		<input type="button" value="stop refresh" class="btn btn-success" id="refresh_toggle_log" name="refresh_toggle_log" ng-click="logCtrl.toggleRefresh()" />
 		<input type="button" value="acknowledge all" class="btn btn-success" id="ack_log" name="ack_log" ng-click="logCtrl.ackAll()" />
