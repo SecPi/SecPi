@@ -21,6 +21,10 @@
 	width: 100%;
 }
 
+.mobile_only {
+	display: block;
+}
+
 
 /*
 	######### Flash Messages #########

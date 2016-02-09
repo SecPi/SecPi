@@ -104,6 +104,10 @@ h1 {
 	display: none;
 }
 
+.mobile_only {
+	display: none;
+}
+
 /*
 	######### Edit Form #########
 */
