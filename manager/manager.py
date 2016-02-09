@@ -260,6 +260,10 @@ class Manager:
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
 			config = self.prepare_config(pi.id)
+			# check if we are deactivating --> worker should be deactivated!
+			if(msg['active_state'] == False):
+				config["active"] = False
+				
 			self.send_json_message(utils.QUEUE_CONFIG+str(pi.id), config)
 			logging.info("Activated %s"%pi.name)
 
