@@ -255,17 +255,19 @@ class Manager:
 		
 		if(msg['active_state'] == True):
 			self.setup_notifiers()
+			logging.info("Activating setup: %s" % msg['setup_name'])
 		
-		logging.info("Activating PIs!")
+		
 		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
 			config = self.prepare_config(pi.id)
 			# check if we are deactivating --> worker should be deactivated!
 			if(msg['active_state'] == False):
 				config["active"] = False
+				logging.info("Deactivating setup: %s" % msg['setup_name'])
 				
 			self.send_json_message(utils.QUEUE_CONFIG+str(pi.id), config)
-			logging.info("Activated worker %s"%pi.name)
+			logging.info("Sent config to worker %s"%pi.name)
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):

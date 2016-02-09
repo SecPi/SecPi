@@ -195,7 +195,7 @@ class Root(object):
 					if(hasattr(self, "channel")):
 						su.active_state = True
 						self.db.commit()
-						ooff = { 'active_state': True }
+						ooff = { 'active_state': True , 'setup_name': su.name }
 						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
 						return {'status':'error', 'message': "Error activating %s! No connection to queue server!" % su.name }
@@ -207,7 +207,7 @@ class Root(object):
 						cherrypy.log("Reconnect finished!")
 						su.active_state = True
 						self.db.commit()
-						ooff = { 'active_state': True }
+						ooff = { 'active_state': True, 'setup_name': su.name }
 						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 						return {'status': 'success', 'message': "Activated setup %s!" % su.name}
 					else:
@@ -238,7 +238,7 @@ class Root(object):
 					if(hasattr(self, "channel")):
 						su.active_state = False
 						self.db.commit()
-						ooff = { 'active_state': False }
+						ooff = { 'active_state': False, 'setup_name': su.name }
 						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 					else:
 						return {'status':'error', 'message': "Error deactivating %s! No connection to queue server!"%su.name }
@@ -250,7 +250,7 @@ class Root(object):
 						cherrypy.log("Reconnect finished!")
 						su.active_state = False
 						self.db.commit()
-						ooff = { 'active_state': False }
+						ooff = { 'active_state': False, 'setup_name': su.name }
 						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
 						return {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
 					else:
