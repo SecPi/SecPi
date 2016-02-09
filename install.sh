@@ -281,6 +281,9 @@ then
 	# generate ca cert
 	openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
 
+	# secure ca key
+	chmod 600 $CERT_PATH/ca/private
+
 	# generate mq server certificate
 	gen_and_sign_cert mq-server.$CA_DOMAIN server
 fi
