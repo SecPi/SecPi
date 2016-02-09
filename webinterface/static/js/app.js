@@ -714,15 +714,58 @@ app.controller('AlarmDataController', ['$log', '$timeout', '$uibModal', 'FlashSe
 	
 }]);
 
-app.controller('NavController', ['$uibModal', '$log', '$scope', '$timeout', 'FlashService', 'HTTPService', function($uibModal, $log, $scope, $timeout, FlashService, HTTPService){
+app.controller('NavController', ['$uibModal', '$log', '$scope', '$interval', 'FlashService', 'HTTPService', function($uibModal, $log, $scope, $interval, FlashService, HTTPService){
 	var self = this;
 	
 	self.showing = true;
+	self.unread_count = 0;
 	
 	self.toggle = function(){
-		$log.log("toggle")
 		self.showing = !self.showing;
 	}
+	
+	self.fetchCount = function(){
+		self.unread_count = 0;
+		HTTPService.post('/alarms/list', {"filter":"ack==0"},
+			function(data, msg){
+				self.unread_count += data.length;
+			}
+		);
+		HTTPService.post('/logs/list', {"filter":"ack==0"},
+			function(data, msg){
+				self.unread_count += data.length;
+			}
+		);
+	}
+	
+	self.toggleRefresh = function(){
+		if(self.refresh_inter){
+			self.stopRefresh();
+		}
+		else{
+			self.startRefresh();
+		}
+	}
+	
+	self.startRefresh = function(){
+		// refresh count every 20 seconds
+		if(!self.refresh_inter){
+			self.refresh_inter = $interval(self.fetchCount, 30000);
+		}
+	}
+	
+	self.stopRefresh = function(){
+		if(self.refresh_inter){
+			$interval.cancel(self.refresh_inter);
+			self.refresh_inter = null;
+		}
+	}
+	
+	
+	self.fetchCount();
+	
+	self.startRefresh();
+	
 }]);
 
 // http://stackoverflow.com/questions/28050980/how-can-i-modify-an-angularjs-bootstrap-dropdown-select-so-that-it-does-not-us

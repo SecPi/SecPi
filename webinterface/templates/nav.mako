@@ -7,7 +7,7 @@
 </div>
 
 <ul class="tabrow" ng-class="navCtrl.showing?'nav-state1':'nav-state2'">
-	<li id="home"><a href="/">Home</a></li>
+	<li id="home"><a href="/">Home <span class="badge" ng-show="navCtrl.unread_count>0">{{navCtrl.unread_count}}</span></a></li>
 	<li id="data"><a href="/alarmdata">Alarm Data</a></li>
 	<li id="setups"><a href="/setups">Setups</a></li>
 	<li id="alarms"><a href="/alarms">Alarms</a></li>
