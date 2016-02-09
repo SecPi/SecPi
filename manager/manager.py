@@ -261,7 +261,7 @@ class Manager:
 		for pi in workers:
 			config = self.prepare_config(pi.id)
 			self.send_json_message(utils.QUEUE_CONFIG+str(pi.id), config)
-			logging.info("Activated %s"%pi.name)
+			logging.info("Activated worker %s"%pi.name)
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
