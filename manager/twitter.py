@@ -13,7 +13,7 @@ class Twitter(Notifier):
 			self.consumer_secret = params["consumer_secret"]
 			self.access_token = params["access_token"]
 			self.access_token_secret = params["access_token_secret"]
-			self.recipients = [rec.strip() for rec in params["recipient"].split(",")]
+			self.recipients = [rec.strip() for rec in params["recipients"].split(",")]
 		except KeyError as ke:
 			logging.error("Twitter: Error while trying to initialize notifier, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
