@@ -1,8 +1,13 @@
+html {
+	background-color: #fff;
+}
+
 
 #main {
 	width: 100%;
 	padding: 15px;
 	margin: 70px 0px 25px 0px;
+	box-shadow: none;
 }
 
 

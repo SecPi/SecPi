@@ -11,12 +11,12 @@
 
 	<table class="table table-striped">
 		<thead>
-			<tr class="pointer" uib-popover-template="'/static/html/table-popover.html'" popover-trigger="outsideClick" popover-placement="top">
+			<tr class="pointer" uib-popover-template="'/static/html/table-popover.html'" popover-trigger="outsideClick" popover-placement="right">
 				<th ng-repeat="(k, v) in dataCtrl.getFields('list')">{{v['name']}}</th>
 			</tr>
 		</thead>
 		<tbody>
-			<tr ng-repeat="obj in dataCtrl.data" class="pointer" uib-popover-template="'/static/html/edit-popover.html'" popover-trigger="outsideClick" popover-placement="top">
+			<tr ng-repeat="obj in dataCtrl.data" class="pointer" uib-popover-template="'/static/html/edit-popover.html'" popover-trigger="outsideClick" popover-placement="right">
 				<td ng-repeat="(k, v) in dataCtrl.getFields('list')">{{obj[k]}}</td>
 			</tr>
 		</tbody>
