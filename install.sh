@@ -62,11 +62,15 @@ function check_requirements(){
 		echo "Dependency pip is missing"
 		exit 5
 	fi
-
-	if ! hash rabbitmqctl 2>/dev/null;
+	
+	# manager or complete install only
+	if [ $1 -eq 1 ] || [ $1 -eq 2 ]
 	then
-		echo "Dependency rabbitmq is missing"
-		exit 5
+		if ! hash rabbitmqctl 2>/dev/null;
+		then
+			echo "Dependency rabbitmq is missing"
+			exit 5
+		fi
 	fi
 }
 
@@ -116,7 +120,14 @@ then
 	fi
 fi
 
-check_requirements
+echo "Select installation type:"
+echo "[1] Complete installation (manager, webinterface, worker)"
+echo "[2] Management installation (manager, webinterface)"
+echo "[3] Worker installation (worker only)"
+read INSTALL_TYPE
+
+
+check_requirements $INSTALL_TYPE
 
 echo "Please input the user which SecPi should use: (default: root)"
 read SECPI_USER
@@ -135,12 +146,6 @@ then
 	SECPI_GROUP="root"
 	echo "Setting user to default value"
 fi
-
-echo "Select installation type:"
-echo "[1] Complete installation (manager, webinterface, worker)"
-echo "[2] Management installation (manager, webinterface)"
-echo "[3] Worker installation (worker only)"
-read INSTALL_TYPE
 
 echo "Enter RabbitMQ Server IP"
 read MQ_IP
@@ -225,8 +230,12 @@ then
 		cp scripts/rabbitmq.config $RMQ_CONFIG
 
 		sed -i "s/<port>/$MQ_PORT/" $RMQ_CONFIG
-		sed -i "s/<certfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.cert.pem/" $RMQ_CONFIG
-		sed -i "s/<keyfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.key.pem/" $RMQ_CONFIG
+		
+		if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
+		then
+			sed -i "s/<certfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.cert.pem/" $RMQ_CONFIG
+			sed -i "s/<keyfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.key.pem/" $RMQ_CONFIG
+		fi
 	fi
 fi
 
@@ -354,13 +363,11 @@ then
 	if [ $? -ne 0 ];
 	then
 		echo "Error adding RabbitMQ user!"
-		exit 1
 	fi
 	rabbitmqctl set_permissions $MQ_USER "secpi.*" "secpi.*" "secpi.*"
 	if [ $? -ne 0 ];
 	then
 		echo "Error setting RabbitMQ permissions!"
-		exit 1
 	fi
 fi
 
