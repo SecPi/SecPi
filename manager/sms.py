@@ -55,11 +55,11 @@ class Sms(Notifier):
 				logging.exception("Sms: Timeout, wasn't able to get network connection")
 				return
 
-			info_str = "Recieved alarm on sensor %s from worker %s." % (info['sensor'], info['worker'])
+			info_str = "SecPi: Recieved alarm on sensor %s from worker %s." % (info['sensor'], info['worker'])
 			# TODO: make for loop if there are multiple recipients
 			try:
 				logging.debug("Sms: Sending message to %s" % self.recipient)
-				success = self.modem.sendSms(self.recipient, info_str, waitForDeliveryReport=True)
+				success = self.modem.sendSms(self.recipient, info_str, waitForDeliveryReport=False)
 			except gsmmodem.exceptions.TimeoutException: # timeout when sending the sms
 				logging.exception("Sms: Timeout, failed to send message")
 				return
