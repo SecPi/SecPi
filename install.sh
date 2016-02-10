@@ -272,8 +272,10 @@ then
 	create_folder $CERT_PATH/ca/private $SECPI_USER $SECPI_GROUP
 	create_folder $CERT_PATH/ca/crl $SECPI_USER $SECPI_GROUP
 	create_folder $CERT_PATH/ca/newcerts $SECPI_USER $SECPI_GROUP
+	create_folder $CERT_PATH/ca/old $SECPI_USER $SECPI_GROUP
 	touch $CERT_PATH/ca/index.txt
 	echo 1000 > $CERT_PATH/ca/serial
+	echo 1000 > $CERT_PATH/ca/crlnumber
 
 	cp scripts/openssl.cnf $CERT_PATH/ca/
 	cp scripts/gen_cert.sh $SECPI_PATH
