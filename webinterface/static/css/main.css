@@ -21,7 +21,7 @@ body {
 	width: 100%;
 	top: 0px;
 	height: 70px;
-	z-index: 100;
+	z-index: 950;
 }
 
 #main {
