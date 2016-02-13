@@ -144,7 +144,7 @@ read SECPI_GROUP
 if [ -z "$SECPI_GROUP" ]
 then
 	SECPI_GROUP="root"
-	echo "Setting user to default value"
+	echo "Setting group to default value"
 fi
 
 echo "Enter RabbitMQ Server IP"
@@ -369,7 +369,7 @@ then
 	then
 		echo "Error adding RabbitMQ user!"
 	fi
-	rabbitmqctl set_permissions $MQ_USER "secpi.*" "secpi.*" "secpi.*"
+	rabbitmqctl set_permissions $MQ_USER "secpi.*|amq\.gen.*" "secpi.*|amq\.gen.*" "secpi.*|amq\.gen.*"
 	if [ $? -ne 0 ];
 	then
 		echo "Error setting RabbitMQ permissions!"
