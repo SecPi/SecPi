@@ -27,4 +27,4 @@ Sensors are monitoring a certain area, they will raise an alarm if something is 
 
 <h2>Parameters</h2>
 
-<%include file="angular_edit.mako" args="baseclass='params', basetitle='Params', query_filter='object_type==\'sensor\''" />
+<%include file="angular_edit.mako" args="baseclass='sensorparams', basetitle='Sensor Parameter', query_filter='object_type==\'sensor\''" />

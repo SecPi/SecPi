@@ -53,7 +53,9 @@ from sites.alarms import AlarmsPage
 from sites.workers import WorkersPage
 from sites.actions import ActionsPage
 from sites.notifiers import NotifiersPage
-from sites.params import ParamsPage
+from sites.actionparams import ActionParamsPage
+from sites.notifierparams import NotifierParamsPage
+from sites.sensorparams import SensorParamsPage
 from sites.logs import LogEntriesPage
 from sites.setupszones import SetupsZonesPage
 from sites.workersactions import WorkersActionsPage
@@ -79,7 +81,9 @@ class Root(object):
 		self.workers = WorkersPage()
 		self.actions = ActionsPage()
 		self.notifiers = NotifiersPage()
-		self.params = ParamsPage()
+		self.sensorparams = SensorParamsPage()
+		self.actionparams = ActionParamsPage()
+		self.notifierparams = NotifierParamsPage()
 		self.logs = LogEntriesPage()
 		self.setupszones = SetupsZonesPage()
 		self.workersactions = WorkersActionsPage()
