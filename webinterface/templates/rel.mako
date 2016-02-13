@@ -12,8 +12,7 @@
 		<tbody>
 			<tr ng-repeat="obj in rlCtrl.lefts_rights">
 				<td>{{obj['name']}}</td>
-				<td><span ng-repeat="z in obj['${rightclass}s']">{{z.name}} <img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="rlCtrl.showDelete(obj.id, z.id)" class="pointer" ng-show="rlCtrl.edit_active" /><br /></span></td>
-				<td></td>
+				<td colspan="2"><span ng-repeat="z in obj['${rightclass}s']">{{z.name}} <img src="/static/img/icons/minus.png" alt="delete" title="delete" ng-click="rlCtrl.showDelete(obj.id, z.id)" class="pointer" ng-show="rlCtrl.edit_active" /><br /></span></td>
 			</tr>
 		</tbody>
 	</table>
