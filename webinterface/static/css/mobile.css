@@ -25,6 +25,10 @@
 	display: block;
 }
 
+.non_mobile_only {
+	display: none;
+}
+
 
 /*
 	######### Flash Messages #########

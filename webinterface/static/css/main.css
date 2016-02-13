@@ -108,6 +108,10 @@ h1 {
 	display: none;
 }
 
+.non_mobile_only {
+	display: default;
+}
+
 /*
 	######### Edit Form #########
 */
