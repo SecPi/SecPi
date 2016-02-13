@@ -4,7 +4,7 @@
 
 <h1>Setups</h1>
 
-A setup is a combination of zones.
+A setup consists of one or multiple zones which should be monitored.
 
 <%include file="angular_edit.mako" args="baseclass='setups', basetitle='Setup'" />
 
@@ -13,13 +13,14 @@ A setup is a combination of zones.
 
 <h1>Zones</h1>
 
-A zone is a combination of multiple sensors.
+A zone is an area which contains a certain amounts of sensors.
 
 <%include file="angular_edit.mako" args="baseclass='zones', basetitle='Zone'" />
 
 
 <h1>Sensors</h1>
-A sensor is a sensor attached to the Raspberry PIs GPIO Pins.
+
+Sensors are monitoring a certain area, they will raise an alarm if something is out of the ordinary.
 
 <%include file="angular_edit.mako" args="baseclass='sensors', basetitle='Sensor'" />
 

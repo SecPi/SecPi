@@ -4,7 +4,7 @@
 
 <h1>Actions</h1>
 
-An action is something a worker does, reacting on an alarm.
+An action is executed after an alarm was raised.
 
 <%include file="angular_edit.mako" args="baseclass='actions', basetitle='Action'" />
 

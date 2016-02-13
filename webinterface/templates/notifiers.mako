@@ -4,7 +4,7 @@
 
 <h1>Notifiers</h1>
 
-A notification will be sent with these settings.
+After an alarm was raised notifications will be sent to inform the user about the alarm.
 
 <%include file="angular_edit.mako" args="baseclass='notifiers', basetitle='Notifiers'" />
 
