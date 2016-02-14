@@ -23,6 +23,7 @@ import time
 from tools import config
 from tools import utils
 from tools.db import database as db
+from sqlalchemy import text
 
 
 class Manager:
@@ -294,7 +295,7 @@ class Manager:
 
 			# iterate over workers and send "execute"
 			workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
-			self.num_of_workers = len(workers)
+			self.num_of_workers = db.session.execute(text("select count(distinct w.id) as cnt from workers w join sensors s on w.id = s.worker_id join zones z on z.id = s.zone_id join zones_setups sz on sz.zone_id = z.id join setups se on se.id = sz.setup_id where se.active_state = 1 AND w.active_state = 1")).first()[0]
 			action_message = { "msg": "execute",
 								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 								"late_arrival":late_arrival}
