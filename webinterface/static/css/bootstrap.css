@@ -1021,7 +1021,8 @@ th {
 .table {
   width: 100%;
   max-width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: 50px;
+  margin-top: 15px;
 }
 .table > thead > tr > th,
 .table > tbody > tr > th,

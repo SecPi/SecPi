@@ -68,7 +68,7 @@ class Worker:
 		logging.debug("Initalizing network connection")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq')['master_ip'], #this will change because we need the ip initially
+			host=config.get('rabbitmq')['master_ip'],
 			port=5671,
 			ssl=True,
 			socket_timeout=10,
