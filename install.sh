@@ -83,6 +83,10 @@ then
 	then
 		# copy tools folder
 		find tools/ -name '*.py' | cpio -updm $SECPI_PATH
+		
+		# copy other stuff
+		cp logging.conf $SECPI_PATH/
+		
 		if [ $2 = "worker" ] || [ $2 = "all" ]
 		then
 			/etc/init.d/secpi-worker stop
@@ -279,6 +283,7 @@ then
 
 	cp scripts/openssl.cnf $CERT_PATH/ca/
 	cp scripts/gen_cert.sh $SECPI_PATH
+	cp scripts/renew_cert.sh $SECPI_PATH
 
 	# generate ca cert
 	openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 365 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
