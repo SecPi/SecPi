@@ -14,7 +14,7 @@ class Mailer(Notifier):
 		
 		try:
 			# SMTP Server config + data dir
-			self.data_dir = params["data_dir"]
+			self.data_dir = params.get("data_dir", "/var/tmp/secpi/alarms")
 			self.smtp_address = params["smtp_address"]
 			self.smtp_port = int(params["smtp_port"])
 			self.smtp_user = params["smtp_user"]

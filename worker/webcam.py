@@ -13,7 +13,7 @@ class Webcam(Action):
 		try:
 			self.path = params["path"]
 			self.resolution = (int(params["resolution_x"]), int(params["resolution_y"]))
-			self.data_path = params["data_path"]
+			self.data_path = params.get("data_path", "/var/tmp/secpi/worker_data")
 		except ValueError as ve: # if resolution can't be parsed as int
 			logging.error("Webcam: Wasn't able to initialize the device, please check your configuration: %s" % ve)
 			self.corrupted = True
