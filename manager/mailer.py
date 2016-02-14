@@ -98,7 +98,7 @@ class Mailer(Notifier):
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
-			logging.error(e)
+			logging.error("Mailer: Unknown error: %s" % e)
 
 	def send_mail_ssl(self):
 		logging.debug("Mailer: Trying to send mail with SSL")
@@ -112,7 +112,7 @@ class Mailer(Notifier):
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
-			logging.error(e)
+			logging.error("Mailer: Unknown error: %s" % e)
 
 	def send_mail_nossl(self):
 		logging.debug("Mailer: Trying to send mail without SSL")
@@ -126,7 +126,7 @@ class Mailer(Notifier):
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
-			logging.error(e)
+			logging.error("Mailer: Unknown error: %s" % e)
 
 	def send_mail_noauth_nossl(self):
 		logging.debug("Mailer: Trying to send mail without authentication")
@@ -138,7 +138,7 @@ class Mailer(Notifier):
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
-			logging.error(e)
+			logging.error("Mailer: Unknown error: %s" % e)
 	
 	def send_mail_noauth_ssl(self):
 		logging.debug("Mailer: Trying to send mail without authentication")
@@ -150,7 +150,7 @@ class Mailer(Notifier):
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
-			logging.error(e)
+			logging.error("Mailer: Unknown error: %s" % e)
 	
 	def send_mail_noauth_starttls(self):
 		logging.debug("Mailer: Trying to send mail with STARTTLS")
@@ -163,7 +163,7 @@ class Mailer(Notifier):
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception as e:
-			logging.error(e)
+			logging.error("Mailer: Unknown error: %s" % e)
 
 	def cleanup(self):
 		logging.debug("Mailer: No cleanup necessary at the moment")
