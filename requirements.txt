@@ -9,4 +9,3 @@ tweepy
 logging
 netifaces
 python-gsmmodem
-pyopenssl
