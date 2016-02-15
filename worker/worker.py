@@ -31,7 +31,7 @@ class Worker:
 	def __init__(self):
 		self.actions = []
 		self.sensors = []
-		self.active = True # start deactivated --> only for debug True
+		self.active = False
 		self.data_directory = "/var/tmp/secpi/worker_data"
 		self.zip_directory = "/var/tmp/secpi"
 		self.message_queue = [] # stores messages which couldn't be sent
