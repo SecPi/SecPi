@@ -21,6 +21,7 @@ class TCPPortListener(Sensor):
 
 	def deactivate(self):
 		self.active = False
+		self.server.shutdown()
 		self.server.server_close()
 
 # Request Handler
