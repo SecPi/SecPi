@@ -176,9 +176,11 @@ fi
 echo "Enter RabbitMQ Password"
 read MQ_PWD
 
-
-echo "Generate CA and certificates? [yes/no]"
-read CREATE_CA
+if [ $INSTALL_TYPE -ne 1 ]
+then
+	echo "Generate CA and certificates? [yes/no]"
+	read CREATE_CA
+fi
 
 if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 then
