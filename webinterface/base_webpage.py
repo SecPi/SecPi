@@ -56,8 +56,17 @@ class BaseWebPage(object):
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def list(self):
-		if(hasattr(cherrypy.request, 'json') and 'filter' in cherrypy.request.json and cherrypy.request.json['filter']!=''):
-			objects = self.db.query(self.baseclass).filter(text(cherrypy.request.json['filter'])).all()
+		if(hasattr(cherrypy.request, 'json')):
+			qry = self.db.query(self.baseclass)
+			
+			if('filter' in cherrypy.request.json and cherrypy.request.json['filter']!=''):
+				qry = qry.filter(text(cherrypy.request.json['filter']))
+			
+			if('sort' in cherrypy.request.json and cherrypy.request.json['sort']!=''):
+				qry = qry.order_by(text(cherrypy.request.json['sort']))
+			
+			objects = qry.all()
+			
 		else:	
 			objects = self.db.query(self.baseclass).all()
 		

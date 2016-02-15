@@ -1,7 +1,7 @@
-<%page args="baseclass,basetitle,query_filter=''" />
+<%page args="baseclass,basetitle,query_filter='',query_sort=''" />
 
 
-<div ng-controller="DataController as dataCtrl" baseclass="${baseclass}" basetitle="${basetitle}" queryfilter="${query_filter}">
+<div ng-controller="DataController as dataCtrl" baseclass="${baseclass}" basetitle="${basetitle}" queryfilter="${query_filter}", querysort="${query_sort}">
 	
 	## <pre>
 	## {{dataCtrl.baseclass}}

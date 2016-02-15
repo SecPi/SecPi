@@ -22,7 +22,7 @@
 
 <div id="alarm_div">
 	<h2>Alarms</h2>
-	<div ng-controller="AckController as alarmCtrl" ackclass="alarm">
+	<div ng-controller="AckController as alarmCtrl" ackclass="alarm" sort="alarmtime desc">
 		<input type="button" value="stop refresh" class="btn btn-success" id="refresh_toggle_alarm" name="refresh_toggle_alarm" ng-click="alarmCtrl.toggleRefresh()" />
 		<input type="button" value="acknowledge all" class="btn btn-success" id="ack_alarm" name="ack_alarm" ng-click="alarmCtrl.ackAll()" />
 		<div class="alarm_entry" ng-repeat="alarm in alarmCtrl.entries" ng-show="alarm.message != null">
@@ -34,7 +34,7 @@
 
 <div id="log_div">
 	<h2>Log Messages</h2>
-	<div ng-controller="AckController as logCtrl" ackclass="log">
+	<div ng-controller="AckController as logCtrl" ackclass="log" sort="logtime desc">
 		<input type="button" value="stop refresh" class="btn btn-success" id="refresh_toggle_log" name="refresh_toggle_log" ng-click="logCtrl.toggleRefresh()" />
 		<input type="button" value="acknowledge all" class="btn btn-success" id="ack_log" name="ack_log" ng-click="logCtrl.ackAll()" />
 		<div class="log_entry" ng-repeat="log in logCtrl.entries" ng-show="log.message != null" ng-class="'lvl'+log.level">

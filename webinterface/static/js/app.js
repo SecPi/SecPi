@@ -116,6 +116,9 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	if ($attrs.queryfilter){
 		self.query_filter = $attrs.queryfilter;
 	}
+	if ($attrs.querysort){
+		self.query_sort = $attrs.querysort;
+	}
 	
 	self.dialogTitle = "Edit";
 	
@@ -173,7 +176,10 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		$log.log('fetching list')
 		var list_data = {}
 		if(self.query_filter){
-			list_data = {"filter": self.query_filter}
+			list_data["filter"] = self.query_filter
+		}
+		if(self.query_sort){
+			list_data["sort"] = self.query_sort
 		}
 		
 		HTTPService.post(self.baseclass+'/list', list_data,
@@ -368,13 +374,17 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 	
 	if (!$attrs.ackclass) throw new Error("No class defined!");
 	
+	if ($attrs.sort){
+		self.sort = $attrs.sort;
+	}
+	
 	self.ackclass = $attrs.ackclass;
 	
 	
 	self.entries = [];
 	
 	self.fetchData = function(){
-		HTTPService.post('/' +self.ackclass +'s/list', {"filter":"ack==0"},
+		HTTPService.post('/' +self.ackclass +'s/list', {"filter":"ack==0", "sort": self.sort},
 			function(data, msg){
 				if(angular.toJson(data) != angular.toJson(self.entries)){
 					self.entries = data;
