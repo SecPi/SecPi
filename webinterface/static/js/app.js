@@ -110,7 +110,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	if (!$attrs.baseclass) throw new Error("No class defined!");
 	if (!$attrs.basetitle) throw new Error("No title defined!");
 	
-	self.baseclass = "/"+$attrs.baseclass;
+	self.baseclass = $attrs.baseclass;
 	self.basetitle = $attrs.basetitle;
 	
 	if ($attrs.queryfilter){
@@ -145,7 +145,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	
 	
 	self.fetchFields = function(){
-		HTTPService.post(self.baseclass+'/fieldList', {},
+		HTTPService.post('/' +self.baseclass+'/fieldList', {},
 			function(data, msg){
 				self.fields = data;
 			}
@@ -182,7 +182,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 			list_data["sort"] = self.query_sort
 		}
 		
-		HTTPService.post(self.baseclass+'/list', list_data,
+		HTTPService.post('/'+self.baseclass+'/list', list_data,
 			function(data, msg){
 				self.data = data;
 				self.loading = false;
@@ -215,7 +215,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		self.loading = true;
 		$log.log("saving stuff")
 		if(self.edit_id == -1){ // if edit id is -1 we are adding a new one
-			HTTPService.post(self.baseclass+'/add', self.edit_data,
+			HTTPService.post('/'+self.baseclass+'/add', self.edit_data,
 				function(data, msg){
 					FlashService.flash(msg, FlashService.TYPE_INFO)
 					
@@ -235,7 +235,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 			);
 		}
 		else{
-			HTTPService.post(self.baseclass+'/update', self.edit_data,
+			HTTPService.post('/'+self.baseclass+'/update', self.edit_data,
 				function(data, msg){
 					FlashService.flash(msg, FlashService.TYPE_INFO)
 					self.data[self.edit_id] = self.edit_data;
@@ -291,7 +291,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	};
 	
 	self.delete = function(){
-		HTTPService.post(self.baseclass+'/delete', {id: self.delID},
+		HTTPService.post('/'+self.baseclass+'/delete', {id: self.delID},
 			function(data, msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO)
 				self.data.splice(self.delID, 1);
@@ -330,7 +330,13 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	}
 	
 	self.export = function(exportId){
-		self.export_data = JSON.stringify(self.data[exportId], null, '\t');
+		expdata = [
+			{
+				type: self.baseclass,
+				data: self.data[exportId]
+			}
+		]
+		self.export_data = angular.toJson(expdata, true);
 		self.dialog = $uibModal.open({
 			templateUrl: '/static/html/export.html',
 			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
@@ -344,7 +350,17 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	}
 	
 	self.exportTable = function(){
-		self.export_data = JSON.stringify(self.data, null, '\t');
+		expdata = []
+		for(var i=0;i<self.data.length;i++){
+			expdata.push({
+				type: self.baseclass,
+				data: self.data[i]
+			})
+		}
+		
+			
+		
+		self.export_data = angular.toJson(expdata, true);
 		self.dialog = $uibModal.open({
 			templateUrl: '/static/html/export.html',
 			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
