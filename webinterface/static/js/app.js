@@ -278,7 +278,8 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	};
 	
 	self.showDelete = function(delId){
-		self.delID = self.data[delID]["id"];
+		self.delID = self.data[delId]["id"];
+		self.delNo = delId;
 		self.dialog = $uibModal.open({
 			templateUrl: '/static/html/confirm-delete.html',
 			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
@@ -294,7 +295,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		HTTPService.post(self.baseclass+'/delete', {id: self.delID},
 			function(data, msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO)
-				self.data.splice(self.delID, 1);
+				self.data.splice(self.delNo, 1);
 				self.dialog.close("Canceled delete!")
 				self.loading = false;
 			},
@@ -305,6 +306,8 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	}
 	
 	self.cancelDelete = function(){
+		self.delID = -1;
+		self.delNo = -1;
 		self.dialog.close("Canceled delete!")
 	}
 	
