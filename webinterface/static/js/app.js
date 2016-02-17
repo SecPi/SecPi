@@ -378,6 +378,46 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		self.dialog.close("closing");
 	}
 	
+	self.showImport = function(){
+		self.import_data = null;
+		self.dialog = $uibModal.open({
+			templateUrl: '/static/html/import.html',
+			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
+			controllerAs: 'dataModCtrl',
+			size: 'lg',
+			resolve: {
+				dataCtrl: function(){ return self }
+			}
+		});
+		self.dialog.result.then(function(){/* manual close */}, function(){ /* close by click on bg */ self.cancelImport() })
+	}
+	
+	self.import = function(){
+		self.loading = true;
+		impdata = angular.fromJson(self.import_data)
+		if(impdata){
+			for(var i=0;i<impdata.length;i++){
+				if(impdata[i]["type"]!=null && impdata[i]["data"]!=null){
+					HTTPService.post('/'+impdata[i]["type"]+'/add', impdata[i]["data"],
+						function(data, msg){
+							FlashService.flash(msg, FlashService.TYPE_INFO)
+							self.getList()
+						},
+						function(){
+						}
+					);
+				}
+			}
+		}
+		self.dialog.close("imported")
+		self.loading = false;
+	}
+	
+	self.cancelImport = function(){
+		self.import_data = null;
+		self.dialog.close("closing");
+	}
+	
 	self.fetchFields();
 	self.getList();
 	

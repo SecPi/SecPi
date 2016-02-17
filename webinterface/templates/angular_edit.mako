@@ -17,6 +17,7 @@
 					<img src="/static/img/icons/plus.png" ng-click="dataCtrl.showNew()" ng-show="dataCtrl.edit_active" class="pointer" />
 					<img src="/static/img/icons/refresh.png" ng-click="dataCtrl.getList()" class="pointer" />
 					<img src="/static/img/icons/table-export.png" alt="export all" title="export all" ng-click="dataCtrl.exportTable()" class="pointer" />
+					<img src="/static/img/icons/table-import.png" alt="import all" title="import all" ng-click="dataCtrl.showImport()" class="pointer" />
 				</th>
 			</tr>
 		</thead>
