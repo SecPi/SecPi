@@ -382,7 +382,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	}
 	
 	self.showImport = function(){
-		self.import_data = null;
+		self.import_text = null;
 		self.dialog = $uibModal.open({
 			templateUrl: '/static/html/import.html',
 			controller: ['$uibModalInstance', 'dataCtrl', DataModalController],
@@ -397,14 +397,14 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	
 	self.import = function(){
 		self.loading = true;
-		impdata = angular.fromJson(self.import_data)
-		if(impdata){
-			for(var i=0;i<impdata.length;i++){
-				if(impdata[i]["type"]!=null && impdata[i]["data"]!=null){
-					HTTPService.post('/'+impdata[i]["type"]+'/add', impdata[i]["data"],
+		self.import_data = angular.fromJson(self.import_text)
+		if(self.import_data){
+			for(var i=0;i<self.import_data.length;i++){
+				if(self.import_data[i]["type"]!=null && self.import_data[i]["data"]!=null){
+					HTTPService.post('/'+self.import_data[i]["type"]+'/add', self.import_data[i]["data"],
 						function(data, msg){
 							FlashService.flash(msg, FlashService.TYPE_INFO)
-							self.getList()
+							self.finishImport();
 						},
 						function(){
 						}
@@ -414,6 +414,18 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		}
 		self.dialog.close("imported")
 		self.loading = false;
+	}
+	
+	self.import_counter = 0;
+	
+	self.finishImport = function(){
+		self.import_counter++;
+		$log.log(self.import_counter)
+		$log.log(self.import_data.length)
+		if(self.import_counter==self.import_data.length){
+			self.getList();
+			self.import_counter=0;
+		}
 	}
 	
 	self.cancelImport = function(){
