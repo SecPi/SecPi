@@ -60,6 +60,7 @@ class Worker:
 			self.fetch_init_config()
 		else:
 			logging.info("Setting up sensors and actions")
+			self.active = config.get('active')
 			self.setup_sensors()
 			self.setup_actions()
 			logging.info("Setup done!")
