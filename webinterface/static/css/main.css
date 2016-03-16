@@ -112,6 +112,10 @@ h1 {
 	display: default;
 }
 
+.table_buttons {
+	min-width: 80px;
+}
+
 /*
 	######### Edit Form #########
 */
