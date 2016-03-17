@@ -43,7 +43,7 @@ class GPIOSensor(Sensor):
 	# callback for alarm
 	def cb_alarm(self, channel):
 		if(self.active):
-			self.alarm("GPIO sensor at pin %s activated!" % channel)
+			self.alarm("GPIO sensor at pin %s detected something!" % channel)
 	
 	def activate(self):
 		if not self.corrupted:
