@@ -20,9 +20,9 @@ class SetupsPage(BaseWebPage):
 
 
 	@cherrypy.expose
-	def index(self, flash_message=None):
+	def index(self):
 		tmpl = self.lookup.get_template("setups.mako")
-		return tmpl.render(page_title="Setups", flash_message=flash_message)
+		return tmpl.render(page_title="Setups")
 
 
 

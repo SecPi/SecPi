@@ -22,9 +22,9 @@ class AlarmsPage(BaseWebPage):
 
 
 	@cherrypy.expose
-	def index(self, flash_message=None):
+	def index(self):
 		tmpl = self.lookup.get_template("alarms.mako")
-		return tmpl.render(page_title="Alarms", flash_message=flash_message)
+		return tmpl.render(page_title="Alarms")
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()

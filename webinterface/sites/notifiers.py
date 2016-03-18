@@ -22,9 +22,9 @@ class NotifiersPage(BaseWebPage):
 
 
 	@cherrypy.expose
-	def index(self, flash_message=None):
+	def index(self):
 		tmpl = self.lookup.get_template("notifiers.mako")
-		return tmpl.render(page_title="Notifiers", flash_message=flash_message)
+		return tmpl.render(page_title="Notifiers")
 
 
 

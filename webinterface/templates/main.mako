@@ -1,4 +1,4 @@
-<%page args="flash_message='',flash_type='info'"/>
+
 <%
 	active_tab = self.active_tab()
 %>
