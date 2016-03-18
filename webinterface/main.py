@@ -119,7 +119,8 @@ class Root(object):
 			except Exception as e:
 				cherrypy.log("Error connecting to Queue! %s" % e, traceback=True)
 				num_tries-=1
-				time.sleep(30)
+				if(num_tries!=0):
+					time.sleep(30)
 
 		if not connected:
 			return False
