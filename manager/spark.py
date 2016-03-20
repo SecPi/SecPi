@@ -1,5 +1,6 @@
 import logging
 import requests
+import requests.exceptions
 
 from tools.notifier import Notifier
 
@@ -15,35 +16,41 @@ class SparkNotifier(Notifier):
 		
 	def notify(self, info):
 		if(not self.corrupted):
-			logging.debug("Sending Cisco Spark notification!")
-			
-			room_name = self.params['room']
-			auth_header = {'Authorization': 'Bearer %s'%self.params['personal_token']}
+			try:
+				logging.debug("Sending Cisco Spark notification!")
+				
+				room_name = self.params['room']
+				auth_header = {'Authorization': 'Bearer %s'%self.params['personal_token']}
 
-			# get room id
-			rooms_req = requests.get('https://api.ciscospark.com/v1/rooms', headers=auth_header)
-			rooms = rooms_req.json()
-			room = [r for r in rooms['items'] if r['title'] == room_name]
+				# get room id
+				rooms_req = requests.get('https://api.ciscospark.com/v1/rooms', headers=auth_header)
+				rooms = rooms_req.json()
+				room = [r for r in rooms['items'] if r['title'] == room_name]
 
-			if(len(room)>0):
-				# we got a room
-				room_id = room[0]['id']
-				logging.debug("Got existing room!")
-			else:	
-				# if not exists, create it
-				logging.debug("No room found, creating one!")
-				new_room_req = requests.post('https://api.ciscospark.com/v1/rooms', headers=auth_header, data={'title': room_name})
-				new_room = new_room_req.json()
+				if(len(room)>0):
+					# we got a room
+					room_id = room[0]['id']
+					logging.debug("Got existing room!")
+				else:	
+					# if not exists, create it
+					logging.debug("No room found, creating one!")
+					new_room_req = requests.post('https://api.ciscospark.com/v1/rooms', headers=auth_header, data={'title': room_name})
+					new_room = new_room_req.json()
+					
+					room_id = new_room['id']
+					
+				if(room_id!=None):
+					logging.debug("Found room: %s"%room_id)
+					info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
+					noti_req = requests.post('https://api.ciscospark.com/v1/messages', headers=auth_header, data={'roomId': room_id, 'text': info_str})
+					
+				else:
+					logging.error("No room found!")
+			except RequestException as ce:
+				logging.error("Error in Spark Notifier: %s"%ce)
+			except KeyError as ke:
+				logging.error("Error in Spark Notifier: %s"%ke)
 				
-				room_id = new_room['id']
-				
-			if(room_id!=None):
-				logging.debug("Found room: %s"%room_id)
-				info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
-				noti_req = requests.post('https://api.ciscospark.com/v1/messages', headers=auth_header, data={'roomId': room_id, 'text': info_str})
-				
-			else:
-				logging.error("No room found!")
 		else:
 			logging.error("Cisco Spark Notifier corrupted! No authorization code or room name given as parameter.")
 		
