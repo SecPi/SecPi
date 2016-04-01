@@ -7,7 +7,7 @@ then
 	# check if name already in file
 	if grep $2:secpi $1 > /dev/null 2>&1
 	then
-		sed -i '' "s/$2:secpi:.*/$2:secpi:$HASH/" "$1"
+		sed -i "s/$2:secpi:.*/$2:secpi:$HASH/" "$1"
 	else
 		# else append to file
 		echo $LINE >> $1
