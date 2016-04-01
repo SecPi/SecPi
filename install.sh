@@ -354,6 +354,7 @@ then
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-manager.service
 	
 	update-rc.d secpi-manager defaults
+	update-rc.d secpi-manager enable
 	
 	
 	
@@ -365,6 +366,7 @@ then
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-webinterface.service
 	
 	update-rc.d secpi-webinterface defaults
+	update-rc.d secpi-webinterface enable
 	
 	# set permissions
 	chmod 755 $SECPI_PATH/webinterface/main.py
@@ -411,6 +413,7 @@ then
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-worker.service
 	
 	update-rc.d secpi-worker defaults
+	update-rc.d secpi-worker enable
 	
 	
 	# set permissions
