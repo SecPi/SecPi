@@ -451,6 +451,8 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 	
 	self.ackclass = $attrs.ackclass;
 	
+	self.btnText = "stop refresh"
+	
 	
 	self.entries = [];
 	
@@ -500,7 +502,8 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 		if(!self.refresh_inter){
 			self.refresh_inter = $interval(self.refresh, 5000);
 			FlashService.flash('Started refresh of messages!', FlashService.TYPE_INFO, 2000);
-			$('#refresh_toggle_'+self.ackclass).prop('value', "stop refresh");
+			//$('#refresh_toggle_'+self.ackclass).prop('value', "stop refresh");
+			self.btnText = "stop refresh";
 		}
 	}
 	
@@ -509,7 +512,8 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 			$interval.cancel(self.refresh_inter);
 			self.refresh_inter = null;
 			FlashService.flash('Stopped refresh of messages!', FlashService.TYPE_INFO, 2000);
-			$('#refresh_toggle_'+self.ackclass).prop('value', "start refresh");
+			//$('#refresh_toggle_'+self.ackclass).prop('value', "start refresh");
+			self.btnText = "start refresh";
 		}
 	}
 	
