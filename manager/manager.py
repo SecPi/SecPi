@@ -53,16 +53,21 @@ class Manager:
 		self.received_data_counter = 0
 		self.alarm_dir = "/var/tmp/secpi/alarms"
 		self.current_alarm_dir = "/var/tmp/secpi/alarms"
+		
 		try:
 			self.data_timeout = int(config.get("data_timeout"))
+		except Exception: # if not specified in the config file we set a default value
+			self.data_timeout = 180
+			logging.debug("Couldn't find or use config parameter for data timeout in manager config file. Setting default value: %d" % self.data_timeout)
+		
+		try:
 			self.holddown_timer = int(config.get("holddown_timer"))
-		except Exception: # if not specified in the config file we set default values for timeouts
-			logging.debug("Couldn't find config parameters for timeouts in config file, using default values for timeouts")
-			self.data_timeout = 10
-			self.holddown_timer = 30
+		except Exception: # if not specified in the config file we set a default value
+			self.holddown_timer = 210
+			logging.debug("Couldn't find or use config parameter for holddown timer in manager config file. Setting default value: %d" % self.holddown_timer)
+
 		self.holddown_state = False
 		self.num_of_workers = 0
-
 
 		self.connect()
 
