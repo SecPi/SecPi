@@ -161,7 +161,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		
 		for (var key in self.fields) {
 			if (self.fields.hasOwnProperty(key)) {
-				if($.inArray(filter, self.fields[key]['visible']) >= 0){
+				if(self.fields[key]['visible'].indexOf(filter) >= 0){
 					filtered_fields[key] = self.fields[key];
 				}
 			}
@@ -196,7 +196,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	self.showEdit = function(id){
 		self.dialogTitle = "Edit";
 		self.form_fields = self.getFields('update')
-		self.edit_data = jQuery.extend(true, {}, self.data[id])
+		self.edit_data = angular.copy(self.data[id])
 		self.edit_id = id;
 		self.orig_data = self.data[id];
 		self.dialog = $uibModal.open({
@@ -316,7 +316,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		self.loading = true;
 		self.dialogTitle = "Copy";
 		self.form_fields = self.getFields('add')
-		self.edit_data = jQuery.extend(true, {}, self.data[copyId])
+		self.edit_data = angular.copy(self.data[copyId])
 		self.edit_id = -1;
 		self.orig_data = self.data[copyId];
 		self.dialog = $uibModal.open({
