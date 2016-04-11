@@ -49,14 +49,16 @@ class Worker:
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
 			logging.error("Wasn't able to load config file, exiting...")
 			quit()
-				
+		
+		time.sleep(60) # TEMPORARY FIX for #83
+
 		self.prepare_data_directory(self.data_directory)
 		self.connect()
 		
 		# if we don't have a pi id we need to request the initial config, afterwards we have to reconnect
 		# to the queues which are specific to the pi id -> hence, call connect again
 		if not config.get('pi_id'):
-			logging.info("Requesting intial configuration")
+			logging.debug("No Pi ID found, will request initial configuration...")
 			self.fetch_init_config()
 		else:
 			logging.info("Setting up sensors and actions")
@@ -256,7 +258,7 @@ class Worker:
 		ip_addresses = self.get_ip_addresses()
 		if ip_addresses:
 			self.corr_id = str(uuid.uuid4())
-			logging.info("Requesting initial configuration from manager")
+			logging.info("Sending initial configuration request to manager")
 			properties = pika.BasicProperties(reply_to=self.callback_queue,
 											  correlation_id=self.corr_id,
 											  content_type='application/json')
@@ -269,7 +271,7 @@ class Worker:
 	def got_init_config(self, ch, method, properties, body):
 		logging.info("Received intitial config %r" % (body))
 		if self.corr_id == properties.correlation_id: #we got the right config
-			try:
+			try: #TODO: add check if response is empty...
 				new_conf = json.loads(body)
 				new_conf["rabbitmq"] = config.get("rabbitmq")
 			except Exception as e:
