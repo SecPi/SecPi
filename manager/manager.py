@@ -53,16 +53,21 @@ class Manager:
 		self.received_data_counter = 0
 		self.alarm_dir = "/var/tmp/secpi/alarms"
 		self.current_alarm_dir = "/var/tmp/secpi/alarms"
+		
 		try:
 			self.data_timeout = int(config.get("data_timeout"))
+		except Exception: # if not specified in the config file we set a default value
+			self.data_timeout = 180
+			logging.debug("Couldn't find or use config parameter for data timeout in manager config file. Setting default value: %d" % self.data_timeout)
+		
+		try:
 			self.holddown_timer = int(config.get("holddown_timer"))
-		except Exception: # if not specified in the config file we set default values for timeouts
-			logging.debug("Couldn't find config parameters for timeouts in config file, using default values for timeouts")
-			self.data_timeout = 10
-			self.holddown_timer = 30
+		except Exception: # if not specified in the config file we set a default value
+			self.holddown_timer = 210
+			logging.debug("Couldn't find or use config parameter for holddown timer in manager config file. Setting default value: %d" % self.holddown_timer)
+
 		self.holddown_state = False
 		self.num_of_workers = 0
-
 
 		self.connect()
 
@@ -76,7 +81,7 @@ class Manager:
 
 		if rebooted:
 			self.setup_notifiers()
-			self.num_of_workers = db.session.execute(text("select count(distinct w.id) as cnt from workers w join sensors s on w.id = s.worker_id join zones z on z.id = s.zone_id join zones_setups sz on sz.zone_id = z.id join setups se on se.id = sz.setup_id where se.active_state = 1 AND w.active_state = 1")).first()[0]
+			self.num_of_workers = db.session.query(db.objects.Worker).join((db.objects.Action, db.objects.Worker.actions)).filter(db.objects.Worker.active_state == True).filter(db.objects.Action.active_state == True).count()
 
 		logging.info("Setup done!")
 
@@ -296,7 +301,7 @@ class Manager:
 
 			# iterate over workers and send "execute"
 			workers = db.session.query(db.objects.Worker).join((db.objects.Action, db.objects.Worker.actions)).filter(db.objects.Worker.active_state == True).filter(db.objects.Action.active_state == True).all()
-			self.num_of_workers = db.session.execute(text("select count(distinct w.id) as cnt from workers w join sensors s on w.id = s.worker_id join zones z on z.id = s.zone_id join zones_setups sz on sz.zone_id = z.id join setups se on se.id = sz.setup_id where se.active_state = 1 AND w.active_state = 1")).first()[0]
+			self.num_of_workers = len(workers)
 			action_message = { "msg": "execute",
 								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 								"late_arrival":late_arrival}

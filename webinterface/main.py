@@ -280,7 +280,7 @@ class Root(object):
 			username = cherrypy.request.json['username']
 			password = cherrypy.request.json['password']
 			try:
-				exit_code = subprocess.call(["./create_htdigest.sh", PROJECT_PATH+"/webinterface/.htdigest", username, password])
+				exit_code = subprocess.call(["/opt/secpi/webinterface/create_htdigest.sh", PROJECT_PATH+"/webinterface/.htdigest", username, password])
 				if not exit_code: # successful
 					return {'status': 'success', 'message': "Login credentials have been changed!"}
 				else: # exit_code != 0
