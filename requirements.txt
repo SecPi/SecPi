@@ -6,6 +6,7 @@ python-dateutil>=1.5
 pytz
 SQLAlchemy>=1.0.4
 tweepy
+dropbox
 logging
 netifaces
 python-gsmmodem

@@ -93,6 +93,7 @@ then
 			find worker/ -name '*.py' | cpio -updm $SECPI_PATH
 			chmod 755 $SECPI_PATH/worker/worker.py
 			/etc/init.d/secpi-worker start
+			echo "Updated worker files..."
 		fi
 		
 		if [ $2 = "manager" ] || [ $2 = "all" ]
@@ -101,6 +102,7 @@ then
 			find manager/ -name '*.py' | cpio -updm $SECPI_PATH
 			chmod 755 $SECPI_PATH/manager/manager.py
 			/etc/init.d/secpi-manager start
+			echo "Updated manager files..."
 		fi
 		
 		if [ $2 = "webinterface" ] || [ $2 = "all" ]
@@ -117,8 +119,13 @@ then
 			find webinterface/ -name '*.gif' | cpio -updm $SECPI_PATH
 			chmod 755 $SECPI_PATH/webinterface/main.py
 			/etc/init.d/secpi-webinterface start
+			echo "Updated webinterface files..."
 		fi
 		
+		echo "Installing python requirements..."
+		pip install -r requirements.txt
+
+		echo "Finished update process!"
 		# only copy files in update mode
 		exit 0
 	fi
@@ -354,6 +361,7 @@ then
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-manager.service
 	
 	update-rc.d secpi-manager defaults
+	update-rc.d secpi-manager enable
 	
 	
 	
@@ -365,6 +373,7 @@ then
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-webinterface.service
 	
 	update-rc.d secpi-webinterface defaults
+	update-rc.d secpi-webinterface enable
 	
 	# set permissions
 	chmod 755 $SECPI_PATH/webinterface/main.py
@@ -411,6 +420,7 @@ then
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-worker.service
 	
 	update-rc.d secpi-worker defaults
+	update-rc.d secpi-worker enable
 	
 	
 	# set permissions
