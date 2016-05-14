@@ -10,9 +10,9 @@ class TestAction(Action):
 		logging.debug("Test Action initialized!")
 
 	def execute(self):
-		logging.log("Executing Test Action!")
+		logging.info("Executing Test Action!")
 		if 'msg' in self.params:
-			logging.log("Test Action Message: %s"%self.params['msg'])
+			logging.info("Test Action Message: %s"%self.params['msg'])
 		
 	def cleanup(self):
 		logging.debug("Test Action Cleanup")
