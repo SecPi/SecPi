@@ -11,11 +11,9 @@ class Action(object):
 		self.worker = worker
 	
 	def post_log(self, msg, lvl):
-		logging.info(msg)
 		self.worker.post_log(msg, lvl)
 	
 	def post_err(self, msg):
-		logging.error(msg)
 		self.worker.post_err(msg)
 	
 	@abc.abstractmethod

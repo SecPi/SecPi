@@ -208,7 +208,7 @@ class Worker:
 	
 					
 	def post_err(self, msg):
-		logging.exception(msg)
+		logging.error(msg)
 		err = { "msg": msg,
 				"level": utils.LEVEL_ERR,
 				"sender": "Worker %s"%config.get('pi_id'),
