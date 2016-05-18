@@ -6,8 +6,8 @@ from tools.action import Action
 
 class Buzzer(Action):
 
-	def __init__(self, id, params):
-		super(Buzzer, self).__init__(id, params)
+	def __init__(self, id, params, worker):
+		super(Buzzer, self).__init__(id, params, worker)
 		try:
 			self.duration = int(params["duration"])
 			self.gpio_pin = int(params["gpio_pin"])

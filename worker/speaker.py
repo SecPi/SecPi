@@ -5,8 +5,8 @@ from tools.action import Action
 
 class Speaker(Action):
 
-	def __init__(self, id, params):
-		super(Speaker, self).__init__(id, params)
+	def __init__(self, id, params, worker):
+		super(Speaker, self).__init__(id, params, worker)
 		try:
 			self.path_to_audio = params["path_to_audio"]
 			self.repetitions = int(params["repetitions"])

@@ -1,12 +1,20 @@
 import abc
+from tools import utils
 
 class Action(object):
 	
-	def __init__(self, id, params):
+	def __init__(self, id, params, worker):
 		self.id = id
 		self.params = params
 		self.corrupted = False
-		
+		self.worker = worker
+	
+	def post_log(self, msg, lvl):
+		self.worker.post_log(msg, lvl)
+	
+	def post_err(self, msg):
+		self.worker.post_err(msg)
+	
 	@abc.abstractmethod
 	def execute(self):
 		"""Do some stuff.

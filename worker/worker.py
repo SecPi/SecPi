@@ -50,6 +50,7 @@ class Worker:
 			logging.error("Wasn't able to load config file, exiting...")
 			quit()
 		
+		logging.info("Sleeping for 60 seconds to wait for manager startup! (more info see github issue #83)")
 		time.sleep(60) # TEMPORARY FIX for #83
 
 		self.prepare_data_directory(self.data_directory)
@@ -216,7 +217,7 @@ class Worker:
 		self.send_json_msg(utils.QUEUE_LOG, err)
 		
 	def post_log(self, msg, lvl):
-		logging.exception(msg)
+		logging.info(msg)
 		lg = { "msg": msg,
 				"level": lvl,
 				"sender": "Worker %s"%config.get('pi_id'),
@@ -437,7 +438,7 @@ class Worker:
 			try:
 				logging.info("Trying to register action: %s" % action["id"])
 				a = self.class_for_name(action["module"], action["class"])
-				act = a(action["id"], action["params"])
+				act = a(action["id"], action["params"], self)
 			except Exception as e: #AttributeError, KeyError
 				self.post_err("Pi with id '%s' wasn't able to register action '%s':\n%s" % (config.get('pi_id'), action["class"],e))
 			else:
