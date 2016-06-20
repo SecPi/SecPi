@@ -12,11 +12,11 @@ class GPIOSensor(Sensor):
 			self.gpio = int(params["gpio"])
 			self.bouncetime = int(self.params['bouncetime'])
 		except ValueError as ve: # if one configuration parameter can't be parsed as int
-			logging.error("GPIOSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % ve)
+			self.post_err("GPIOSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
 		except KeyError as ke: # if config parameters are missing in the file
-			logging.error("GPIOSensor: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s" % ke)
+			self.post_err("GPIOSensor: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
 		
@@ -28,7 +28,7 @@ class GPIOSensor(Sensor):
 			GPIO.setup(self.gpio, GPIO.IN)
 			GPIO.add_event_detect(self.gpio, GPIO.RISING, callback=self.cb_alarm, bouncetime=self.bouncetime)
 		except ValueError as ve: # GPIO pin number or bouncetime is not in valid range
-			logging.error("GPIOSensor: The given pin number or bouncetime is not in a valid range: %s" % ve)
+			self.post_err("GPIOSensor: The given pin number or bouncetime is not in a valid range: %s" % ve)
 			return
 		logging.debug("GPIOSensor: Registered sensor at pin %s!" % self.gpio)
 	
@@ -37,7 +37,7 @@ class GPIOSensor(Sensor):
 			GPIO.remove_event_detect(self.gpio)
 			GPIO.cleanup(self.gpio)
 		except ValueError as ve: # GPIO pin number is not in valid range
-			logging.error("GPIOSensor: The given pin number is not in a valid range: %s" % ve)
+			self.post_err("GPIOSensor: The given pin number is not in a valid range: %s" % ve)
 		logging.debug("GPIOSensor: Removed sensor at pin %s!" % self.gpio)
 	
 	# callback for alarm
@@ -50,11 +50,11 @@ class GPIOSensor(Sensor):
 			self.active = True
 			self.setup_sensor()
 		else:
-			logging.error("GPIOSensor: Sensor couldn't be activated")
+			self.post_err("GPIOSensor: Sensor couldn't be activated")
 
 	def deactivate(self):
 		if not self.corrupted:
 			self.active = False
 			self.cleanup_sensor()
 		else:
-			logging.error("GPIOSensor: Sensor couldn't be deactivated") # maybe make this more clear
+			self.post_err("GPIOSensor: Sensor couldn't be deactivated") # maybe make this more clear

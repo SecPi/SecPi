@@ -17,11 +17,11 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 			self.bouncetime = int(params["bouncetime"])
 			self.device_id = params["device_id"]
 		except ValueError as ve: # if one configuration parameter can't be parsed as int
-			logging.error("TemperatureSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % ve)
+			self.post_err("TemperatureSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
 		except KeyError as ke: # if config parameters are missing
-			logging.error("TemperatureSensor: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s" % ke)
+			self.post_err("TemperatureSensor: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
 
@@ -34,7 +34,7 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 
 		if not os.path.isfile(self.device_file): # if there is no slave file which contains the temperature
 			self.corrupted = True
-			logging.error("TemperatureSensor: Wasn't able to find temperature file at %s" % self.device_file)
+			self.post_err("TemperatureSensor: Wasn't able to find temperature file at %s" % self.device_file)
 			return
 
 		logging.debug("TemperatureSensor: Sensor initialized")
@@ -46,13 +46,13 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 												   target=self.check_temperature)
 			self.checker_thread.start()
 		else:
-			logging.error("TemperatureSensor: Sensor couldn't be activated")
+			self.post_err("TemperatureSensor: Sensor couldn't be activated")
 
 	def deactivate(self):
 		if not self.corrupted:
 			self.stop_thread = True
 		else:
-			logging.error("TemperatureSensor: Sensor couldn't be deactivated")
+			self.post_err("TemperatureSensor: Sensor couldn't be deactivated")
 
 	def check_temperature(self):
 		while True:
