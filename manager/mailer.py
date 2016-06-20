@@ -38,7 +38,7 @@ class Mailer(Notifier):
 			self.message["From"] = self.params["sender"]
 			self.message["To"] = self.params["recipient"]
 			self.message["Subject"] = self.params.get("subject", "SecPi Alarm")
-			self.message.attach(MIMEText(self.params.get("text", "Your SecPi raised an alarm. Please check the attached files."), "plain"))
+			self.message.attach(MIMEText(self.params.get("text", "Your SecPi raised an alarm. Please check the attached files."), "plain", 'utf-8'))
 			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
 			self.message.attach(MIMEText(info_str, "plain"))
 			
