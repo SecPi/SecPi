@@ -10,3 +10,4 @@ dropbox
 logging
 netifaces
 python-gsmmodem
+slacker
