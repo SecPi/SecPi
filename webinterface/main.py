@@ -189,89 +189,119 @@ class Root(object):
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
-	@cherrypy.tools.json_out(handler=utils.json_handler)
-	def activate(self):
-		if(hasattr(cherrypy.request, 'json')):
-			id = cherrypy.request.json['id']
-			
-			if(id and id > 0):
-				su = self.db.query(objects.Setup).get(int(id))
-				try:
-					if(hasattr(self, "channel")):
-						su.active_state = True
-						self.db.commit()
-						ooff = { 'active_state': True , 'setup_name': su.name }
-						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
-					else:
-						return {'status':'error', 'message': "Error activating %s! No connection to queue server!" % su.name }
-				
-				except pika.exceptions.ConnectionClosed:
-					cherrypy.log("Reconnecting to RabbitMQ Server!")
-					reconnected = self.connect(5)
-					if reconnected:
-						cherrypy.log("Reconnect finished!")
-						su.active_state = True
-						self.db.commit()
-						ooff = { 'active_state': True, 'setup_name': su.name }
-						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
-						return {'status': 'success', 'message': "Activated setup %s!" % su.name}
-					else:
-						return {'status':'error', 'message': "Error activating %s! Wasn't able to reconnect!" % su.name }
-
-				except Exception as e:
-					su.active_state = False
-					self.db.commit()
-					cherrypy.log("Error activating! %s"%str(e), traceback=True)
-					return {'status':'error', 'message': "Error activating! %s" % e }
-				else:
-					return {'status': 'success', 'message': "Activated setup %s!" % su.name}
-			else:
-				return {'status':'error', 'message': "Invalid ID!" }
+	#@cherrypy.tools.json_out(handler=utils.json_handler)
+	def activate(self, **kwargs):
+		retval = {}
+		is_json = False
+		id=0
 		
-		return {'status': 'error', 'message': 'No data recieved!'}
+		if(hasattr(cherrypy.request, 'json')):	
+			id = cherrypy.request.json['id']
+			is_json = True
+		elif('id' in kwargs):
+			id = kwargs['id']
+		else:
+			retval = {'status': 'error', 'message': 'No data recieved!'}
+			
+		if(id and id > 0):
+			su = self.db.query(objects.Setup).get(int(id))
+			try:
+				if(hasattr(self, "channel")):
+					su.active_state = True
+					self.db.commit()
+					ooff = { 'active_state': True , 'setup_name': su.name }
+					self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+					retval = {'status': 'success', 'message': "Activated setup %s!" % su.name}
+				else:
+					retval = {'status':'error', 'message': "Error activating %s! No connection to queue server!" % su.name }
+			
+			except pika.exceptions.ConnectionClosed:
+				cherrypy.log("Reconnecting to RabbitMQ Server!")
+				reconnected = self.connect(5)
+				if reconnected:
+					cherrypy.log("Reconnect finished!")
+					su.active_state = True
+					self.db.commit()
+					ooff = { 'active_state': True, 'setup_name': su.name }
+					self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+					retval = {'status': 'success', 'message': "Activated setup %s!" % su.name}
+				else:
+					retval = {'status':'error', 'message': "Error activating %s! Wasn't able to reconnect!" % su.name }
 
+			except Exception as e:
+				su.active_state = False
+				self.db.commit()
+				cherrypy.log("Error activating! %s"%str(e), traceback=True)
+				retval = {'status':'error', 'message': "Error activating! %s" % e }
+				
+		else:
+			retval = {'status':'error', 'message': "Invalid ID!" }
+		
+		if(is_json):
+			cherrypy.response.headers['Content-Type'] = "application/json"
+			return json.dumps(retval)
+		else:
+			tmpl = self.lookup.get_template("activate.mako")
+			return tmpl.render(page_title="Activate", message = retval['message'], status=retval['status'])
+		
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
-	@cherrypy.tools.json_out(handler=utils.json_handler)
-	def deactivate(self):
-		if(hasattr(cherrypy.request, 'json')):
-			id = cherrypy.request.json['id']
-			
-			if(id and id > 0):
-				su = self.db.query(objects.Setup).get(int(id))
-				try:
-					if(hasattr(self, "channel")):
-						su.active_state = False
-						self.db.commit()
-						ooff = { 'active_state': False, 'setup_name': su.name }
-						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
-					else:
-						return {'status':'error', 'message': "Error deactivating %s! No connection to queue server!"%su.name }
-						
-				except pika.exceptions.ConnectionClosed:
-					cherrypy.log("Reconnecting to RabbitMQ Server!")
-					reconnected = self.connect(5)
-					if reconnected:
-						cherrypy.log("Reconnect finished!")
-						su.active_state = False
-						self.db.commit()
-						ooff = { 'active_state': False, 'setup_name': su.name }
-						self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
-						return {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
-					else:
-						return {'status':'error', 'message': "Error deactivating %s! Wasn't able to reconnect!" % su.name }
-
-				except Exception as e:
-					su.active_state = True;
-					self.db.commit()
-					cherrypy.log("Error deactivating! %s"%str(e), traceback=True)
-					return {'status':'error', 'message': "Error deactivating! %s" % e }
-				else:
-					return {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
-			
-			return {'status':'error', 'message': "Invalid ID!" }
+	#@cherrypy.tools.json_out(handler=utils.json_handler)
+	def deactivate(self, **kwargs):
+		retval = {}
+		is_json = False
+		id=0
 		
-		return {'status': 'error', 'message': 'No data recieved!'}
+		if(hasattr(cherrypy.request, 'json')):	
+			id = cherrypy.request.json['id']
+			is_json = True
+		elif('id' in kwargs):
+			id = kwargs['id']
+		else:
+			retval = {'status': 'error', 'message': 'No data recieved!'}
+			
+		if(id and id > 0):
+			su = self.db.query(objects.Setup).get(int(id))
+			try:
+				if(hasattr(self, "channel")):
+					su.active_state = False
+					self.db.commit()
+					ooff = { 'active_state': False , 'setup_name': su.name }
+					self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+					retval = {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
+				else:
+					retval = {'status':'error', 'message': "Error deactivating %s! No connection to queue server!" % su.name }
+			
+			except pika.exceptions.ConnectionClosed:
+				cherrypy.log("Reconnecting to RabbitMQ Server!")
+				reconnected = self.connect(5)
+				if reconnected:
+					cherrypy.log("Reconnect finished!")
+					su.active_state = False
+					self.db.commit()
+					ooff = { 'active_state': False, 'setup_name': su.name }
+					self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=json.dumps(ooff))
+					retval = {'status': 'success', 'message': "Deactivated setup %s!" % su.name}
+				else:
+					retval = {'status':'error', 'message': "Error deactivating %s! Wasn't able to reconnect!" % su.name }
+
+			except Exception as e:
+				su.active_state = True
+				self.db.commit()
+				cherrypy.log("Error deactivating! %s"%str(e), traceback=True)
+				retval = {'status':'error', 'message': "Error deactivating! %s" % e }
+				
+		else:
+			retval = {'status':'error', 'message': "Invalid ID!" }
+		
+		if(is_json):
+			cherrypy.response.headers['Content-Type'] = "application/json"
+			return json.dumps(retval)
+		else:
+			tmpl = self.lookup.get_template("activate.mako")
+			return tmpl.render(page_title="Deactivate", message = retval['message'], status=retval['status'])
+	
+	
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
