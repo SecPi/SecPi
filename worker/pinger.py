@@ -8,21 +8,37 @@ class Pinger(Sensor):
 
 	def __init__(self, id, params, worker):
 		super(Pinger, self).__init__(id, params, worker)
-		self.interval = 5
-		self.max_losses = 2
-		self.destination_ip = "192.168.0.10"
-		self.bouncetime = 30
+		
+		try:
+			self.interval = int(params["interval"])
+			self.max_losses = int(params["max_losses"])
+			self.destination_ip = params["destination_ip"]
+			self.bouncetime = int(params["bounce_time"])
+		except KeyError as ke: # if config parameters are missing in file
+			logging.error("Pinger: Wasn't able to initialize, it seems there is a config parameter missing: %s" % ke)
+			self.corrupted = True
+			return
+		except ValueError as ve: # if a parameter can't be parsed as int
+			logging.error("Pinger: Wasn't able to initialize, please check your configuration: %s" % ve)
+			self.corrupted = True
+			return
 
-		logging.info("Pinger: Sensor initialized")
+		logging.debug("Pinger: Sensor initialized")
 
 	def activate(self):
-		self.stop_thread = False
-		self.pinger_thread = threading.Thread(name="thread-pinger-%s" % self.destination_ip,
-											  target=self.check_up)
-		self.pinger_thread.start()
+		if not self.corrupted:
+			self.stop_thread = False
+			self.pinger_thread = threading.Thread(name="thread-pinger-%s" % self.destination_ip,
+												  target=self.check_up)
+			self.pinger_thread.start()
+		else:
+			logging.error("Pinger: Sensor couldn't be activated")
 
 	def deactivate(self):
-		self.stop_thread = True
+		if not self.corrupted:
+			self.stop_thread = True
+		else:
+			logging.error("Pinger: Sensor couldn't be deactivated")
 
 
 	def check_up(self):
