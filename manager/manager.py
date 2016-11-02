@@ -108,7 +108,7 @@ class Manager:
 				connected = True
 				logging.info("Connection to rabbitmq service established")
 			except pika.exceptions.AMQPConnectionError as pe: # if connection can't be established
-				logging.error("Wasn't able to connect to rabbitmq service: %s" % pe)
+				logging.error("Wasn't able to connect to rabbitmq service: %s" % repr(pe))
 				time.sleep(30)
 
 		#define exchange
