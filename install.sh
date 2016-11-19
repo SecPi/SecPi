@@ -228,9 +228,15 @@ then
 		echo "Setting password to default value"
 	fi
 
-	echo "Should we take care of rabbitmq.config file? [yes/no]"
+	echo "Should we take care of rabbitmq.config file? [yes/no] (default: yes)"
 	echo "Select no if you already have an existing rabbitmq setup."
 	read CREATE_RMQ_CONFIG
+
+	if [ -z "$CREATE_RMQ_CONFIG" ]
+	then
+		CREATE_RMQ_CONFIG="yes"
+		echo "Creating default rabbitmq configuration file"
+	fi
 
 	if [ "$CREATE_RMQ_CONFIG" = "yes" ] || [ "$CREATE_RMQ_CONFIG" = "y" ];
 	then
