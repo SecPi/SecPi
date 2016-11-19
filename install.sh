@@ -131,12 +131,17 @@ then
 	fi
 fi
 
-echo "Select installation type:"
+echo "Select installation type: (default: [1] Complete installation)"
 echo "[1] Complete installation (manager, webinterface, worker)"
 echo "[2] Management installation (manager, webinterface)"
 echo "[3] Worker installation (worker only)"
 read INSTALL_TYPE
 
+if [ -z "$INSTALL_TYPE" ]
+then
+	INSTALL_TYPE="1"
+	echo "Performing complete installation"
+fi
 
 check_requirements $INSTALL_TYPE
 
