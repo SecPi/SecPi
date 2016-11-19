@@ -135,6 +135,7 @@ echo "Select installation type: (default: [1] Complete installation)"
 echo "[1] Complete installation (manager, webinterface, worker)"
 echo "[2] Management installation (manager, webinterface)"
 echo "[3] Worker installation (worker only)"
+echo "Note: When there is a default option available pressing enter will select it automatically."
 read INSTALL_TYPE
 
 if [ -z "$INSTALL_TYPE" ]
