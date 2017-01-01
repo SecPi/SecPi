@@ -92,7 +92,10 @@ class Worker:
 				connected = True
 				logging.info("Connection to manager established")
 			except pika.exceptions.AMQPConnectionError as pe: # if connection can't be established
-				logging.error("Wasn't able to open a connection to the manager: %s" % pe)
+				if "The AMQP connection was closed" in repr(pe):
+					logging.error("Wasn't able to connect to the rabbitmq service, please check if the rabbitmq service is reachable and running")
+				else:
+					logging.error("Wasn't able to open a connection to the manager: %s" % repr(pe))
 				time.sleep(30)
 
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
