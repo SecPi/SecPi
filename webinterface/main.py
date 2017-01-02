@@ -115,9 +115,11 @@ class Root(object):
 				self.channel = self.connection.channel()
 				connected = True
 				cherrypy.log("Connection to rabbitmq service established")
-			#except pika.exceptions.AMQPConnectionError as pe:
-			except Exception as e:
-				cherrypy.log("Error connecting to Queue! %s" % e, traceback=True)
+			except pika.exceptions.AMQPConnectionError as pe:
+				if "The AMQP connection was closed" in repr(pe):
+					cherrypy.log("Wasn't able to connect to the rabbitmq service, please check if the rabbitmq service is reachable and running")
+				else:
+					cherrypy.log("Wasn't able to connect to the rabbitmq service: %s" % repr(pe))
 				num_tries-=1
 				if(num_tries!=0):
 					time.sleep(30)
