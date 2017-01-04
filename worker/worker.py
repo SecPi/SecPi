@@ -50,16 +50,14 @@ class Worker:
 			logging.error("Wasn't able to load config file, exiting...")
 			quit()
 		
-		logging.info("Sleeping for 60 seconds to wait for manager startup! (more info see github issue #83)")
-		time.sleep(60) # TEMPORARY FIX for #83
-
 		self.prepare_data_directory(self.data_directory)
 		self.connect()
 		
 		# if we don't have a pi id we need to request the initial config, afterwards we have to reconnect
 		# to the queues which are specific to the pi id -> hence, call connect again
 		if not config.get('pi_id'):
-			logging.debug("No Pi ID found, will request initial configuration...")
+			logging.info("No Pi ID found, will request initial configuration...")
+			time.sleep(60)
 			self.fetch_init_config()
 		else:
 			logging.info("Setting up sensors and actions")
