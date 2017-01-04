@@ -11,3 +11,4 @@ logging
 netifaces
 python-gsmmodem
 slacker
+pyping
