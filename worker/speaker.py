@@ -32,7 +32,7 @@ class Speaker(Action):
 			return
 		pygame.mixer.music.set_volume(1)
 
-		for i in range(0, self.repetitions):
+		for i in xrange(0, self.repetitions):
 			pygame.mixer.music.rewind()
 			pygame.mixer.music.play()
 			while pygame.mixer.music.get_busy():
