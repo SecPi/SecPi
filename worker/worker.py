@@ -344,8 +344,8 @@ class Worker:
 				t.join()
 		
 			if self.prepare_data(): #check if there is any data to send
-				zip_file = open("%s/%s.zip" % (self.zip_directory, config.get('pi_id')), "rb")
-				byte_stream = zip_file.read()
+				with open("%s/%s.zip" % (self.zip_directory, config.get('pi_id')), "rb") as zip_file:
+					byte_stream = zip_file.read()
 				self.send_msg(utils.QUEUE_DATA, byte_stream)
 				logging.info("Sent data to manager")
 				self.cleanup_data()
@@ -370,9 +370,9 @@ class Worker:
 			# TODO: check valid config file?!
 			# write config to file
 			try:
-				f = open('%s/worker/config.json'%(PROJECT_PATH),'w')
-				f.write(json.dumps(new_config))
-				f.close()
+				with open('%s/worker/config.json'%(PROJECT_PATH),'w') as f:
+					f.write(json.dumps(new_config))
+				
 			except Exception as e:
 				logging.exception("Wasn't able to write config file:\n%s" % e)
 			

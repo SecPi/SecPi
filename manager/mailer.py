@@ -75,10 +75,10 @@ class Mailer(Notifier):
 		for file in os.listdir(latest_subdir):
 			# check if it really is a file
 			if os.path.isfile("%s/%s" % (latest_subdir, file)):
-				f = open("%s/%s" % (latest_subdir, file), "rb")
-				att = MIMEApplication(f.read())
+				with open("%s/%s" % (latest_subdir, file), "rb") as f:
+					att = MIMEApplication(f.read())
+				
 				att.add_header('Content-Disposition','attachment; filename="%s"' % file)
-				f.close()
 				self.message.attach(att)
 				logging.debug("Mailer: Attached file '%s' to message" % file)
 			else:

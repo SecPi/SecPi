@@ -36,8 +36,9 @@ class Dropbox_Dropper(Notifier):
 			#self.dbx.files_create_folder(dropbox_dir) # shouldn't be necessary, automatically created 
 			for file in os.listdir(latest_subdir):
 				if os.path.isfile("%s/%s" % (latest_subdir, file)):
-					f = open("%s/%s" % (latest_subdir, file), "rb")
-					data = f.read()
+					with open("%s/%s" % (latest_subdir, file), "rb") as f:
+						data = f.read()
+						
 					try:
 						logging.info("Dropbox: Trying to upload file %s to %s" % (file, dropbox_dir))
 						res = self.dbx.files_upload(data, "%s/%s" % (dropbox_dir, file))
@@ -46,7 +47,6 @@ class Dropbox_Dropper(Notifier):
 						logging.error("Dropbox: API error: %s" % d)
 					except Exception as e: # currently this catches wrong authorization, we should change this
 						logging.error("Dropbox: Wasn't able to upload file: %s" % e)
-					f.close()
 		else:
 			logging.error("Dropbox: Wasn't able to notify because there was an initialization error")
 

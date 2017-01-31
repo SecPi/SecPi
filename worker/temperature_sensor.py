@@ -67,9 +67,9 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 			time.sleep(3)
 
 	def read_temp_raw(self):
-		f = open(self.device_file, 'r')
-		lines = f.readlines()
-		f.close()
+		with open(self.device_file, 'r') as f:
+			lines = f.readlines()
+		
 		return lines
 
 	def read_temp(self):

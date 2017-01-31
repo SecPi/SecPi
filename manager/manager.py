@@ -242,9 +242,9 @@ class Manager:
 		newFile_bytes = bytearray(body)
 		if newFile_bytes: #only write data when body is not empty
 			try:
-				newFile = open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb")
-				newFile.write(newFile_bytes)
-				logging.info("Data written")
+				with open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb") as newFile:
+					newFile.write(newFile_bytes)
+					logging.info("Data written")
 			except IOError as ie: # File can't be written, e.g. permissions wrong, directory doesn't exist
 				logging.exception("Wasn't able to write received data: %s" % ie)
 		self.received_data_counter += 1
