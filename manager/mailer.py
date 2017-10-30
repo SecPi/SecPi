@@ -6,6 +6,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from tools.notifier import Notifier
+from tools.utils import str_to_value
 
 class Mailer(Notifier):
 
@@ -20,6 +21,7 @@ class Mailer(Notifier):
 			self.smtp_user = params["smtp_user"]
 			self.smtp_pass = params["smtp_pass"]
 			self.smtp_security = params["smtp_security"]
+			self.unzip_attachments = str_to_value(params.get("unzip_attachments", False))
 		except KeyError as ke: # if config parameters are missing
 			logging.error("Mailer: Wasn't able to initialize the notifier, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
@@ -73,17 +75,40 @@ class Mailer(Notifier):
 		logging.debug("Mailer: Will look into %s for data" % latest_subdir)
 		#then iterate through it and attach all the files to the mail
 		for file in os.listdir(latest_subdir):
+			filepath = "%s/%s" % (latest_subdir, file)
 			# check if it really is a file
-			if os.path.isfile("%s/%s" % (latest_subdir, file)):
-				with open("%s/%s" % (latest_subdir, file), "rb") as f:
-					att = MIMEApplication(f.read())
-				
-				att.add_header('Content-Disposition','attachment; filename="%s"' % file)
-				self.message.attach(att)
-				logging.debug("Mailer: Attached file '%s' to message" % file)
+			if os.path.isfile(filepath):
+
+				# Add each file in zipfile as separate attachment
+				if self.unzip_attachments and file.endswith('.zip'):
+					self.prepare_expand_zip_attachment(filepath)
+
+				# Add file as a whole (default)
+				else:
+					with open(filepath, "rb") as f:
+						self.prepare_add_attachment(file, f.read())
+
 			else:
 				logging.debug("Mailer: %s is not a file" % file)
 		# TODO: maybe log something if there are no files?
+
+	def prepare_add_attachment(self, filename, content):
+		"""Add single attachment to current mail message"""
+		att = MIMEApplication(content)
+		att.add_header('Content-Disposition','attachment; filename="%s"' % filename)
+		self.message.attach(att)
+		logging.debug("Mailer: Attached file '%s' to message" % filename)
+
+	def prepare_expand_zip_attachment(self, filepath):
+		"""Decode zip file and add each containing file as attachment to current mail message"""
+		logging.debug("Mailer: Decoding zip file '%s' as requested" % filepath)
+		import zipfile
+		with zipfile.ZipFile(filepath) as zip:
+			filenames = zip.namelist()
+
+			for filename in filenames:
+				payload = zip.read(filename)
+				self.prepare_add_attachment(filename, payload)
 
 	def send_mail_starttls(self):
 		logging.debug("Mailer: Trying to send mail with STARTTLS")
