@@ -11,6 +11,9 @@ class GPIOSensor(Sensor):
 		try:
 			self.gpio = int(params["gpio"])
 			self.bouncetime = int(self.params['bouncetime'])
+			self.edge = self.params.get('edge', 'rising').lower()
+			if self.edge not in ['rising', 'falling', 'both']:
+				raise ValueError("GPIOSensor: Parameter 'edge' must be one of ['rising', 'falling', 'both']")
 		except ValueError as ve: # if one configuration parameter can't be parsed as int
 			self.post_err("GPIOSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % ve)
 			self.corrupted = True
@@ -26,7 +29,15 @@ class GPIOSensor(Sensor):
 	def setup_sensor(self):
 		try:
 			GPIO.setup(self.gpio, GPIO.IN)
-			GPIO.add_event_detect(self.gpio, GPIO.RISING, callback=self.cb_alarm, bouncetime=self.bouncetime)
+			if self.edge == 'rising':
+				edge_type = GPIO.RISING
+			elif self.edge == 'falling':
+				edge_type = GPIO.FALLING
+			elif self.edge == 'both':
+				edge_type = GPIO.BOTH
+			else:
+				raise ValueError("GPIOSensor: Unknown edge type: %s" % self.edge)
+			GPIO.add_event_detect(self.gpio, edge_type, callback=self.cb_alarm, bouncetime=self.bouncetime)
 		except ValueError as ve: # GPIO pin number or bouncetime is not in valid range
 			self.post_err("GPIOSensor: The given pin number or bouncetime is not in a valid range: %s" % ve)
 			return
@@ -42,9 +53,16 @@ class GPIOSensor(Sensor):
 	
 	# callback for alarm
 	def cb_alarm(self, channel):
-		if(self.active):
-			self.alarm("GPIO sensor at pin %s detected something!" % channel)
-	
+		if self.active:
+			if self.edge in ['rising', 'falling']:
+				self.alarm("GPIO sensor at pin %s detected something!" % channel)
+			else:
+				if GPIO.input(channel):
+					state = 'activated'
+				else:
+					state = 'deactivated'
+				self.alarm("GPIO sensor at pin %s %s" % (channel, state))
+
 	def activate(self):
 		if not self.corrupted:
 			self.active = True
