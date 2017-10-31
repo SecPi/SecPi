@@ -1,10 +1,13 @@
-import logging
 import os
+import logging
 import smtplib
-
-from email.mime.application import MIMEApplication
+import mimetypes
 from email.mime.multipart import MIMEMultipart
+from email.mime.nonmultipart import MIMENonMultipart
+from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.audio import MIMEAudio
 from tools.notifier import Notifier
 from tools.utils import str_to_value
 
@@ -92,11 +95,35 @@ class Mailer(Notifier):
 				logging.debug("Mailer: %s is not a file" % file)
 		# TODO: maybe log something if there are no files?
 
-	def prepare_add_attachment(self, filename, content):
+	def prepare_add_attachment(self, filename, payload):
 		"""Add single attachment to current mail message"""
-		att = MIMEApplication(content)
-		att.add_header('Content-Disposition','attachment; filename="%s"' % filename)
-		self.message.attach(att)
+
+		# Determine content type
+		ctype, encoding = mimetypes.guess_type(filename, strict=False)
+		maintype, subtype = ctype.split('/', 1)
+
+		# Create proper MIME part by maintype
+		if maintype == 'application' and subtype in ['xml', 'json']:
+			mimepart = MIMENonMultipart(maintype, subtype, charset='utf-8')
+			mimepart.set_payload(payload.encode('utf-8'), 'utf-8')
+
+		elif maintype == 'text':
+			mimepart = MIMEText(payload.encode('utf-8'), _subtype=subtype, _charset='utf-8')
+
+		elif maintype == 'image':
+			mimepart = MIMEImage(payload, _subtype=subtype)
+
+		elif maintype == 'audio':
+			mimepart = MIMEAudio(payload, _subtype=subtype)
+
+		else:
+			# Encode the payload using Base64 (Content-Transfer-Encoding)
+			mimepart = MIMEApplication(payload)
+
+		# Attach MIME part to message
+		mimepart.add_header('Content-Disposition','attachment; filename="%s"' % filename)
+		self.message.attach(mimepart)
+
 		logging.debug("Mailer: Attached file '%s' to message" % filename)
 
 	def prepare_expand_zip_attachment(self, filepath):
