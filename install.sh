@@ -428,6 +428,8 @@ then
 fi
 
 chown -R $SECPI_USER:$SECPI_GROUP $SECPI_PATH
+# fix permissions for key files, see #114, TODO: reevaluate for better solution
+chmod +r $CERT_PATH/*
 
 # reload systemd, but don't write anything if systemctl doesn't exist
 systemctl daemon-reload > /dev/null 2>&1
