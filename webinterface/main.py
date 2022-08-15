@@ -333,13 +333,13 @@ class Root(object):
 
 
 def run():
-	db_log_file_name = '/var/log/secpi/db.log'
+	# db_log_file_name = '/var/log/secpi/db.log'
 	
-	db_handler = logging.FileHandler(db_log_file_name)
-	db_handler.setLevel(logging.WARN)
+	# db_handler = logging.FileHandler(db_log_file_name)
+	# db_handler.setLevel(logging.WARN)
 
 	db_logger = logging.getLogger('sqlalchemy')
-	db_logger.addHandler(db_handler)
+	# db_logger.addHandler(db_handler)
 	db_logger.setLevel(logging.WARN)
 	
 	cherrypy.tools.db = SQLAlchemyTool()
