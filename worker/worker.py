@@ -273,9 +273,18 @@ class Worker:
 
 	# callback function which is executed when the manager replies with the initial config which is then applied
 	def got_init_config(self, ch, method, properties, body):
-		logging.info("Received intitial config %r" % (body))
+
+		if len(body) == 0:
+			logging.warning("Received empty configuration, will skip processing")
+
+			# After a while, ask for configuration again.
+			time.sleep(self.CONVERSATION_DELAY)
+			self.fetch_init_config()
+			return
+
+		logging.info("Received initial config %r" % (body))
 		if self.corr_id == properties.correlation_id: #we got the right config
-			try: #TODO: add check if response is empty...
+			try:
 				new_conf = json.loads(body)
 				new_conf["rabbitmq"] = config.get("rabbitmq")
 			except Exception as e:
