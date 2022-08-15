@@ -63,7 +63,12 @@ from sites.workersactions import WorkersActionsPage
 from sites.alarmdata import AlarmDataPage
 
 
-config.load(PROJECT_PATH +"/webinterface/config.json")
+try:
+	config.load(PROJECT_PATH + "/webinterface/config.json")
+except Exception:
+	logging.exception("Wasn't able to load config file, exiting...")
+	quit()
+
 
 class Root(object):
 
