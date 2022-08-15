@@ -6,7 +6,7 @@ from tools.db import objects
 from tools import config
 from tools import utils
 
-from baserelationshippage import BaseRelationshipPage
+from .baserelationshippage import BaseRelationshipPage
 
 class WorkersActionsPage(BaseRelationshipPage):
 	
