@@ -29,10 +29,12 @@ from sqlalchemy import text
 class Manager:
 
 	def __init__(self):
-		try: #TODO: this should be nicer...		
-			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
+		logging_conf = os.path.join(PROJECT_PATH, 'logging.conf')
+		print(f"Loading config file for logging from {logging_conf}", file=sys.stderr)
+		try: #TODO: this should be nicer...
+			logging.config.fileConfig(logging_conf, defaults={'logfilename': 'manager.log'})
 		except Exception as e:
-			print("Error while trying to load config file for logging")
+			print(f"Error while trying to load config file for logging from {logging_conf}: {e}", file=sys.stderr)
 
 		logging.info("Initializing manager")
 

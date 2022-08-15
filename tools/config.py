@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import json
+import logging
 import os
+import sys
 
 conf = {}
 
 def load(path):
+	logging.info(f"Loading configuration from {path}")
 	global conf
 	
 	with open(path) as data_file:    
