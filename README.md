@@ -25,6 +25,7 @@ pip install -r requirements.txt
 docker run -it --rm --publish=5672:5672 rabbitmq:3.9
 ./startup.sh manager
 ./startup.sh worker
+./startup.sh webinterface
 ```
 
 
