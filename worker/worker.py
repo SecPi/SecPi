@@ -70,15 +70,15 @@ class Worker:
 		logging.debug("Initalizing network connection")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
-			ssl=True,
 			host=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
 			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
 			socket_timeout=10,
-			ssl_options = { 
-				"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-				"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			}
+			# ssl=True,
+			# ssl_options = {
+			#	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
+			#	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
+			#	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
+			# }
 		)
 
 		connected = False
