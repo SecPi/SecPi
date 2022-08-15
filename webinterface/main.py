@@ -363,7 +363,7 @@ def run():
 			'tools.db.on': True,
 			'tools.lookup.on': True,
 			'tools.staticdir.root': os.path.join(PROJECT_PATH, "webinterface"),
-			'tools.auth_digest.on': True,
+			'tools.auth_digest.on': False,
 			'tools.auth_digest.realm': 'secpi',
 			'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('%s/webinterface/.htdigest'%(PROJECT_PATH)),
 			'tools.auth_digest.key': 'ae41349f9413b13c'
