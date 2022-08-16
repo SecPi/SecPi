@@ -355,7 +355,10 @@ def run():
 		# 'server.ssl_certificate_chain':'%s/certs/%s'%(PROJECT_PATH, config.get("server_ca_chain")),
 		# 'log.error_file': "/var/log/secpi/webinterface.log",
 		# 'log.access_file': "/var/log/secpi/webinterface_access.log",
-		'log.screen': True
+		'log.screen': True,
+		'tools.encode.on': True,
+		'tools.encode.encoding': 'utf-8',
+		'tools.encode.text_only': False,
 	})
 	
 	app_config = {

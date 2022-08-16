@@ -26,7 +26,7 @@ QUEUE_INIT_CONFIG="secpi-init_config"
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()
 	
-	for k,v in fields.iteritems():
+	for k,v in fields.items():
 		if filter in v['visible']:
 			filtered_data[k] = v
 	
@@ -34,8 +34,8 @@ def filter_fields(fields, filter):
 	
 def str_to_value(val):
 	# print("checking %s: %s\n"%(val, type(val)))
-	if(type(val) is str or type(val) is unicode):
-		
+	if isinstance(val, (str, bytes)):
+
 		if(val=="None"): return None
 		if(val.lower()=="true"): return True
 		if(val.lower()=="false"): return False
