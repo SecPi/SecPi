@@ -361,7 +361,7 @@ class Manager:
 
 	# timeout thread which sends the received data from workers
 	def notify(self, info):
-		for i in xrange(0, self.data_timeout):
+		for i in range(0, self.data_timeout):
 			if self.received_data_counter < self.num_of_workers: #not all data here yet
 				logging.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
 				time.sleep(1)
@@ -382,7 +382,7 @@ class Manager:
 	# go into holddown state, while in this state subsequent alarms are interpreted as one alarm
 	def holddown(self):
 		self.holddown_state = True
-		for i in xrange(0, self.holddown_timer):
+		for i in range(0, self.holddown_timer):
 			time.sleep(1)
 		logging.debug("Holddown is over")
 		self.holddown_state = False

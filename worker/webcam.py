@@ -40,7 +40,7 @@ class Webcam(Action):
 			return
 
 		try:
-			for i in xrange(0,num_of_pic):
+			for i in range(0,num_of_pic):
 				img = self.cam.get_image()
 				pygame.image.save(img, "%s/%s_%d.jpg" % (self.data_path, time.strftime("%Y%m%d_%H%M%S"), i))
 				time.sleep(seconds_between)
