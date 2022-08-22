@@ -15,8 +15,8 @@ class FFMPEGVideo(Action):
 		- pip install ffmpy
 	"""
 
-	def __init__(self, id, params):
-		super(FFMPEGVideo, self).__init__(id, params)
+	def __init__(self, id, params, worker):
+		super(FFMPEGVideo, self).__init__(id, params, worker)
 
 		logging.info('FFMPEGVideo: Starting')
 

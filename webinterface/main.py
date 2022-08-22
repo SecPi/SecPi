@@ -63,7 +63,12 @@ from sites.workersactions import WorkersActionsPage
 from sites.alarmdata import AlarmDataPage
 
 
-config.load(PROJECT_PATH +"/webinterface/config.json")
+try:
+	config.load(PROJECT_PATH + "/webinterface/config.json")
+except Exception:
+	logging.exception("Wasn't able to load config file, exiting...")
+	quit()
+
 
 class Root(object):
 
@@ -96,15 +101,15 @@ class Root(object):
 	def connect(self, num_tries=3):
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq')['master_ip'],
-			port=5671,
-			ssl=True,
+			host=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
+			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
 			socket_timeout=10,
-			ssl_options = {
-				"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-				"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			}
+			# ssl=True,
+			# ssl_options = {
+			# 	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
+			# 	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
+			# 	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
+			# }
 		)
 
 		connected = False
@@ -328,13 +333,13 @@ class Root(object):
 
 
 def run():
-	db_log_file_name = '/var/log/secpi/db.log'
+	# db_log_file_name = '/var/log/secpi/db.log'
 	
-	db_handler = logging.FileHandler(db_log_file_name)
-	db_handler.setLevel(logging.WARN)
+	# db_handler = logging.FileHandler(db_log_file_name)
+	# db_handler.setLevel(logging.WARN)
 
 	db_logger = logging.getLogger('sqlalchemy')
-	db_logger.addHandler(db_handler)
+	# db_logger.addHandler(db_handler)
 	db_logger.setLevel(logging.WARN)
 	
 	cherrypy.tools.db = SQLAlchemyTool()
@@ -343,14 +348,17 @@ def run():
 	
 	cherrypy.config.update({
 		'server.socket_host': '0.0.0.0',
-		'server.socket_port': 8443,
-		'server.ssl_module':'pyopenssl',
-		'server.ssl_certificate':'%s/certs/%s'%(PROJECT_PATH, config.get("server_cert")),
-		'server.ssl_private_key':'%s/certs/%s'%(PROJECT_PATH, config.get("server_key")),
-		'server.ssl_certificate_chain':'%s/certs/%s'%(PROJECT_PATH, config.get("server_ca_chain")),
-		'log.error_file': "/var/log/secpi/webinterface.log",
-		'log.access_file': "/var/log/secpi/webinterface_access.log",
-		'log.screen': False
+		'server.socket_port': 8000,
+		# 'server.ssl_module':'pyopenssl',
+		# 'server.ssl_certificate':'%s/certs/%s'%(PROJECT_PATH, config.get("server_cert")),
+		# 'server.ssl_private_key':'%s/certs/%s'%(PROJECT_PATH, config.get("server_key")),
+		# 'server.ssl_certificate_chain':'%s/certs/%s'%(PROJECT_PATH, config.get("server_ca_chain")),
+		# 'log.error_file': "/var/log/secpi/webinterface.log",
+		# 'log.access_file': "/var/log/secpi/webinterface_access.log",
+		'log.screen': True,
+		'tools.encode.on': True,
+		'tools.encode.encoding': 'utf-8',
+		'tools.encode.text_only': False,
 	})
 	
 	app_config = {
@@ -358,7 +366,7 @@ def run():
 			'tools.db.on': True,
 			'tools.lookup.on': True,
 			'tools.staticdir.root': os.path.join(PROJECT_PATH, "webinterface"),
-			'tools.auth_digest.on': True,
+			'tools.auth_digest.on': False,
 			'tools.auth_digest.realm': 'secpi',
 			'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest('%s/webinterface/.htdigest'%(PROJECT_PATH)),
 			'tools.auth_digest.key': 'ae41349f9413b13c'

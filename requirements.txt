@@ -1,13 +1,14 @@
 CherryPy>=3.8.0
 CherryPy-SQLAlchemy>=0.5.2
 Mako>=1.0.1
-pika>=0.9.14
+pika>=0.9.14,<1
+pika-stubs<1
 python-dateutil>=1.5
 pytz
-SQLAlchemy>=1.0.4
+SQLAlchemy>=1.0.4,<1.1
 tweepy
 dropbox
-logging
+#logging
 netifaces
 python-gsmmodem
 slacker

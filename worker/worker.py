@@ -28,6 +28,8 @@ from tools import utils
 
 class Worker:
 
+	CONVERSATION_DELAY = 4.2
+
 	def __init__(self):
 		self.actions = []
 		self.sensors = []
@@ -47,7 +49,7 @@ class Worker:
 			config.load(PROJECT_PATH +"/worker/config.json")
 			logging.debug("Config loaded")
 		except ValueError: # Config file can't be loaded, e.g. no valid JSON
-			logging.error("Wasn't able to load config file, exiting...")
+			logging.exception("Wasn't able to load config file, exiting...")
 			quit()
 		
 		self.prepare_data_directory(self.data_directory)
@@ -57,7 +59,7 @@ class Worker:
 		# to the queues which are specific to the pi id -> hence, call connect again
 		if not config.get('pi_id'):
 			logging.info("No Pi ID found, will request initial configuration...")
-			time.sleep(60)
+			time.sleep(self.CONVERSATION_DELAY)
 			self.fetch_init_config()
 		else:
 			logging.info("Setting up sensors and actions")
@@ -70,15 +72,15 @@ class Worker:
 		logging.debug("Initalizing network connection")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq')['master_ip'],
-			port=5671,
-			ssl=True,
+			host=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
+			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
 			socket_timeout=10,
-			ssl_options = { 
-				"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-				"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			}
+			# ssl=True,
+			# ssl_options = {
+			#	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
+			#	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
+			#	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
+			# }
 		)
 
 		connected = False
@@ -94,7 +96,7 @@ class Worker:
 					logging.error("Wasn't able to connect to the rabbitmq service, please check if the rabbitmq service is reachable and running")
 				else:
 					logging.error("Wasn't able to open a connection to the manager: %s" % repr(pe))
-				time.sleep(30)
+				time.sleep(self.CONVERSATION_DELAY)
 
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
@@ -128,7 +130,7 @@ class Worker:
 			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
 				logging.error("Lost connection to rabbitmq service on manager")
 				disconnected = True
-				time.sleep(10) # reconnect timer
+				time.sleep(self.CONVERSATION_DELAY) # reconnect timer
 				logging.info("Trying to reconnect...")
 				self.connect()
 				self.clear_message_queue() #could this make problems if the manager replies too fast?
@@ -271,14 +273,25 @@ class Worker:
 
 	# callback function which is executed when the manager replies with the initial config which is then applied
 	def got_init_config(self, ch, method, properties, body):
-		logging.info("Received intitial config %r" % (body))
+
+		if len(body) == 0:
+			logging.warning("Received empty configuration, will skip processing")
+
+			# After a while, ask for configuration again.
+			time.sleep(self.CONVERSATION_DELAY)
+			self.fetch_init_config()
+			return
+
+		logging.info("Received initial config %r" % (body))
 		if self.corr_id == properties.correlation_id: #we got the right config
-			try: #TODO: add check if response is empty...
+			try:
 				new_conf = json.loads(body)
 				new_conf["rabbitmq"] = config.get("rabbitmq")
 			except Exception as e:
 				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e)
-				time.sleep(60) #sleep for X seconds and then ask again
+
+				# After a while, ask for configuration again.
+				time.sleep(self.CONVERSATION_DELAY)
 				self.fetch_init_config()
 				return
 		

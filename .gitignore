@@ -1,4 +1,8 @@
 *.pyc
+__pycache__
+/.venv*
+/.idea
+
 webinterface/logs/*
 worker/*.jpg
 data.db

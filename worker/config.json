@@ -1,9 +1,9 @@
 {
 	"rabbitmq":{
-		"master_ip": "<ip>",
-		"master_port": <port>,
-		"user": "<user>",
-		"password": "<pwd>",
+		"master_ip": "localhost",
+		"master_port": 5672,
+		"user": "guest",
+		"password": "guest",
 		"cacert": "ca/cacert.pem",
 		"certfile": "<certfile>",
 		"keyfile": "<keyfile>"

@@ -29,10 +29,12 @@ from sqlalchemy import text
 class Manager:
 
 	def __init__(self):
-		try: #TODO: this should be nicer...		
-			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'manager.log'})
+		logging_conf = os.path.join(PROJECT_PATH, 'logging.conf')
+		print(f"Loading config file for logging from {logging_conf}", file=sys.stderr)
+		try: #TODO: this should be nicer...
+			logging.config.fileConfig(logging_conf, defaults={'logfilename': 'manager.log'})
 		except Exception as e:
-			print("Error while trying to load config file for logging")
+			print(f"Error while trying to load config file for logging from {logging_conf}: {e}", file=sys.stderr)
 
 		logging.info("Initializing manager")
 
@@ -89,15 +91,15 @@ class Manager:
 		logging.debug("Initializing connection to rabbitmq service")
 		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
 		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq')['master_ip'],
-			port=5671,
-			ssl=True,
+			host=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
+			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
 			socket_timeout=10,
-			ssl_options = {
-				"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-				"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-				"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			}
+			# ssl=True,
+			# ssl_options = {
+			#  	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
+			# 	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
+			# 	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
+			# }
 		)
 		
 		connected = False
@@ -359,7 +361,7 @@ class Manager:
 
 	# timeout thread which sends the received data from workers
 	def notify(self, info):
-		for i in xrange(0, self.data_timeout):
+		for i in range(0, self.data_timeout):
 			if self.received_data_counter < self.num_of_workers: #not all data here yet
 				logging.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
 				time.sleep(1)
@@ -380,7 +382,7 @@ class Manager:
 	# go into holddown state, while in this state subsequent alarms are interpreted as one alarm
 	def holddown(self):
 		self.holddown_state = True
-		for i in xrange(0, self.holddown_timer):
+		for i in range(0, self.holddown_timer):
 			time.sleep(1)
 		logging.debug("Holddown is over")
 		self.holddown_state = False

@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 from tools import config
-import objects
+from tools.db import objects
 
 session = None
 engine = None

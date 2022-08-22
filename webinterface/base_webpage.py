@@ -24,7 +24,7 @@ class BaseWebPage(object):
 	def objectToDict(self, obj):
 		data = {}
 		
-		for k, v in self.fields.iteritems():
+		for k, v in self.fields.items():
 			data[k] = obj.__dict__[k]
 			
 		return data;
@@ -100,7 +100,7 @@ class BaseWebPage(object):
 				cherrypy.log("got something %s"%data)
 				newObj = self.baseclass()
 				
-				for k, v in data.iteritems():
+				for k, v in data.items():
 					if(not k == "id"):
 						setattr(newObj, k, utils.str_to_value(v))
 				
@@ -127,7 +127,7 @@ class BaseWebPage(object):
 					cherrypy.log("update something %s"%data)
 					obj = self.db.query(self.baseclass).get(id)
 					
-					for k, v in data.iteritems():
+					for k, v in data.items():
 						if(not k == "id"): # and v is not None --> can be null!?
 							setattr(obj, k, utils.str_to_value(v))
 					
