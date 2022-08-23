@@ -151,21 +151,14 @@ class AdvantechAdamConnector:
 
         # When component does not have state yet, create single summary message and submit as alarm.
         if self.state is None and all_responses:
-            summary_message_long = self.get_summary_message(all_responses, data)
-            summary_message_short = ResponseItem.get_open_doors_message(all_responses)
-            logger.info(f"AdvantechAdam: Raising alarm with summary message. {summary_message_short}")
+            summary_message_long = ResponseItem.summary_humanized(all_responses, data)
+            summary_message_short = ResponseItem.open_doors_humanized(all_responses)
+            alarm_message = f"Systemstart. {summary_message_short}"
+            logger.info(f"AdvantechAdam: Raising alarm with summary message. {alarm_message}")
             logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
-            all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=summary_message_short)
+            all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
 
         self.state = data
-
-    def get_summary_message(self, all_states: t.List["ResponseItem"], all_data):
-        summary_message = ""
-        for state in all_states:
-            summary_message += f'- {state.get_door_state_humanized()}\n'
-
-        summary_message = f"Alarm summary message\n\nAlle Türen:\n{summary_message}\nAlle Daten:\n{all_data}"
-        return summary_message
 
     def register(self, sensor, callback):
         """
@@ -208,7 +201,7 @@ class AdvantechAdamSensor(Sensor):
                 logger.debug(
                     f"Sensor state changed. id={self.id}, params={self.params}, channel={response.registration.channel}, value={response.value}"
                 )
-                message = response.get_door_transition_humanized()
+                message = response.door_transition_humanized()
                 logger.info(f"AdvantechAdam: Raising alarm for individual sensor. {message}")
                 self.alarm(message)
                 if self.stop_thread:
@@ -268,7 +261,16 @@ class ResponseItem:
     mqtt_userdata: t.Optional[t.Dict] = None
 
     @staticmethod
-    def get_open_doors_message(items: t.List["ResponseItem"]):
+    def summary_humanized(items: t.List["ResponseItem"], all_data):
+        summary_message = ""
+        for state in items:
+            summary_message += f'- {state.door_state_humanized()}\n'
+
+        summary_message = f"Summary message\n\nAlle Türen:\n{summary_message}\nAlle Daten:\n{all_data}"
+        return summary_message
+
+    @staticmethod
+    def open_doors_humanized(items: t.List["ResponseItem"]):
         open_doors = []
         for state in items:
             sensor_id = state.registration.sensor.id
@@ -279,7 +281,7 @@ class ResponseItem:
                 open_doors.append(sensor_name)
         return f"Offene Türen: {', '.join(open_doors) or 'keine'}"
 
-    def get_door_state_humanized(self):
+    def door_state_humanized(self):
         sensor_name = self.registration.name
         sensor_value = self.value
         if sensor_value is True:
@@ -290,7 +292,7 @@ class ResponseItem:
             verb = "unbekannt"
         return f'Tür "{sensor_name}" ist {verb}'
 
-    def get_door_transition_humanized(self):
+    def door_transition_humanized(self):
         sensor_name = self.registration.name
         sensor_value = self.value
         if sensor_value is True:
