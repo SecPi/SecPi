@@ -185,8 +185,12 @@ class AdvantechAdamSensor(Sensor):
         super(AdvantechAdamSensor, self).__init__(id, params, worker)
 
         try:
-            self.mqtt_broker_ip = config.get("advantech_adam", {})["mqtt_broker_ip"]
-            self.mqtt_topic = config.get("advantech_adam", {})["mqtt_topic"]
+            # FIXME: Getting this from the worker's `config.json` does not work, because it will
+            #        get overwritten by the master's configuration.
+            # self.mqtt_broker_ip = config.get("advantech_adam", {})["mqtt_broker_ip"]
+            # self.mqtt_topic = config.get("advantech_adam", {})["mqtt_topic"]
+            self.mqtt_broker_ip = "localhost"
+            self.mqtt_topic = "Advantech/00D0C9EFDBBD/data"
 
         # If config parameters are missing in file.
         except KeyError as ex:
