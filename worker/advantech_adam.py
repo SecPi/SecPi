@@ -153,7 +153,7 @@ class AdvantechAdamConnector:
         # When component does not have state yet, create single summary message and submit as alarm.
         if self.state is None and all_responses:
             summary_message_long = ResponseItem.summary_humanized("Summary message", all_responses, data)
-            summary_message_short = ResponseItem.open_doors_humanized(all_responses)
+            summary_message_short = ResponseItem.open_circuit_humanized(all_responses)
             alarm_message = f"Erste Erfassung. {summary_message_short}\n\n{summary_message_long}"
             logger.info(f"AdvantechAdam: Raising alarm with summary message. {alarm_message}")
             logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
@@ -206,7 +206,7 @@ class AdvantechAdamSensor(Sensor):
                 logger.debug(
                     f"Sensor state changed. id={self.id}, params={self.params}, channel={response.registration.channel}, value={response.value}"
                 )
-                message_title = response.door_transition_humanized()
+                message_title = response.circuit_transition_humanized()
                 message = ResponseItem.summary_humanized(message_title, all_responses, response.alldata)
 
                 logger.info(f"AdvantechAdam: Raising alarm for individual sensor. {message}")
@@ -271,25 +271,25 @@ class ResponseItem:
     def summary_humanized(title: str, items: t.List["ResponseItem"], all_data):
         summary_message = ""
         for state in items:
-            summary_message += f'- {state.door_state_humanized()}\n'
+            summary_message += f'- {state.circuit_state_humanized()}\n'
 
-        # summary_message = f"{title}\n\nAlle Türen:\n{summary_message}\nAlle Daten:\n{all_data}"
-        summary_message = f"{title}\n\nAlle Türen:\n{summary_message}"
+        # summary_message = f"{title}\n\nAlle Kontakten:\n{summary_message}\nAlle Daten:\n{all_data}"
+        summary_message = f"{title}\n\nAlle Kontakten:\n{summary_message}"
         return summary_message
 
     @staticmethod
-    def open_doors_humanized(items: t.List["ResponseItem"]):
-        open_doors = []
+    def open_circuit_humanized(items: t.List["ResponseItem"]):
+        open_circuit = []
         for state in items:
             sensor_id = state.registration.sensor.id
             sensor_channel = state.registration.channel
             sensor_name = state.registration.name
             value = state.value
             if value is True:
-                open_doors.append(sensor_name)
-        return f"Offene Türen: {', '.join(open_doors) or 'keine'}"
+                open_circuit.append(sensor_name)
+        return f"Offene Kontakte: {', '.join(open_circuit) or 'keine'}"
 
-    def door_state_humanized(self):
+    def circuit_state_humanized(self):
         sensor_name = self.registration.name
         sensor_value = self.value
         if sensor_value is True:
@@ -297,10 +297,10 @@ class ResponseItem:
         elif sensor_value is False:
             verb = "geschlossen"
         else:
-            verb = "unbekannt"
-        return f'Tür "{sensor_name}" ist {verb}'
+            verb = "kaputt"
+        return f'Kontakt "{sensor_name}" ist {verb}'
 
-    def door_transition_humanized(self):
+    def circuit_transition_humanized(self):
         sensor_name = self.registration.name
         sensor_value = self.value
         if sensor_value is True:
@@ -309,7 +309,7 @@ class ResponseItem:
             verb = "geschlossen"
         else:
             verb = "kaputtgemacht"
-        return f"Tür {sensor_name} wurde {verb}"
+        return f"Kontakt {sensor_name} wurde {verb}"
 
 
 if __name__ == "__main__":
