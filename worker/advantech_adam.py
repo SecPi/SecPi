@@ -125,12 +125,11 @@ class AdvantechAdamConnector:
         data = json.loads(payload)
         logger.debug(f"Data: {data}")
 
-        # Check individual channel registrations and trigger events.
+        # Record states for all registered channels.
         all_responses = []
         for channel, registration_item in self.registrations.items():
             if channel in data:
 
-                # Record states for all registered channels.
                 response = ResponseItem(
                     channel=channel,
                     value=data[channel],
@@ -139,21 +138,23 @@ class AdvantechAdamConnector:
                     mqtt_client=client,
                     mqtt_userdata=userdata,
                 )
-                all_responses.append(response)
-
-                # Dispatch individual channel event, only when state has changed.
                 if self.state is not None:
                     old_value = self.state.get(channel)
-                    new_value = data.get(channel)
-                    if old_value != new_value:
-                        response.old_value = old_value
-                        registration_item.callback(response)
+                    response.old_value = old_value
+                all_responses.append(response)
+
+        # Dispatch individual channel events, only when state has changed.
+        for response in all_responses:
+            if self.state is not None:
+                if response.old_value != response.value:
+                    response.old_value = old_value
+                    response.registration.callback(response, all_responses)
 
         # When component does not have state yet, create single summary message and submit as alarm.
         if self.state is None and all_responses:
-            summary_message_long = ResponseItem.summary_humanized(all_responses, data)
+            summary_message_long = ResponseItem.summary_humanized("Summary message", all_responses, data)
             summary_message_short = ResponseItem.open_doors_humanized(all_responses)
-            alarm_message = f"Systemstart. {summary_message_short}"
+            alarm_message = f"Erste Erfassung. {summary_message_short}"
             logger.info(f"AdvantechAdam: Raising alarm with summary message. {alarm_message}")
             logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
             all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
@@ -197,11 +198,13 @@ class AdvantechAdamSensor(Sensor):
         if not self.corrupted:
             self.start_mqtt_subscriber()
 
-            def event_handler(response: ResponseItem):
+            def event_handler(response: ResponseItem, all_responses: t.List["ResponseItem"]):
                 logger.debug(
                     f"Sensor state changed. id={self.id}, params={self.params}, channel={response.registration.channel}, value={response.value}"
                 )
-                message = response.door_transition_humanized()
+                message_title = response.door_transition_humanized()
+                message = ResponseItem.summary_humanized(message_title, all_responses, response.alldata)
+
                 logger.info(f"AdvantechAdam: Raising alarm for individual sensor. {message}")
                 self.alarm(message)
                 if self.stop_thread:
@@ -261,12 +264,12 @@ class ResponseItem:
     mqtt_userdata: t.Optional[t.Dict] = None
 
     @staticmethod
-    def summary_humanized(items: t.List["ResponseItem"], all_data):
+    def summary_humanized(title: str, items: t.List["ResponseItem"], all_data):
         summary_message = ""
         for state in items:
             summary_message += f'- {state.door_state_humanized()}\n'
 
-        summary_message = f"Summary message\n\nAlle Türen:\n{summary_message}\nAlle Daten:\n{all_data}"
+        summary_message = f"{title}\n\nAlle Türen:\n{summary_message}\nAlle Daten:\n{all_data}"
         return summary_message
 
     @staticmethod
