@@ -273,7 +273,8 @@ class ResponseItem:
         for state in items:
             summary_message += f'- {state.door_state_humanized()}\n'
 
-        summary_message = f"{title}\n\nAlle Türen:\n{summary_message}\nAlle Daten:\n{all_data}"
+        # summary_message = f"{title}\n\nAlle Türen:\n{summary_message}\nAlle Daten:\n{all_data}"
+        summary_message = f"{title}\n\nAlle Türen:\n{summary_message}"
         return summary_message
 
     @staticmethod
