@@ -156,7 +156,7 @@ class AdvantechAdamConnector:
             summary_message_short = ResponseItem.open_circuit_humanized(all_responses)
             alarm_message = f"Erste Erfassung. {summary_message_short}\n\n{summary_message_long}"
             logger.info(f"AdvantechAdam: Raising alarm with summary message. {alarm_message}")
-            logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
+            # logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
             all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
 
         self.state = data
@@ -273,8 +273,8 @@ class ResponseItem:
         for state in items:
             summary_message += f'- {state.circuit_state_humanized()}\n'
 
-        # summary_message = f"{title}\n\nAlle Kontakten:\n{summary_message}\nAlle Daten:\n{all_data}"
-        summary_message = f"{title}\n\nAlle Kontakten:\n{summary_message}"
+        # summary_message = f"{title}\n\nAlle Kontakte:\n{summary_message}\nAlle Daten:\n{all_data}"
+        summary_message = f"{title}\n\nAlle Kontakte:\n{summary_message}"
         return summary_message
 
     @staticmethod
