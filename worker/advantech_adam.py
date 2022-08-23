@@ -154,7 +154,7 @@ class AdvantechAdamConnector:
         if self.state is None and all_responses:
             summary_message_long = ResponseItem.summary_humanized("Summary message", all_responses, data)
             summary_message_short = ResponseItem.open_doors_humanized(all_responses)
-            alarm_message = f"Erste Erfassung. {summary_message_short}"
+            alarm_message = f"Erste Erfassung. {summary_message_short}<br><br>{summary_message_long}"
             logger.info(f"AdvantechAdam: Raising alarm with summary message. {alarm_message}")
             logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
             all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
