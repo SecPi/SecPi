@@ -407,7 +407,9 @@ class Manager:
 		if(len(sensors)>0):
 			conf['active'] = True
 		
-		
+		# A configuration setting container which will be available on all workers.
+		conf['global'] = config.get('global')
+
 		conf_sensors = []
 		for sen in sensors:
 			para = {}

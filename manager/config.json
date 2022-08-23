@@ -7,5 +7,11 @@
 		"cacert": "ca/cacert.pem",
 		"certfile": "<certfile>",
 		"keyfile": "<keyfile>"
+	},
+	"global": {
+		"advantech_adam": {
+			"mqtt_broker_ip": "localhost",
+			"mqtt_topic": "Advantech/00D0C9EFDBBD/data"
+		}
 	}
 }

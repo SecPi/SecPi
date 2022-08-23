@@ -23,7 +23,7 @@ Setup
 Configuration
 =============
 
-Add this snippet to your `worker/config.json`::
+Add this snippet to your `manager/config.json`::
 
     "advantech_adam": {
         "mqtt_broker_ip": "localhost",
@@ -185,12 +185,9 @@ class AdvantechAdamSensor(Sensor):
         super(AdvantechAdamSensor, self).__init__(id, params, worker)
 
         try:
-            # FIXME: Getting this from the worker's `config.json` does not work, because it will
-            #        get overwritten by the master's configuration.
-            # self.mqtt_broker_ip = config.get("advantech_adam", {})["mqtt_broker_ip"]
-            # self.mqtt_topic = config.get("advantech_adam", {})["mqtt_topic"]
-            self.mqtt_broker_ip = "localhost"
-            self.mqtt_topic = "Advantech/00D0C9EFDBBD/data"
+            settings = config.get("global")["advantech_adam"]
+            self.mqtt_broker_ip = settings["mqtt_broker_ip"]
+            self.mqtt_topic = settings["mqtt_topic"]
 
         # If config parameters are missing in file.
         except KeyError as ex:
