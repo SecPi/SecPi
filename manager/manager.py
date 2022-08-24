@@ -111,26 +111,26 @@ class Manager:
 		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
 		self.channel.queue_declare(queue=utils.QUEUE_LOG)
 		self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-		self.channel.queue_bind(queue=utils.QUEUE_ON_OFF, exchange=utils.EXCHANGE)
-		self.channel.queue_bind(queue=utils.QUEUE_DATA, exchange=utils.EXCHANGE)
-		self.channel.queue_bind(queue=utils.QUEUE_ALARM, exchange=utils.EXCHANGE)
-		self.channel.queue_bind(queue=utils.QUEUE_LOG, exchange=utils.EXCHANGE)
-		self.channel.queue_bind(queue=utils.QUEUE_INIT_CONFIG, exchange=utils.EXCHANGE)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_DATA)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ALARM)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_LOG)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_INIT_CONFIG)
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
 		for pi in workers:
 			self.channel.queue_declare(queue=utils.QUEUE_ACTION+str(pi.id))
 			self.channel.queue_declare(queue=utils.QUEUE_CONFIG+str(pi.id))
-			self.channel.queue_bind(queue=utils.QUEUE_ACTION+str(pi.id), exchange=utils.EXCHANGE)
-			self.channel.queue_bind(queue=utils.QUEUE_CONFIG+str(pi.id), exchange=utils.EXCHANGE)
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ACTION+str(pi.id))
+			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_CONFIG+str(pi.id))
 
 		#define callbacks for alarm and data queues
-		self.channel.basic_consume(queue=utils.QUEUE_ALARM, on_message_callback=self.got_alarm, auto_ack=False)
-		self.channel.basic_consume(queue=utils.QUEUE_ON_OFF, on_message_callback=self.got_on_off, auto_ack=False)
-		self.channel.basic_consume(queue=utils.QUEUE_DATA, on_message_callback=self.got_data, auto_ack=False)
-		self.channel.basic_consume(queue=utils.QUEUE_LOG, on_message_callback=self.got_log, auto_ack=False)
-		self.channel.basic_consume(queue=utils.QUEUE_INIT_CONFIG, on_message_callback=self.got_config_request, auto_ack=False)
+		self.channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
+		self.channel.basic_consume(self.got_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
+		self.channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
+		self.channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
+		self.channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
 
 	def start(self):
 

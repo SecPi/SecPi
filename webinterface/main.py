@@ -122,7 +122,7 @@ class Root(object):
 
 		# define queues
 		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
-		self.channel.queue_bind(queue=utils.QUEUE_ON_OFF, exchange=utils.EXCHANGE)
+		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
 		return True
 
 	def connection_cleanup(self):
