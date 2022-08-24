@@ -133,6 +133,7 @@ import json
 import logging
 import sys
 import threading
+import time
 import typing as t
 
 import func_timeout
@@ -231,7 +232,13 @@ class AdvantechAdamMqttConnector:
         """
 
         # First of all, attempt to request the initial state from the device.
-        self.seed_state()
+        # However, delay it for some seconds to give the application some time to register
+        # all sensors. Otherwise, there will be no chance to generate and submit a summary
+        # notification message.
+        def seed_later():
+            time.sleep(3)
+            self.seed_state()
+        threading.Thread(target=seed_later).start()
 
         # Then, start the MQTT subscriber thread singleton.
         if AdvantechAdamMqttConnector.thread is None:
