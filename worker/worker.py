@@ -468,7 +468,7 @@ class Worker:
 
 	# callback for the sensors, sends a message with info to the manager
 	def alarm(self, sensor_id, message):
-		if(self.active):
+		if self.active:
 			logging.info("Sensor with id %s detected something" % sensor_id)
 
 			msg = {	"pi_id":config.get("pi_id"),
@@ -478,6 +478,8 @@ class Worker:
 			
 			# send a message to the alarmQ and tell which sensor signaled
 			self.send_json_msg(utils.QUEUE_ALARM, msg)
+		else:
+			logging.warning("Not submitting alarm because worker is not active")
 		
 	def prepare_data_directory(self, data_path):
 		try:
