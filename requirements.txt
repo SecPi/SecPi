@@ -1,3 +1,4 @@
+# Baseline
 CherryPy>=3.8.0
 CherryPy-SQLAlchemy>=0.5.2
 Mako>=1.0.1
@@ -13,3 +14,10 @@ netifaces
 python-gsmmodem
 slacker
 pyping
+
+# IsarEngineering
+ffmpy<1
+pycall<3
+paho-mqtt<2
+pymodbus<3
+func-timeout<5
