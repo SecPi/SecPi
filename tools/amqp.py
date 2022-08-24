@@ -28,9 +28,9 @@ class AMQPAdapter:
             credentials=credentials,
             host=self.hostname,
             port=self.port,
-            heartbeat=30,
+            heartbeat=360,
             socket_timeout=10,
-            blocked_connection_timeout=300,
+            # blocked_connection_timeout=300,
             # ssl=True,
             # ssl_options = {
             # 	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
