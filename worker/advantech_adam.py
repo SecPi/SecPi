@@ -250,6 +250,11 @@ class AdvantechAdamMqttConnector:
             aamc = AdvantechAdamModbusConnector(mqtt_broker=self.mqtt_broker, mqtt_topic=self.mqtt_topic)
             self.state = aamc.read_input_ports()
             logger.info(f"Received initial state: {self.state}")
+
+            # Create single summary message and submit as alarm.
+            all_responses = self.process_device_data(data=self.state)
+            self.submit_summary_alarm(all_responses, self.state)
+
         except:
             logger.exception("Seeding state failed")
 
@@ -299,38 +304,17 @@ class AdvantechAdamMqttConnector:
         logger.debug(f"Data: {data}")
 
         # Record states for all registered channels.
-        all_responses = []
-        for channel, registration_item in self.registrations.items():
-            if channel in data:
-
-                response = ResponseItem(
-                    channel=channel,
-                    value=data[channel],
-                    registration=registration_item,
-                    alldata=data,
-                    mqtt_client=client,
-                    mqtt_userdata=userdata,
-                )
-                if self.state is not None:
-                    old_value = self.state.get(channel)
-                    response.old_value = old_value
-                all_responses.append(response)
+        all_responses = self.process_device_data(data=data, more_data={"mqtt_client": client, "mqtt_userdata": userdata})
 
         # Dispatch individual channel events, only when state has changed.
         for response in all_responses:
             if self.state is not None:
                 if response.old_value != response.value:
-                    response.old_value = old_value
                     response.registration.callback(response, all_responses)
 
         # When component does not have state yet, create single summary message and submit as alarm.
         if self.state is None and all_responses:
-            summary_message_long = ResponseItem.summary_humanized("Summary message", all_responses, data)
-            summary_message_short = ResponseItem.open_circuit_humanized(all_responses)
-            alarm_message = f"Erste Erfassung. {summary_message_short}\n\n{summary_message_long}"
-            logger.info(f"AdvantechAdam: Raising alarm with summary message. {alarm_message}")
-            # logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
-            all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
+            self.submit_summary_alarm(all_responses, data)
 
         self.state = data
 
@@ -342,6 +326,42 @@ class AdvantechAdamMqttConnector:
         name = sensor.params["name"]
         logger.info(f"AdvantechAdam: Registering event callback for channel={channel}, name={name}")
         self.registrations[channel] = RegistrationItem(channel=channel, name=name, sensor=sensor, callback=callback)
+
+    def process_device_data(self, data: t.Dict, more_data: t.Optional[t.Dict] = None) -> t.List["ResponseItem"]:
+        """
+        Match registered channels against port status response from device and create response model.
+        """
+        more_data = more_data or {}
+        all_responses = []
+        for channel, registration_item in self.registrations.items():
+            if channel in data:
+
+                response = ResponseItem(
+                    channel=channel,
+                    value=data[channel],
+                    registration=registration_item,
+                    alldata=data,
+                )
+                response.__dict__.update(**more_data)
+
+                if self.state is not None:
+                    old_value = self.state.get(channel)
+                    response.old_value = old_value
+
+                all_responses.append(response)
+
+        return all_responses
+
+    def submit_summary_alarm(self, all_responses: t.List["ResponseItem"], data: t.Dict):
+        """
+        Build and submit a summary alarm, informing about the total state of all ports.
+        """
+        summary_message_long = ResponseItem.summary_humanized("Summary message", all_responses, data)
+        summary_message_short = ResponseItem.open_circuit_humanized(all_responses)
+        alarm_message = f"Erste Erfassung. {summary_message_short}\n\n{summary_message_long}"
+        logger.info(f"AdvantechAdam: Raising alarm with summary message. {alarm_message}")
+        # logger.info(f"AdvantechAdam: Long message:\n{summary_message_long}")
+        all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
 
 
 class AdvantechAdamSensor(Sensor):
