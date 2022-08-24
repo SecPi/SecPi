@@ -229,7 +229,7 @@ class Root(object):
 			
 			except pika.exceptions.ConnectionClosed:
 				cherrypy.log("Reconnecting to RabbitMQ Server!")
-				reconnected = self.connect(5)
+				reconnected = self.connect()
 				if reconnected:
 					cherrypy.log("Reconnect finished!")
 					su.active_state = True
@@ -286,7 +286,7 @@ class Root(object):
 			
 			except pika.exceptions.ConnectionClosed:
 				cherrypy.log("Reconnecting to RabbitMQ Server!")
-				reconnected = self.connect(5)
+				reconnected = self.connect()
 				if reconnected:
 					cherrypy.log("Reconnect finished!")
 					su.active_state = False
