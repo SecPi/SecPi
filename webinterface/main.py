@@ -152,7 +152,7 @@ class Root(object):
 			cherrypy.log("Wasn't able to cleanup connection")
 
 	def log_msg(self, msg, level):
-		log_entry = db.objects.LogEntry(level=level, message=str(msg), sender="Webinterface")
+		log_entry = self.db.objects.LogEntry(level=level, message=str(msg), sender="Webinterface")
 		self.db.add(log_entry)
 		self.db.commit()
 	
