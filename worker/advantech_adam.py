@@ -120,12 +120,6 @@ ADAM MQTT Manual, p. 8::
     Return: >01
     Error:  ?01
 
-
-Backlog
-=======
-- Implement `deactivate` correctly by shutting down the MQTT subscriber
-
-
 """
 import collections
 import dataclasses
@@ -238,6 +232,7 @@ class AdvantechAdamMqttConnector:
         def seed_later():
             time.sleep(3)
             self.seed_state()
+
         threading.Thread(target=seed_later).start()
 
         # Then, start the MQTT subscriber thread singleton.
@@ -311,7 +306,9 @@ class AdvantechAdamMqttConnector:
         logger.debug(f"Data: {data}")
 
         # Record states for all registered channels.
-        all_responses = self.process_device_data(data=data, more_data={"mqtt_client": client, "mqtt_userdata": userdata})
+        all_responses = self.process_device_data(
+            data=data, more_data={"mqtt_client": client, "mqtt_userdata": userdata}
+        )
 
         # Dispatch individual channel events, only when state has changed.
         for response in all_responses:
@@ -333,6 +330,14 @@ class AdvantechAdamMqttConnector:
         name = sensor.params["name"]
         logger.info(f"AdvantechAdam: Registering event callback for channel={channel}, name={name}")
         self.registrations[channel] = RegistrationItem(channel=channel, name=name, sensor=sensor, callback=callback)
+
+    def unregister(self, sensor):
+        """
+        Unregister callback event for designated channel.
+        """
+        channel = sensor.params["channel"]
+        if channel in self.registrations:
+            del self.registrations[channel]
 
     def process_device_data(self, data: t.Dict, more_data: t.Optional[t.Dict] = None) -> t.List["ResponseItem"]:
         """
@@ -381,7 +386,6 @@ class AdvantechAdamSensor(Sensor):
 
     def __init__(self, id, params, worker):
         logger.info(f"AdvantechAdam: Initializing sensor id={id} with parameters {params}")
-        self.stop_thread = False
         super(AdvantechAdamSensor, self).__init__(id, params, worker)
 
         try:
@@ -408,8 +412,6 @@ class AdvantechAdamSensor(Sensor):
 
                 logger.info(f"AdvantechAdam: Raising alarm for individual sensor. {message}")
                 self.alarm(message)
-                if self.stop_thread:
-                    response.mqtt_client.disconnect()
 
             AdvantechAdamSensor.connector.register(self, event_handler)
 
@@ -419,10 +421,10 @@ class AdvantechAdamSensor(Sensor):
 
     def deactivate(self):
         if not self.corrupted:
-            self.stop_thread = True
-            logger.info(f"TODO: Stop MQTT subscriber thread")
+            AdvantechAdamSensor.connector.unregister(self)
+            self.post_log(f"AdvantechAdam: Sensor deactivated successfully, id={self.id}", utils.LEVEL_INFO)
         else:
-            self.post_err("AdvantechAdam: Sensor could not be deactivated")
+            self.post_err(f"AdvantechAdam: Sensor could not be deactivated, id={self.id}")
 
     def start_mqtt_subscriber(self):
         """
