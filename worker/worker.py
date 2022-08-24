@@ -385,7 +385,7 @@ class Worker:
 			# write config to file
 			try:
 				with open('%s/worker/config.json'%(PROJECT_PATH),'w') as f:
-					f.write(json.dumps(new_config))
+					f.write(json.dumps(new_config, indent=2))
 				
 			except Exception as e:
 				logging.exception("Wasn't able to write config file:\n%s" % e)
