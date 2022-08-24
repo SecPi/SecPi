@@ -10,8 +10,8 @@ PIDFile=/var/run/secpi-worker.pid
 WorkingDirectory=/opt/secpi
 ExecStart=/opt/secpi/worker/worker.py /opt/secpi
 Restart=on-failure
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

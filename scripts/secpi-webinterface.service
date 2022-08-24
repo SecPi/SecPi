@@ -10,8 +10,8 @@ PIDFile=/var/run/secpi-webinterface.pid
 WorkingDirectory=/opt/secpi
 ExecStart=/opt/secpi/webinterface/main.py /opt/secpi
 Restart=on-failure
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
