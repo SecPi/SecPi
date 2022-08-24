@@ -107,8 +107,8 @@ class Root(object):
 
 		cherrypy.log("Finished initialization")
 			
-	def connect(self, num_tries=3):
-		self.bus.connect(retries=num_tries)
+	def connect(self):
+		self.bus.connect()
 		self.channel = self.bus.channel
 
 		if self.bus.available:
