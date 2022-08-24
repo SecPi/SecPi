@@ -27,49 +27,39 @@ class SipCall(Notifier):
         super(SipCall, self).__init__(id, params)
 
         try:
-
             self.sip_number = params["sip_number"]
-            # self.sip_recipients = [rec.strip() for rec in params["sip_recipients"].split(",")]
-            self.sip_recipients = self.sip_number
             self.sip_route = params["sip_route"]
             # self.sip_context = params["sip_context"]
             # self.sip_application = params["sip_application"]
         except KeyError as ke:
-            logging.error(
-                "SipCall: Error while trying to initialize notifier, it seems there is a config parameter missing: %s"
-                % ke
-            )
+            logging.error(f"SipCall: Initializing notifier failed, configuration parameter missing: {ke}")
             self.corrupted = True
             return
+
+        if not self.sip_number.startswith("+"):
+            self.sip_number = "+" + self.sip_number
+
         logging.info("SipCall: Notifier initialized")
 
     def notify(self, info):
         if not self.corrupted:
-            # info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
-            context = "alarm_" + str(info["sensor"])
-            logging.info(str(info["sensor"]))
-            if str(info["sensor"]) != "eisentuer":
-                try:
-                    # for recipient in self.recipients:
-                    # call(self.sip_route, recipient, context)
-                    number = "+" + self.sip_number
-                    self.call(self.sip_route, number, context)
-                    # logging.info("SipCall: Call to %s was sent" % recipient)
-                    logging.info("SipCall: Call to %s was sent" % self.sip_number)
-                except Exception as e:
-                    # logging.error("SipCall: Wasn't able to sent call to %s: %s" % (recipient, e))
-                    logging.error("SipCall: Wasn't able to sent call to %s: %s" % (self.sip_number, e))
+            sensor_name = str(info["sensor"])
+            logging.info(f"SipCall: Starting call to {self.sip_number}, triggered by sensor {sensor_name}")
+            context = f"alarm_{sensor_name}"
+            try:
+                self.sip_submit_call(self.sip_route, self.sip_number, context)
+                logging.info(f"SipCall: Call to {self.sip_number} submitted successfully")
+            except Exception:
+                logging.exception(f"SipCall: Call to {self.sip_number} failed")
         else:
             logging.error("SipCall: Wasn't able to notify because there was an initialization error")
 
     def cleanup(self):
-        logging.debug("Asterisk: No cleanup necessary at the moment")
+        logging.debug("SipCall: No cleanup necessary at the moment")
 
-    def call(self, route, number, context):
-        try:
-            c = Call("SIP/%s/%s" % (route, number), wait_time=50, retry_time=120, max_retries=4)
-            con = Context(context, "s", "1")
-            cf = CallFile(c, con, user="asterisk")
-            cf.spool()
-        except Exception as e:
-            logging.error("SipCall: Unknown call error: %s" % e)
+    @staticmethod
+    def sip_submit_call(route, number, context):
+        c = Call("SIP/%s/%s" % (route, number), wait_time=50, retry_time=120, max_retries=4)
+        con = Context(context, "s", "1")
+        cf = CallFile(c, con, user="asterisk")
+        cf.spool()
