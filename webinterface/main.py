@@ -15,7 +15,6 @@ import traceback
 import logging
 import logging.config
 import subprocess
-import time
 
 
 # web framework
@@ -39,6 +38,7 @@ from mako.lookup import TemplateLookup
 import pika
 
 # our stuff
+from tools.amqp import AMQPAdapter
 from tools.db import objects
 from tools import config
 from tools import utils
@@ -95,47 +95,28 @@ class Root(object):
 		
 		self.alarmdata = AlarmDataPage()
 		
+		# Connect to messaging bus.
+		self.channel: pika.channel.Channel = None
+		self.bus = AMQPAdapter(
+			hostname=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
+			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
+			username=config.get('rabbitmq')['user'],
+			password=config.get('rabbitmq')['password'],
+		)
 		self.connect()
+
 		cherrypy.log("Finished initialization")
 			
 	def connect(self, num_tries=3):
-		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
-			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
-			socket_timeout=10,
-			# ssl=True,
-			# ssl_options = {
-			# 	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-			# 	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-			# 	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			# }
-		)
+		self.bus.connect(retries=num_tries)
+		self.channel = self.bus.channel
 
-		connected = False
-		while not connected and num_tries > 0:
-			try:
-				cherrypy.log("Trying to connect to rabbitmq service...")
-				self.connection = pika.BlockingConnection(parameters=parameters)
-				self.channel = self.connection.channel()
-				connected = True
-				cherrypy.log("Connection to rabbitmq service established")
-				break
-			except pika.exceptions.AMQPConnectionError as pe:
-				if "The AMQP connection was closed" in repr(pe):
-					cherrypy.log("Wasn't able to connect to the rabbitmq service, please check if the rabbitmq service is reachable and running")
-				else:
-					cherrypy.log("Wasn't able to connect to the rabbitmq service: %s" % repr(pe))
-			except Exception as e:
-				cherrypy.log("Unknown error: %s" % e)
-			
-			num_tries-=1
-			if(num_tries!=0):
-				time.sleep(30)
-
-		if not connected:
-			cherrypy.log("Wasn't able to connect to rabbitmq service, exiting...")
+		if self.bus.available:
+			cherrypy.log("AMQP: Connected to broker")
+		else:
+			cherrypy.log("AMQP: No connection to broker, exiting")
 			return False
+
 		# define exchange
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
@@ -146,8 +127,7 @@ class Root(object):
 
 	def connection_cleanup(self):
 		try:
-			self.channel.close()
-			self.connection.close()
+			self.bus.disconnect()
 		except pika.exceptions.ConnectionClosed:
 			cherrypy.log("Wasn't able to cleanup connection")
 

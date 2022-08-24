@@ -2,6 +2,7 @@
 
 import sys
 
+
 if(len(sys.argv)>1):
 	PROJECT_PATH = sys.argv[1]
 	sys.path.append(PROJECT_PATH)
@@ -22,6 +23,7 @@ import time
 
 from tools import config
 from tools import utils
+from tools.amqp import AMQPAdapter
 from tools.db import database as db
 from sqlalchemy import text
 
@@ -71,6 +73,14 @@ class Manager:
 		self.holddown_state = False
 		self.num_of_workers = 0
 
+		# Connect to messaging bus.
+		self.channel: pika.channel.Channel = None
+		self.bus = AMQPAdapter(
+			hostname=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
+			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
+			username=config.get('rabbitmq')['user'],
+			password=config.get('rabbitmq')['password'],
+		)
 		self.connect()
 
 		# debug output, setups & state
@@ -88,35 +98,11 @@ class Manager:
 		logging.info("Setup done!")
 
 	def connect(self):
-		logging.debug("Initializing connection to rabbitmq service")
-		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
-			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
-			socket_timeout=10,
-			# ssl=True,
-			# ssl_options = {
-			#  	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-			# 	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-			# 	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			# }
-		)
-		
-		connected = False
-		while not connected: #retry if establishing a connection fails
-			try:
-				self.connection = pika.BlockingConnection(parameters=parameters)
-				self.channel = self.connection.channel()
-				connected = True
-				logging.info("Connection to rabbitmq service established")
-			except pika.exceptions.AMQPConnectionError as pe: # if connection can't be established
-				if "The AMQP connection was closed" in repr(pe):
-					logging.error("Wasn't able to connect to the rabbitmq service, please check if the rabbitmq service is reachable and running")
-				else:
-					logging.error("Wasn't able to connect to the rabbitmq service: %s" % repr(pe))
-				time.sleep(30)
 
-		#define exchange
+		self.bus.connect()
+		self.channel = self.bus.channel
+
+		# Declare exchanges and queues.
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
 		#define queues: data, alarm and action & config for every pi
@@ -146,24 +132,18 @@ class Manager:
 		self.channel.basic_consume(queue=utils.QUEUE_LOG, on_message_callback=self.got_log, auto_ack=False)
 		self.channel.basic_consume(queue=utils.QUEUE_INIT_CONFIG, on_message_callback=self.got_config_request, auto_ack=False)
 
-	
 	def start(self):
-		disconnected = True
-		while disconnected:
-			try:
-				disconnected = False
-				self.channel.start_consuming() # blocking call
-			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
-				logging.error("Lost connection to rabbitmq service")
-				disconnected = True
-				time.sleep(10) # reconnect timer
-				logging.info("Trying to reconnect...")
-				self.connect()
-	
-		
+
+		def on_error():
+			logging.info("Trying to reconnect to AMQP broker")
+			self.bus.disconnect()
+			self.connect()
+
+		self.bus.subscribe_forever(on_error=on_error)
+
 	def __del__(self):
 		try:
-			self.connection.close()
+			self.bus.disconnect()
 		except AttributeError: #If there is no connection object closing won't work
 			logging.info("No connection cleanup possible")
 

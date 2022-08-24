@@ -18,13 +18,14 @@ import netifaces
 import os
 import pika
 import shutil
-import socket
 import threading
 import time
 import uuid
 
 from tools import config
 from tools import utils
+from tools.amqp import AMQPAdapter
+
 
 class Worker:
 
@@ -54,6 +55,15 @@ class Worker:
 			quit()
 		
 		self.prepare_data_directory(self.data_directory)
+
+		# Connect to messaging bus.
+		self.channel: pika.channel.Channel = None
+		self.bus = AMQPAdapter(
+			hostname=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
+			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
+			username=config.get('rabbitmq')['user'],
+			password=config.get('rabbitmq')['password'],
+		)
 		self.connect()
 		
 		# if we don't have a pi id we need to request the initial config, afterwards we have to reconnect
@@ -70,35 +80,11 @@ class Worker:
 			logging.info("Setup done!")
 	
 	def connect(self):
-		logging.debug("Initalizing network connection")
-		credentials = pika.PlainCredentials(config.get('rabbitmq')['user'], config.get('rabbitmq')['password'])
-		parameters = pika.ConnectionParameters(credentials=credentials,
-			host=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
-			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
-			socket_timeout=10,
-			# ssl=True,
-			# ssl_options = {
-			#	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-			#	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-			#	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
-			# }
-		)
 
-		connected = False
-		while not connected: #retry if establishing a connection fails
-			try:
-				logging.info("Trying to establish a connection to the manager")
-				self.connection = pika.BlockingConnection(parameters=parameters) 
-				self.channel = self.connection.channel()
-				connected = True
-				logging.info("Connection to manager established")
-			except pika.exceptions.AMQPConnectionError as pe: # if connection can't be established
-				if "The AMQP connection was closed" in repr(pe):
-					logging.error("Wasn't able to connect to the rabbitmq service, please check if the rabbitmq service is reachable and running")
-				else:
-					logging.error("Wasn't able to open a connection to the manager: %s" % repr(pe))
-				time.sleep(self.CONVERSATION_DELAY)
+		self.bus.connect()
+		self.channel = self.bus.channel
 
+		# Declare exchanges and queues.
 		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
 		# INIT CONFIG MODE
@@ -122,30 +108,26 @@ class Worker:
 			self.channel.basic_consume(queue=utils.QUEUE_ACTION+str(config.get('pi_id')), on_message_callback=self.got_action, auto_ack=False)
 			self.channel.basic_consume(queue=utils.QUEUE_CONFIG+str(config.get('pi_id')), on_message_callback=self.got_config, auto_ack=False)
 
-	
 	def start(self):
-		disconnected = True
-		while disconnected:
-			try:
-				disconnected = False
-				self.channel.start_consuming() # blocking call
-			except pika.exceptions.ConnectionClosed: # when connection is lost, e.g. rabbitmq not running
-				logging.error("Lost connection to rabbitmq service on manager")
-				disconnected = True
-				time.sleep(self.CONVERSATION_DELAY) # reconnect timer
-				logging.info("Trying to reconnect...")
-				self.connect()
-				self.clear_message_queue() #could this make problems if the manager replies too fast?
-	
+
+		def on_error():
+			logging.info("Trying to reconnect to AMQP broker")
+			self.bus.disconnect()
+			self.connect()
+			# TODO: Could invoking `clear_message_queue` make problems if the manager replies too fast?
+			self.clear_message_queue()
+
+		self.bus.subscribe_forever(on_error=on_error)
+
 	def __del__(self):
 		try:
-			self.connection.close()
+			self.bus.disconnect()
 		except AttributeError: #If there is no connection object closing won't work
 			logging.info("No connection cleanup possible")
 
 	# sends a message to the manager
 	def send_msg(self, rk, body, **kwargs):
-		if self.connection.is_open:
+		if self.bus.available:
 			try:
 				logging.debug("Sending message to manager")
 				self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
@@ -166,7 +148,7 @@ class Worker:
 	
 	# sends a message to the manager
 	def send_json_msg(self, rk, body, **kwargs):
-		if self.connection.is_open:
+		if self.bus.available:
 			try:
 				logging.debug("Sending message to manager")
 				properties = pika.BasicProperties(content_type='application/json')
@@ -491,8 +473,7 @@ class Worker:
 			self.post_err("Pi with id '%s' wasn't able to create data directory:\n%s" % (config.get('pi_id'), oe))
 
 	def connection_cleanup(self):
-		self.channel.close()
-		self.connection.close()
+		self.bus.disconnect()
 
 	
 
