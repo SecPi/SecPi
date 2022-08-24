@@ -37,11 +37,12 @@ class Worker:
 		self.data_directory = "/var/tmp/secpi/worker_data"
 		self.zip_directory = "/var/tmp/secpi"
 		self.message_queue = [] # stores messages which couldn't be sent
-		
+
+		logging_config = os.path.join(PROJECT_PATH, 'logging.conf')
 		try:
-			logging.config.fileConfig(os.path.join(PROJECT_PATH, 'logging.conf'), defaults={'logfilename': 'worker.log'})
-		except Exception as e:
-			print("Error while trying to load config file for logging")
+			logging.config.fileConfig(logging_config, defaults={'logfilename': 'worker.log'})
+		except Exception as ex:
+			print(f"Error while trying to load config file for logging from {logging_config}: {ex}")
 
 		logging.info("Initializing worker")
 
