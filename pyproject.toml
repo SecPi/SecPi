@@ -35,7 +35,7 @@ dependencies = [
   # Baseline modules.
   "appdirs<2",
   "requests<3",
-  "pika<1",
+  "pika<2",
   "python-dateutil<3",
   "SQLAlchemy<1.5",
   "netifaces<1",
@@ -81,6 +81,7 @@ develop = [
   "black<23",
   "build<1",
   "poethepoet<1",
+  "pika-stubs<1; python_version>='3.8'",
 ]
 
 [tool.setuptools]

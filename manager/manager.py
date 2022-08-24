@@ -91,27 +91,27 @@ class Manager(Service):
 		channel.queue_declare(queue=utils.QUEUE_ON_OFF)
 		channel.queue_declare(queue=utils.QUEUE_LOG)
 		channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
-		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_DATA)
-		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ALARM)
-		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_LOG)
-		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_INIT_CONFIG)
-		
+		channel.queue_bind(queue=utils.QUEUE_ON_OFF, exchange=utils.EXCHANGE)
+		channel.queue_bind(queue=utils.QUEUE_DATA, exchange=utils.EXCHANGE)
+		channel.queue_bind(queue=utils.QUEUE_ALARM, exchange=utils.EXCHANGE)
+		channel.queue_bind(queue=utils.QUEUE_LOG, exchange=utils.EXCHANGE)
+		channel.queue_bind(queue=utils.QUEUE_INIT_CONFIG, exchange=utils.EXCHANGE)
+
 		# Load workers from database.
 		workers = self.db.session.query(Worker).all()
 		for pi in workers:
 			channel.queue_declare(queue=utils.QUEUE_ACTION+str(pi.id))
 			channel.queue_declare(queue=utils.QUEUE_CONFIG+str(pi.id))
-			channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ACTION+str(pi.id))
-			channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_CONFIG+str(pi.id))
+			channel.queue_bind(queue=utils.QUEUE_ACTION+str(pi.id), exchange=utils.EXCHANGE)
+			channel.queue_bind(queue=utils.QUEUE_CONFIG+str(pi.id), exchange=utils.EXCHANGE)
 
 		# Define callbacks for alarm and data queues.
-		channel.basic_consume(self.got_operational, queue=utils.QUEUE_OPERATIONAL + "m", no_ack=True)
-		channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
-		channel.basic_consume(self.got_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
-		channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
-		channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
-		channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
+		channel.basic_consume(queue=utils.QUEUE_OPERATIONAL + "m", on_message_callback=self.got_operational, auto_ack=True)
+		channel.basic_consume(queue=utils.QUEUE_ALARM, on_message_callback=self.got_alarm, auto_ack=True)
+		channel.basic_consume(queue=utils.QUEUE_ON_OFF, on_message_callback=self.got_on_off, auto_ack=True)
+		channel.basic_consume(queue=utils.QUEUE_DATA, on_message_callback=self.got_data, auto_ack=True)
+		channel.basic_consume(queue=utils.QUEUE_LOG, on_message_callback=self.got_log, auto_ack=True)
+		channel.basic_consume(queue=utils.QUEUE_INIT_CONFIG, on_message_callback=self.got_config_request, auto_ack=True)
 
 	def start(self):
 		self.bus.subscribe_forever(on_error=self.on_bus_error)

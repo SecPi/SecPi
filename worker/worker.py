@@ -70,12 +70,11 @@ class Worker(Service):
 		# When the worker does not have an identifier, only define a basic
 		# setup to receive an initial configuration from the manager.
 		if not self.config.get("pi_id"):
-			# init config queue
 			result = channel.queue_declare(queue="init-callback", exclusive=True)
 			self.callback_queue = result.method.queue
-			channel.queue_bind(exchange=utils.EXCHANGE, queue=self.callback_queue)
+			channel.queue_bind(queue=self.callback_queue, exchange=utils.EXCHANGE)
 			channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-			channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
+			channel.basic_consume(queue=self.callback_queue, on_message_callback=self.got_init_config, auto_ack=True)
 
 		# OPERATIVE MODE
 		# When the worker has an assigned identifier, it is assumed it already has
@@ -94,9 +93,9 @@ class Worker(Service):
 			channel.queue_declare(queue=utils.QUEUE_LOG)
 
 			# Specify the queues we want to listen to, including the callback.
-			channel.basic_consume(self.got_operational, queue=utils.QUEUE_OPERATIONAL + worker_identifier, no_ack=True)
-			channel.basic_consume(self.got_action, queue=utils.QUEUE_ACTION + worker_identifier, no_ack=True)
-			channel.basic_consume(self.got_config, queue=utils.QUEUE_CONFIG + worker_identifier, no_ack=True)
+			channel.basic_consume(queue=utils.QUEUE_OPERATIONAL + worker_identifier, on_message_callback=self.got_operational, auto_ack=True)
+			channel.basic_consume(queue=utils.QUEUE_ACTION + worker_identifier, on_message_callback=self.got_action, auto_ack=True)
+			channel.basic_consume(queue=utils.QUEUE_CONFIG + worker_identifier, on_message_callback=self.got_config, auto_ack=True)
 
 	def start(self):
 		self.bus.subscribe_forever(on_error=self.on_bus_error)
