@@ -104,11 +104,12 @@ class Worker:
 		# INIT CONFIG MODE
 		if not config.get('pi_id'): # when we have no pi id we only have to define the initial config setup
 			# init config queue
-			result = self.channel.queue_declare(exclusive=True)
+			# TODO: Verify `queue=""` here.
+			result = self.channel.queue_declare(queue="", exclusive=True)
 			self.callback_queue = result.method.queue
-			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=self.callback_queue)
+			self.channel.queue_bind(queue=self.callback_queue, exchange=utils.EXCHANGE)
 			self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-			self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
+			self.channel.basic_consume(queue=self.callback_queue, on_message_callback=self.got_init_config, auto_ack=False)
 		else: # only connect to the other queues when we got the initial configuration, OPERATIVE MODE
 			#declare all the queues
 			self.channel.queue_declare(queue=utils.QUEUE_ACTION+str(config.get('pi_id')))
@@ -118,8 +119,8 @@ class Worker:
 			self.channel.queue_declare(queue=utils.QUEUE_LOG)
 
 			#specify the queues we want to listen to, including the callback
-			self.channel.basic_consume(self.got_action, queue=utils.QUEUE_ACTION+str(config.get('pi_id')), no_ack=True)
-			self.channel.basic_consume(self.got_config, queue=utils.QUEUE_CONFIG+str(config.get('pi_id')), no_ack=True)
+			self.channel.basic_consume(queue=utils.QUEUE_ACTION+str(config.get('pi_id')), on_message_callback=self.got_action, auto_ack=False)
+			self.channel.basic_consume(queue=utils.QUEUE_CONFIG+str(config.get('pi_id')), on_message_callback=self.got_config, auto_ack=False)
 
 	
 	def start(self):
