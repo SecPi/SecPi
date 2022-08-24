@@ -35,9 +35,9 @@ Configuration
 
 Add this snippet to your `manager/config.json`::
 
-    "advantech_adam": {
+    "adam6000": {
         "mqtt_broker_ip": "localhost",
-        "mqtt_topic": "Advantech/00D0C9EFDBBD/data"
+        "mqtt_topic": "Advantech/00D0C9EFDBBD"
     }
 
 
@@ -46,7 +46,7 @@ Usage
 ::
 
     # Start `AdvantechAdam` example program.
-    python -m worker.advantech_adam
+    python -m worker.adam6000
 
     # Submit example MQTT message.
     export PAYLOAD1='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
@@ -389,7 +389,7 @@ class AdvantechAdamSensor(Sensor):
         super(AdvantechAdamSensor, self).__init__(id, params, worker)
 
         try:
-            settings = config.get("global", {})["advantech_adam"]
+            settings = config.get("global", {})["adam6000"]
             self.mqtt_broker_ip = settings["mqtt_broker_ip"]
             self.mqtt_topic = settings["mqtt_topic"]
 
