@@ -1,6 +1,19 @@
-import socket
-import sys
-import SocketServer
+"""
+Configuration::
+
+	ID:          1
+	Name:        tcp-listener-1234
+	Description: Example TCP listener
+	Zone ID:     1
+	Worker ID:   1
+	Class:       TCPPortListener
+	Module:      tcpportlistener
+
+Trigger alarm::
+
+	echo hello | socat - tcp:localhost:1234
+"""
+import socketserver
 import threading
 from tools.sensor import Sensor
 
@@ -25,11 +38,10 @@ class TCPPortListener(Sensor):
 		self.server.server_close()
 
 # Request Handler
-import SocketServer
-class SecPiTCPHandler(SocketServer.BaseRequestHandler):
-	   
+class SecPiTCPHandler(socketserver.BaseRequestHandler):
+
 	def __init__(self, request, client_address, server):
-		SocketServer.BaseRequestHandler.__init__(self, request, client_address, server)
+		socketserver.BaseRequestHandler.__init__(self, request, client_address, server)
 		return
 
 	def handle(self):
@@ -37,8 +49,7 @@ class SecPiTCPHandler(SocketServer.BaseRequestHandler):
 		self.request.close()
 		return
 
-import SocketServer
-class SecPiTCPServer(SocketServer.TCPServer, object):
+class SecPiTCPServer(socketserver.TCPServer, object):
 
 	def __init__(self,sensor, server_address, handler_class=SecPiTCPHandler):
 		super( SecPiTCPServer, self).__init__(server_address, handler_class)
@@ -47,4 +58,4 @@ class SecPiTCPServer(SocketServer.TCPServer, object):
 
 	def finish_request(self, request, client_address):
 		self.sensor.alarm("Got TCP connection, raising alarm")
-		return SocketServer.TCPServer.finish_request(self, request, client_address)
+		return socketserver.TCPServer.finish_request(self, request, client_address)
