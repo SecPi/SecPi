@@ -9,7 +9,7 @@
 		"keyfile": "<keyfile>"
 	},
 	"global": {
-		"advantech_adam": {
+		"adam6000": {
 			"mqtt_broker_ip": "localhost",
 			"mqtt_topic": "Advantech/00D0C9EFDBBD"
 		}
