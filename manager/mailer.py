@@ -37,6 +37,7 @@ class Mailer(Notifier):
 		logging.info("Mailer: Notifier initialized")
 	
 	def notify(self, info):
+		logging.info("Notifying via SMTP email")
 		if not self.corrupted:
 			# Mail setup
 			self.message = MIMEMultipart()
@@ -149,8 +150,8 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception as e:
-			logging.error("Mailer: Unknown error: %s" % e)
+		except Exception:
+			logging.exception("Mailer: Unknown error")
 
 	def send_mail_ssl(self):
 		logging.debug("Mailer: Trying to send mail with SSL")
@@ -163,8 +164,8 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception as e:
-			logging.error("Mailer: Unknown error: %s" % e)
+		except Exception:
+			logging.exception("Mailer: Unknown error")
 
 	def send_mail_nossl(self):
 		logging.debug("Mailer: Trying to send mail without SSL")
@@ -177,8 +178,8 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception as e:
-			logging.error("Mailer: Unknown error: %s" % e)
+		except Exception:
+			logging.exception("Mailer: Unknown error")
 
 	def send_mail_noauth_nossl(self):
 		logging.debug("Mailer: Trying to send mail without authentication")
@@ -189,9 +190,9 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception as e:
-			logging.error("Mailer: Unknown error: %s" % e)
-	
+		except Exception:
+			logging.exception("Mailer: Unknown error")
+
 	def send_mail_noauth_ssl(self):
 		logging.debug("Mailer: Trying to send mail without authentication")
 		try:
@@ -201,9 +202,9 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception as e:
-			logging.error("Mailer: Unknown error: %s" % e)
-	
+		except Exception:
+			logging.exception("Mailer: Unknown error")
+
 	def send_mail_noauth_starttls(self):
 		logging.debug("Mailer: Trying to send mail with STARTTLS")
 		try:
@@ -214,8 +215,8 @@ class Mailer(Notifier):
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
 			logging.info("Mailer: Mail sent")
 			smtp.quit()
-		except Exception as e:
-			logging.error("Mailer: Unknown error: %s" % e)
+		except Exception:
+			logging.exception("Mailer: Unknown error")
 
 	def cleanup(self):
 		logging.debug("Mailer: No cleanup necessary at the moment")
