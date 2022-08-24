@@ -3,7 +3,13 @@ About
 =====
 
 SecPi sensor adapter for digital input ports of Advantech ADAM-605x devices.
-https://www.advantech.com/products/a67f7853-013a-4b50-9b20-01798c56b090/adam-6050/mod_b009c4b4-4b7c-4736-b16f-241978245e6a
+
+- https://www.advantech.com/products/a67f7853-013a-4b50-9b20-01798c56b090/adam-6050/mod_b009c4b4-4b7c-4736-b16f-241978245e6a
+- https://advdownload.advantech.com/productfile/Downloadfile5/1-24AIR0Z/ADAM-6000_User_Manaul_Ed.11_FINAL.pdf
+- https://advdownload.advantech.com/productfile/Downloadfile4/1-1EGDNCJ/ADAM%20MQTT%20manual%20V1.pdf
+- http://support.elmark.com.pl/advantech/pdf/iag/ADAM_MQTT-manual.pdf
+- https://www.mouser.com/catalog/additional/Advantech_ADAM_6000_User_Manaul_Ed_10_FINAL.pdf
+- https://www.integral-system.fr/shop/media/product/file/adam6200_user_manual_ed_4-5f6b0ebe7c493.pdf
 
 
 Setup
@@ -43,8 +49,82 @@ Usage
     python -m worker.advantech_adam
 
     # Submit example MQTT message.
-    export PAYLOAD='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
-    echo $PAYLOAD | mosquitto_pub -h localhost -t "Advantech/00D0C9EFDBBD/data" -l
+    export PAYLOAD1='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
+    export PAYLOAD2='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":false,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
+    echo $PAYLOAD1 | mosquitto_pub -h localhost -t "Advantech/00D0C9EFDBBD/data" -l
+    echo $PAYLOAD2 | mosquitto_pub -h localhost -t "Advantech/00D0C9EFDBBD/data" -l
+
+
+HTTP interface
+==============
+::
+
+    curl "http://192.168.178.10/digitalinput/all/value" --user "root:00000000"
+    <?xml version="1.0" ?><ADAM-6050 status="OK"><DI><ID>0</ID><VALUE>1</VALUE></DI><DI><ID>1</ID><VALUE>1</VALUE></DI><DI><ID>2</ID><VALUE>0</VALUE></DI><DI><ID>3</ID><VALUE>1</VALUE></DI><DI><ID>4</ID><VALUE>0</VALUE></DI><DI><ID>5</ID><VALUE>0</VALUE></DI><DI><ID>6</ID><VALUE>0</VALUE></DI><DI><ID>7</ID><VALUE>1</VALUE></DI><DI><ID>8</ID><VALUE>0</VALUE></DI><DI><ID>9</ID><VALUE>0</VALUE></DI><DI><ID>10</ID><VALUE>0</VALUE></DI><DI><ID>11</ID><VALUE>0</VALUE></DI></ADAM-6050>
+
+Modbus interface
+================
+::
+
+    python -m pymodbus.repl.main tcp --host 192.168.178.10
+    client.read_discrete_inputs address 1 count 12
+
+    {
+        "bits": [
+            true,
+            false,
+            true,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+        ]
+    }
+
+
+Documentation
+=============
+
+Module Ethernet Protocol and Port (ADAM-6200 User Manual, p. 57)::
+
+    TCP Modbus          TCP 502
+    Download            TCP 5450
+    Config. Upload      TCP 5452
+    Web Server          TCP 80
+    Search Engine       UDP 5048
+    ASCII CMD           UDP 1025
+    P2P/GCL             UDP 1025 Configurable
+    Data Stream         UDP 5168
+    GCL remote Message  UDP 5168
+
+ADAM MQTT Manual, p. 8::
+
+    What: Set publishing data streaming
+    CMD: %aaSETMQTTSTxxxxxxxx
+    CMD: %01SETMQTTST00001000
+
+    interval time
+    aa:         always 01
+    xxxxxxxx:   publishing data streaming interval time in millisecond
+                (0032~FFFFFFFF)
+
+    Return: >01
+    Error:  ?01
+
+
+Backlog
+=======
+- Implement `deactivate` correctly by shutting down the MQTT subscriber
+
 
 """
 import collections
@@ -361,7 +441,7 @@ class ResponseItem:
     def summary_humanized(title: str, items: t.List["ResponseItem"], all_data):
         summary_message = ""
         for state in items:
-            summary_message += f'- {state.circuit_state_humanized()}\n'
+            summary_message += f"- {state.circuit_state_humanized()}\n"
 
         # summary_message = f"{title}\n\nAlle Kontakte:\n{summary_message}\nAlle Daten:\n{all_data}"
         summary_message = f"{title}\n\nAlle Kontakte:\n{summary_message}"
