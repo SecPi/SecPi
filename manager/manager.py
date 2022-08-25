@@ -2,7 +2,6 @@
 
 import sys
 
-
 if(len(sys.argv)>1):
 	PROJECT_PATH = sys.argv[1]
 	sys.path.append(PROJECT_PATH)
