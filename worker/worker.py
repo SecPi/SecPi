@@ -55,7 +55,6 @@ class Worker:
 		self.prepare_data_directory(self.data_directory)
 
 		# Connect to messaging bus.
-		self.channel: pika.channel.Channel = None
 		self.bus = AMQPAdapter(
 			hostname=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
 			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
@@ -80,30 +79,30 @@ class Worker:
 	def connect(self):
 
 		self.bus.connect()
-		self.channel = self.bus.channel
+		channel: "pika.channel.Channel" = self.bus.channel
 
 		# Declare exchanges and queues.
-		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
+		channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
 		# INIT CONFIG MODE
 		if not config.get('pi_id'): # when we have no pi id we only have to define the initial config setup
 			# init config queue
-			result = self.channel.queue_declare(exclusive=True)
+			result = channel.queue_declare(exclusive=True)
 			self.callback_queue = result.method.queue
-			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=self.callback_queue)
-			self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-			self.channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
+			channel.queue_bind(exchange=utils.EXCHANGE, queue=self.callback_queue)
+			channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
+			channel.basic_consume(self.got_init_config, queue=self.callback_queue, no_ack=True)
 		else: # only connect to the other queues when we got the initial configuration, OPERATIVE MODE
 			#declare all the queues
-			self.channel.queue_declare(queue=utils.QUEUE_ACTION+str(config.get('pi_id')))
-			self.channel.queue_declare(queue=utils.QUEUE_CONFIG+str(config.get('pi_id')))
-			self.channel.queue_declare(queue=utils.QUEUE_DATA)
-			self.channel.queue_declare(queue=utils.QUEUE_ALARM)
-			self.channel.queue_declare(queue=utils.QUEUE_LOG)
+			channel.queue_declare(queue=utils.QUEUE_ACTION+str(config.get('pi_id')))
+			channel.queue_declare(queue=utils.QUEUE_CONFIG+str(config.get('pi_id')))
+			channel.queue_declare(queue=utils.QUEUE_DATA)
+			channel.queue_declare(queue=utils.QUEUE_ALARM)
+			channel.queue_declare(queue=utils.QUEUE_LOG)
 
 			#specify the queues we want to listen to, including the callback
-			self.channel.basic_consume(self.got_action, queue=utils.QUEUE_ACTION+str(config.get('pi_id')), no_ack=True)
-			self.channel.basic_consume(self.got_config, queue=utils.QUEUE_CONFIG+str(config.get('pi_id')), no_ack=True)
+			channel.basic_consume(self.got_action, queue=utils.QUEUE_ACTION+str(config.get('pi_id')), no_ack=True)
+			channel.basic_consume(self.got_config, queue=utils.QUEUE_CONFIG+str(config.get('pi_id')), no_ack=True)
 
 	def start(self):
 

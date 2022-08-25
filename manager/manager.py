@@ -73,7 +73,6 @@ class Manager:
 		self.num_of_workers = 0
 
 		# Connect to messaging bus.
-		self.channel: pika.channel.Channel = None
 		self.bus = AMQPAdapter(
 			hostname=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
 			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
@@ -99,37 +98,37 @@ class Manager:
 	def connect(self):
 
 		self.bus.connect()
-		self.channel = self.bus.channel
+		channel: "pika.channel.Channel" = self.bus.channel
 
 		# Declare exchanges and queues.
-		self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
+		channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
 		#define queues: data, alarm and action & config for every pi
-		self.channel.queue_declare(queue=utils.QUEUE_DATA)
-		self.channel.queue_declare(queue=utils.QUEUE_ALARM)
-		self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
-		self.channel.queue_declare(queue=utils.QUEUE_LOG)
-		self.channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
-		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_DATA)
-		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ALARM)
-		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_LOG)
-		self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_INIT_CONFIG)
+		channel.queue_declare(queue=utils.QUEUE_DATA)
+		channel.queue_declare(queue=utils.QUEUE_ALARM)
+		channel.queue_declare(queue=utils.QUEUE_ON_OFF)
+		channel.queue_declare(queue=utils.QUEUE_LOG)
+		channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
+		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ON_OFF)
+		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_DATA)
+		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ALARM)
+		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_LOG)
+		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_INIT_CONFIG)
 		
 		# load workers from db
 		workers = db.session.query(db.objects.Worker).all()
 		for pi in workers:
-			self.channel.queue_declare(queue=utils.QUEUE_ACTION+str(pi.id))
-			self.channel.queue_declare(queue=utils.QUEUE_CONFIG+str(pi.id))
-			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ACTION+str(pi.id))
-			self.channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_CONFIG+str(pi.id))
+			channel.queue_declare(queue=utils.QUEUE_ACTION+str(pi.id))
+			channel.queue_declare(queue=utils.QUEUE_CONFIG+str(pi.id))
+			channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ACTION+str(pi.id))
+			channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_CONFIG+str(pi.id))
 
 		#define callbacks for alarm and data queues
-		self.channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
-		self.channel.basic_consume(self.got_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
-		self.channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
-		self.channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
-		self.channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
+		channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
+		channel.basic_consume(self.got_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
+		channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
+		channel.basic_consume(self.got_log, queue=utils.QUEUE_LOG, no_ack=True)
+		channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
 
 	def start(self):
 
