@@ -165,14 +165,21 @@ class Root(object):
 		return cherrypy.request.lookup
 	
 	def handle_error(self):
-		if('Content-Type' in cherrypy.request.headers and 'application/json' in cherrypy.request.headers['Content-Type'].lower()):
+		if 'Content-Type' in cherrypy.request.headers and 'application/json' in cherrypy.request.headers['Content-Type'].lower():
 			exc_type, exc_value, exc_traceback = sys.exc_info()
+			payload = json.dumps({
+				"status": 'error',
+				"message": f"An exception occurred during processing: {exc_value}",
+				"traceback": traceback.format_exc()
+			})
 			cherrypy.response.status = 200
-			cherrypy.response.body = json.dumps({'status':'error', 'message': "An exception occured during processing! %s"%exc_value, 'traceback':traceback.format_exc() })
+			cherrypy.response.body = payload.encode("utf-8")
 		else:
 			tmpl = self.lookup.get_template("500.mako")
+			payload = tmpl.render(page_title="Error!", traceback=traceback.format_exc())
 			cherrypy.response.status = 500
-			cherrypy.response.body = tmpl.render(page_title="Error!", traceback=traceback.format_exc())
+			cherrypy.response.headers['Content-Type'] = "text/html"
+			cherrypy.response.body = payload.encode("utf-8")
 
 	def error_404(self, status, message, traceback, version):
 		tmpl = self.lookup.get_template("404.mako")
