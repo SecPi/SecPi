@@ -64,7 +64,7 @@ class AMQPAdapter:
 
     @property
     def available(self):
-        return self.connection.is_open
+        return self.connection and self.connection.is_open
 
     def disconnect(self):
         try:
