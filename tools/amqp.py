@@ -8,20 +8,24 @@ import pika
 
 class AMQPAdapter:
     """
-    Connect to AMQP broker and start consuming messages, with reconnect.
+    Connect to AMQP broker and start consuming messages, with reconnect, and buffering.
     """
 
     # TODO: Implement exponential backoff.
     CONVERSATION_DELAY = 4.2
 
-    def __init__(self, hostname: str, port: int, username: str, password: str):
+    def __init__(self, hostname: str, port: int, username: str, password: str, buffer_undelivered=False):
         self.hostname = hostname
         self.port = port
         self.username = username
         self.password = password
+        self.buffer_undelivered = buffer_undelivered
 
         self.connection: pika.BlockingConnection = None
         self.channel: pika.channel.Channel = None
+
+        # List of undelivered messages.
+        self.undelivered_messages = []
 
     def connect(self, retries=None):
         credentials = pika.PlainCredentials(self.username, self.password)
@@ -81,6 +85,38 @@ class AMQPAdapter:
 
     def publish(self, **kwargs):
         """
+        Publish message to AMQP broker.
+
+        - Optionally buffer messages when bus unavailable.
+        - Invokes `publish_threadsafe`.
+        """
+        if self.available:
+            try:
+                logging.debug(f"Publishing message: {kwargs}")
+                self.publish_threadsafe(**kwargs)
+                return True
+            except Exception:
+                logging.exception("Publishing message failed")
+                return False
+        else:
+            logging.error("Not connected to bus, unable to publish message")
+
+            if self.buffer_undelivered:
+                message = kwargs
+
+                if message not in self.undelivered_messages:
+                    logging.debug("Storing message to undelivered queue")
+                    self.undelivered_messages.append(message)
+
+                # Could happen if we have another disconnect while processing
+                # undelivered messages.
+                else:
+                    logging.debug("Message already in undelivered queue")
+
+            return False
+
+    def publish_threadsafe(self, **kwargs):
+        """
         Publish message to bus from multithreaded application.
 
         This is necessary for multithreaded apps since Pika is not thread safe.
@@ -90,8 +126,6 @@ class AMQPAdapter:
         - https://brandthill.com/blog/pika.html
         - https://github.com/pika/pika/blob/0.13.1/examples/basic_consumer_threaded.py
         """
-        assert self.connection.is_open
-        assert self.channel.is_open
         func = functools.partial(self.channel.basic_publish, **kwargs)
         self.connection.add_callback_threadsafe(func)
 
@@ -118,6 +152,35 @@ class AMQPAdapter:
             if not good:
                 if callable(on_error):
                     on_error()
+
+    def process_undelivered_messages(self, delay=None):
+        """
+        Re-submit messages which could not be sent beforehand.
+        """
+        logging.info("Processing undelivered messages")
+
+        if not self.undelivered_messages:
+            logging.info("No undelivered messages found")
+            return
+
+        # When processing undelivered messages, make sure to wait a bit, in order to give the
+        # manager a chance to be ready beforehand. This easily happens when both daemons are
+        # either starting up side by side, or when both regain connection to the AMQP broker
+        # at the same time.
+        if delay is not None:
+            logging.info(f"Delaying undelivered message processing by {delay} seconds")
+            self.sleep(self.CONVERSATION_DELAY)
+
+        for message in self.undelivered_messages.copy():
+            if self.publish(**message):
+                self.undelivered_messages.remove(message)
+            else:
+                logging.warning("Failed processing undelivered message")
+
+        if not self.undelivered_messages:
+            logging.info("Undelivered messages processed completely")
+        else:
+            logging.warning("Undelivered message processing incomplete")
 
     def sleep(self, duration):
         """

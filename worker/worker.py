@@ -36,7 +36,6 @@ class Worker:
 		self.active = False
 		self.data_directory = "/var/tmp/secpi/worker_data"
 		self.zip_directory = "/var/tmp/secpi"
-		self.message_queue = [] # stores messages which couldn't be sent
 
 		logging_config = os.path.join(PROJECT_PATH, 'logging.conf')
 		try:
@@ -62,6 +61,7 @@ class Worker:
 			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
 			username=config.get('rabbitmq')['user'],
 			password=config.get('rabbitmq')['password'],
+			buffer_undelivered=True,
 		)
 		self.connect()
 		
@@ -111,8 +111,10 @@ class Worker:
 			logging.info("Trying to reconnect to AMQP broker")
 			self.bus.disconnect()
 			self.connect()
-			# TODO: Could invoking `clear_message_queue` make problems if the manager replies too fast?
-			self.clear_message_queue()
+
+			# Process undelivered messages.
+			# TODO: Could invoking `process_message_queue` make problems if the manager replies too fast?
+			self.bus.process_undelivered_messages(delay=self.CONVERSATION_DELAY)
 
 		self.bus.subscribe_forever(on_error=on_error)
 
@@ -124,73 +126,15 @@ class Worker:
 
 	# sends a message to the manager
 	def send_msg(self, rk, body, **kwargs):
-		if self.bus.available:
-			try:
-				logging.debug("Sending message to manager")
-				self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
-				return True
-			except Exception as e:
-				logging.exception("Error while sending data to queue:\n%s" % e)
-				return False
-		else:
-			logging.error("Can't send message to manager")
-			message = {"rk":rk, "body": body, "kwargs": kwargs, "json": False}
-			if message not in self.message_queue: # could happen if we have another disconnect when we try to clear the message queue
-				self.message_queue.append(message)
-				logging.info("Added message to message queue")
-			else:
-				logging.debug("Message already in queue")
+		self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
+		return True
 
-			return False
-	
 	# sends a message to the manager
 	def send_json_msg(self, rk, body, **kwargs):
-		if self.bus.available:
-			try:
-				logging.debug("Sending message to manager")
-				properties = pika.BasicProperties(content_type='application/json')
-				self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
-				return True
-			except Exception as e:
-				logging.exception("Error while sending data to queue:\n%s" % e)
-				return False
-		else:
-			logging.error("Can't send message to manager")
-			message = {"rk":rk, "body": body, "kwargs": kwargs, "json": True}
-			if message not in self.message_queue: # could happen if we have another disconnect when we try to clear the message queue
-				self.message_queue.append(message)
-				logging.info("Added message to message queue")
-			else:
-				logging.debug("Message already in queue")
+		properties = pika.BasicProperties(content_type='application/json')
+		self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
+		return True
 
-			return False
-	
-	# Try to resend the messages which couldn't be sent before
-	def clear_message_queue(self):
-		logging.info("Trying to clear message queue")
-
-		if not self.message_queue: # queue is already empty
-			logging.info("Message queue was empty, nothing to clear")
-			return
-
-		for message in self.message_queue:
-			if(message["json"]):
-				if self.send_json_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfully
-					self.message_queue.remove(message)
-				else:
-					logging.info("Message from queue couldn't be sent")
-			else:
-				if self.send_msg(message["rk"], message["body"], **message["kwargs"]): # if message was sent successfully
-					self.message_queue.remove(message)
-				else:
-					logging.info("Message from queue couldn't be sent")
-
-		if not self.message_queue: # message queue is empty
-			logging.info("Message queue cleared")
-		else:
-			logging.error("Message queue couldn't be cleared completely")
-	
-					
 	def post_err(self, msg):
 		logging.error(msg)
 		err = { "msg": msg,
