@@ -70,7 +70,6 @@ class Worker:
 		# to the queues which are specific to the pi id -> hence, call connect again
 		if not config.get('pi_id'):
 			logging.info("No Pi ID found, will request initial configuration...")
-			time.sleep(self.CONVERSATION_DELAY)
 			self.fetch_init_config()
 		else:
 			logging.info("Setting up sensors and actions")
