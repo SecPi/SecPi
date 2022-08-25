@@ -129,7 +129,7 @@ class Worker:
 		if self.bus.available:
 			try:
 				logging.debug("Sending message to manager")
-				self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
+				self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
 				return True
 			except Exception as e:
 				logging.exception("Error while sending data to queue:\n%s" % e)
@@ -151,7 +151,7 @@ class Worker:
 			try:
 				logging.debug("Sending message to manager")
 				properties = pika.BasicProperties(content_type='application/json')
-				self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
+				self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
 				return True
 			except Exception as e:
 				logging.exception("Error while sending data to queue:\n%s" % e)

@@ -1,4 +1,5 @@
 import logging
+import functools
 import time
 import typing as t
 
@@ -77,6 +78,22 @@ class AMQPAdapter:
 
         self.channel = None
         self.connection = None
+
+    def publish(self, **kwargs):
+        """
+        Publish message to bus from multithreaded application.
+
+        This is necessary for multithreaded apps since Pika is not thread safe.
+        We must use `add_callback_threadsafe` anytime we want to perform a network action
+        on a different thread than the main connection thread.
+
+        - https://brandthill.com/blog/pika.html
+        - https://github.com/pika/pika/blob/0.13.1/examples/basic_consumer_threaded.py
+        """
+        assert self.connection.is_open
+        assert self.channel.is_open
+        func = functools.partial(self.channel.basic_publish, **kwargs)
+        self.connection.add_callback_threadsafe(func)
 
     def subscribe_forever(self, on_error: t.Optional[t.Callable] = None):
         good = False

@@ -165,7 +165,7 @@ class Manager:
 	# this method is used to send messages to a queue
 	def send_message(self, rk, body, **kwargs):
 		try:
-			self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
+			self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
 			logging.info("Sending data to %s" % rk)
 			return True
 		except Exception as e:
@@ -176,7 +176,7 @@ class Manager:
 	def send_json_message(self, rk, body, **kwargs):
 		try:
 			properties = pika.BasicProperties(content_type='application/json')
-			self.channel.basic_publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
+			self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
 			logging.info("Sending json data to %s" % rk)
 			return True
 		except Exception as e:
@@ -210,13 +210,13 @@ class Manager:
 		else: # wasn't able to find worker with given ip address(es)
 			logging.error("Wasn't able to find worker for given IP adress(es)")
 			reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id)
-			self.channel.basic_publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body="")
+			self.bus.publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body="")
 			return
 		
 		config = self.prepare_config(pi_id)
 		logging.info("Sending intial config to worker with id %s" % pi_id)
 		reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id, content_type='application/json')
-		self.channel.basic_publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
+		self.bus.publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
 
 	# callback method for when the manager recieves data after a worker executed its actions
 	def got_data(self, ch, method, properties, body):
