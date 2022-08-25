@@ -19,7 +19,6 @@ import os
 import pika
 import shutil
 import threading
-import time
 import uuid
 
 from tools import config
@@ -260,7 +259,7 @@ class Worker:
 			logging.warning("Received empty configuration, will skip processing")
 
 			# After a while, ask for configuration again.
-			time.sleep(self.CONVERSATION_DELAY)
+			self.bus.sleep(self.CONVERSATION_DELAY)
 			self.fetch_init_config()
 			return
 
@@ -273,7 +272,7 @@ class Worker:
 				logging.exception("Wasn't able to read JSON config from manager:\n%s" % e)
 
 				# After a while, ask for configuration again.
-				time.sleep(self.CONVERSATION_DELAY)
+				self.bus.sleep(self.CONVERSATION_DELAY)
 				self.fetch_init_config()
 				return
 		

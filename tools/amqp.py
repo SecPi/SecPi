@@ -20,7 +20,7 @@ class AMQPAdapter:
         self.username = username
         self.password = password
 
-        self.connection: pika.BaseConnection = None
+        self.connection: pika.BlockingConnection = None
         self.channel: pika.channel.Channel = None
 
     def connect(self, retries=None):
@@ -53,7 +53,7 @@ class AMQPAdapter:
                 if retries is not None:
                     retry_label = f"for {retries} more times"
                 logging.exception(f"Connecting to AMQP broker failed temporarily, retrying {retry_label}")
-                time.sleep(self.CONVERSATION_DELAY)
+                self.sleep(self.CONVERSATION_DELAY)
 
             if retries is not None:
                 retries -= 1
@@ -113,8 +113,22 @@ class AMQPAdapter:
                     logging.exception("Lost connection to AMQP broker")
                 good = False
 
-            time.sleep(self.CONVERSATION_DELAY)
+            self.sleep(self.CONVERSATION_DELAY)
 
             if not good:
                 if callable(on_error):
                     on_error()
+
+    def sleep(self, duration):
+        """
+        `pika.BlockingConnection.sleep` is a safer way to sleep than calling `time.sleep()`
+        directly that would keep the adapter from ignoring frames sent from the broker.
+        The connection will "sleep" or block the number of seconds specified in duration
+        in small intervals.
+
+        https://pika.readthedocs.io/en/stable/modules/adapters/blocking.html#pika.adapters.blocking_connection.BlockingConnection.sleep
+        """
+        if self.connection is not None and self.connection.is_open:
+            self.connection.sleep(duration)
+        else:
+            time.sleep(duration)
