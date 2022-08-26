@@ -50,8 +50,8 @@ you should be ready to start hacking.
 
 ### Resources
 
-- `Source code <https://github.com/isarengineering/SecPi>`_
-- `Documentation <https://github.com/SecPi/SecPi/wiki>`_
+- [Source code](https://github.com/isarengineering/SecPi)
+- [Documentation](https://github.com/SecPi/SecPi/wiki)
 
 
 ### License
