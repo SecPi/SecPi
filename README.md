@@ -14,6 +14,24 @@ them work together.
 Please visit the [wiki pages](https://github.com/SecPi/SecPi/wiki) for more information.
 
 
+## Features
+
+The major features are:
+
+- Built-in elements for sensors, actions and notifiers
+- Modular and extensible architecture for adding more elements
+- Support for multiple systems on the network
+- Web interface for desktop and mobile devices
+- Support for SBC Linux platforms like the Raspberry Pi and Banana Pi
+
+
+## Architecture
+
+We recommend to make yourself accustomed to the jargon of SecPi. You should know a bit
+about the Manager, Worker, and Webinterface/WebUI software components, and how they work
+together. A corresponding summary is https://github.com/SecPi/SecPi/wiki/Introduction.
+
+
 ## Project information
 
 ### Contributions
