@@ -79,6 +79,6 @@ Attribution 3.0 License.
 
 [Create an issue]: https://github.com/isarengineering/SecPi/issues/new
 [development sandbox]: https://github.com/isarengineering/SecPi/blob/next/doc/sandbox.rst
-[Martin Liebl]: https://github.com/mliebl
+[Martin Liebl]: https://github.com/MartinLiebl
 [Philip Wölfel]: https://github.com/phwoelfel
 [Yusuke Kamiyamane]: https://github.com/yusukekamiyamane
