@@ -1,5 +1,9 @@
 # SecPi Alarm System
 
+[![Tests](https://img.shields.io/github/workflow/status/isarengineering/SecPi/Tests.svg?style=flat-square&label=Tests)](https://github.com/isarengineering/SecPi/actions/workflows/tests.yml)
+[![Test coverage](https://img.shields.io/codecov/c/gh/isarengineering/SecPi.svg?style=flat-square)](https://codecov.io/gh/isarengineering/SecPi/)
+[![License](https://img.shields.io/github/license/isarengineering/SecPi.svg?style=flat-square)](https://github.com/isarengineering/SecPi/blob/next/LICENSE) 
+
 ## About
 
 SecPi is an open source project which gives people the ability to build their
