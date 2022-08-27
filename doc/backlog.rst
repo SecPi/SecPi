@@ -20,10 +20,15 @@ Iteration 2
 ***********
 - [o] Get rid of ``PROJECT_PATH``
 - [o] Overhaul directory layout. Add setup.py and command line entrypoints.
+- [o] Add software tests and CI configuration
+- [o] Naming things: Replace ``Pi`` or ``pi_id`` with something more meaningful
 - [o] Improve ``install.sh``.
 - [o] Deployment: Add new systemd unit files, with logging to journald.
 - [o] Tutorial I: socat -> TCPListener -> Mailer -> mailserver.py
   while true; do echo hello | socat - tcp:localhost:1234; done
+- [o] Mount ``/var/tmp`` as tmpfs
+- [o] Tests: Replace ``socat`` with Python routine
+- [o] CI: Improve efficiency by implementing ``socat`` and ``amqp-publish`` in Python
 
 
 ***********
@@ -39,3 +44,6 @@ Iteration 3
 - [o] Bring back AMQP SSL connection abilities.
 - [o] Add MQTT SSL connection abilities.
 - [o] Notifications using Apprise or mqttwarn
+- [o] Improve UI
+  https://github.com/SecPi/SecPi/issues/101
+- [o] Add documentation from Wiki
