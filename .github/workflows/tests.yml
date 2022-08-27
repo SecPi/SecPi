@@ -31,18 +31,31 @@ jobs:
     name: Python ${{ matrix.python-version }} on OS ${{ matrix.os }}
     steps:
 
-    - name: Acquire sources
-      uses: actions/checkout@v3
-
-    - name: Install dependencies
+    - name: Install dependencies (Linux)
+      if: runner.os == 'Linux'
       run: |
 
-        # Install `socat`.
+        # Install `socat` and `amqp-publish`.
         sudo apt-get update
         sudo apt-get install --yes socat amqp-tools
 
-        # Display information about `socat`.
+        # Verify installation.
         socat -V
+        amqp-publish --usage
+
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+
+        # Install `socat` and `amqp-publish`.
+        brew install rabbitmq socat
+
+        # Verify installation.
+        socat -V
+        amqp-publish --usage
+
+    - name: Acquire sources
+      uses: actions/checkout@v3
 
     - name: Setup Python
       uses: actions/setup-python@v3
