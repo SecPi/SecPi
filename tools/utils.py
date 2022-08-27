@@ -1,4 +1,6 @@
-
+import logging
+import pathlib
+import sys
 from collections import OrderedDict
 import dateutil.parser
 import pytz
@@ -74,3 +76,18 @@ def json_handler(*args, **kwargs):
     # Adapted from cherrypy/lib/jsontools.py
     value = cherrypy.serving.request._json_inner_handler(*args, **kwargs)
     return json_encoder.iterencode(value)
+
+
+def setup_logging(level=logging.INFO, config_file=None):
+	if config_file:
+		config_file = pathlib.Path(config_file)
+		if not config_file.exists():
+			raise FileNotFoundError(f"Logging configuration file '{config_file}' not found")
+		logging.config.fileConfig(config_file, defaults={'logfilename': 'worker.log'})
+	else:
+		log_format = "%(asctime)-15s [%(name)-34s] %(levelname)-7s: %(message)s"
+		logging.basicConfig(format=log_format, stream=sys.stderr, level=level)
+
+	if logging.getLogger().level == logging.DEBUG:
+		pika_logger = logging.getLogger("pika")
+		pika_logger.setLevel(logging.INFO)

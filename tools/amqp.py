@@ -5,6 +5,8 @@ import typing as t
 
 import pika
 
+logger = logging.getLogger(__name__)
+
 
 class AMQPAdapter:
     """
@@ -47,16 +49,16 @@ class AMQPAdapter:
         connected = False
         while not connected:
             try:
-                logging.info(f"Connecting to AMQP broker at {self.hostname}:{self.port}")
+                logger.info(f"Connecting to AMQP broker at {self.hostname}:{self.port}")
                 self.connection = pika.BlockingConnection(parameters=parameters)
                 self.channel = self.connection.channel()
                 connected = True
-                logging.info("Connecting to AMQP broker successful")
+                logger.info("Connecting to AMQP broker successful")
             except Exception:
                 retry_label = "forever"
                 if retries is not None:
                     retry_label = f"for {retries} more times"
-                logging.exception(f"Connecting to AMQP broker failed temporarily, retrying {retry_label}")
+                logger.exception(f"Connecting to AMQP broker failed temporarily, retrying {retry_label}")
                 self.sleep(self.CONVERSATION_DELAY)
 
             if retries is not None:
@@ -92,26 +94,26 @@ class AMQPAdapter:
         """
         if self.available:
             try:
-                logging.debug(f"Publishing message: {kwargs}")
+                logger.debug(f"Publishing message: {kwargs}")
                 self.publish_threadsafe(**kwargs)
                 return True
             except Exception:
-                logging.exception("Publishing message failed")
+                logger.exception("Publishing message failed")
                 return False
         else:
-            logging.error("Not connected to bus, unable to publish message")
+            logger.error("Not connected to bus, unable to publish message")
 
             if self.buffer_undelivered:
                 message = kwargs
 
                 if message not in self.undelivered_messages:
-                    logging.debug("Storing message to undelivered queue")
+                    logger.debug("Storing message to undelivered queue")
                     self.undelivered_messages.append(message)
 
                 # Could happen if we have another disconnect while processing
                 # undelivered messages.
                 else:
-                    logging.debug("Message already in undelivered queue")
+                    logger.debug("Message already in undelivered queue")
 
             return False
 
@@ -132,7 +134,7 @@ class AMQPAdapter:
     def subscribe_forever(self, on_error: t.Optional[t.Callable] = None):
         good = False
         while True:
-            logging.info("Start consuming AMQP queue")
+            logger.info("Start consuming AMQP queue")
             try:
                 # Blocking call.
                 if self.available:
@@ -144,7 +146,7 @@ class AMQPAdapter:
             # Connection is lost, e.g. RabbitMQ not running.
             except Exception:
                 if good:
-                    logging.exception("Lost connection to AMQP broker")
+                    logger.exception("Lost connection to AMQP broker")
                 good = False
 
             self.sleep(self.CONVERSATION_DELAY)
@@ -157,10 +159,10 @@ class AMQPAdapter:
         """
         Re-submit messages which could not be sent beforehand.
         """
-        logging.info("Processing undelivered messages")
+        logger.info("Processing undelivered messages")
 
         if not self.undelivered_messages:
-            logging.info("No undelivered messages found")
+            logger.info("No undelivered messages found")
             return
 
         # When processing undelivered messages, make sure to wait a bit, in order to give the
@@ -168,19 +170,19 @@ class AMQPAdapter:
         # either starting up side by side, or when both regain connection to the AMQP broker
         # at the same time.
         if delay is not None:
-            logging.info(f"Delaying undelivered message processing by {delay} seconds")
+            logger.info(f"Delaying undelivered message processing by {delay} seconds")
             self.sleep(self.CONVERSATION_DELAY)
 
         for message in self.undelivered_messages.copy():
             if self.publish(**message):
                 self.undelivered_messages.remove(message)
             else:
-                logging.warning("Failed processing undelivered message")
+                logger.warning("Failed processing undelivered message")
 
         if not self.undelivered_messages:
-            logging.info("Undelivered messages processed completely")
+            logger.info("Undelivered messages processed completely")
         else:
-            logging.warning("Undelivered message processing incomplete")
+            logger.warning("Undelivered message processing incomplete")
 
     def sleep(self, duration):
         """
