@@ -1,0 +1,137 @@
+# ==================
+# Project definition
+# ==================
+
+# Derived from https://peps.python.org/pep-0621/
+
+[project]
+name = "secpi"
+version = "2.0.0-dev1"
+description = "SecPi is a software framework for building alarm systems"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {file = "LICENSE.txt"}
+keywords = ["alarm", "monitoring", "observation", "security", "alerting", "notification", "amqp", "mqtt", "modbus"]
+authors = [
+  {name = "Philip Wölfel", email = "is141524@fhstp.ac.at"},
+  {name = "Martin Liebl", email = "is141513@fhstp.ac.at"},
+]
+maintainers = [
+  {name = "Andreas Motl", email = "andreas.motl@cicerops.de"},
+  {name = "Jan Hoffmann", email = "tonke@cicerops.de"}
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+
+  # Baseline modules.
+  "pika<1",
+  "pika-stubs<1",
+  "python-dateutil<3",
+  "SQLAlchemy>=1.0.4,<1.1",
+  "netifaces",
+  "dataclasses; python_version<'3.7'",
+
+  # Web interface modules.
+  "CherryPy<19",
+  "CherryPy-SQLAlchemy<1",
+  "Mako<2",
+
+  # Sensor modules. Support for host pinging.
+  "pyping",
+
+  # Notifier modules. Support for Dropbox, SMS, Slack, Twitter.
+  "dropbox",
+  "python-gsmmodem",
+  "slacker",
+  "tweepy",
+
+  # IsarEngineering modules. Support for VCR, SIP, ADAM.
+  "ffmpy<1",
+  "func-timeout<5",
+  "paho-mqtt<2",
+  "pymodbus<3",
+  "pycall<3",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest<8",
+  "pytest-cov[all]<4",
+]
+develop = [
+  "isort<6",
+  "black<23",
+  "build<1",
+  "poethepoet<1",
+]
+
+[tool.setuptools]
+# Because the layout is not in shape yet, list the packages manually.
+# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html
+# TODO: Use `secpi` as namespace root.
+packages = ["manager", "worker", "webinterface", "tools"]
+
+[project.scripts]
+secpi-worker = "worker.worker:main"
+
+
+[project.urls]
+homepage = "https://github.com/isarengineering/SecPi"
+documentation = "https://github.com/SecPi/SecPi/wiki"
+repository = "https://github.com/isarengineering/SecPi"
+changelog = "https://github.com/isarengineering/SecPi/blob/next/CHANGES.rst"
+
+
+# ==================
+# Tool configuration
+# ==================
+
+# Configuration snippets for Black, isort, pytest, and coverage.
+
+[tool.isort]
+profile = "black"
+src_paths = []
+
+[tool.black]
+line-length = 120
+
+[tool.pytest.ini_options]
+minversion = "2.0"
+addopts = "-rsfEX --capture=tee-sys -p pytester --strict-markers --verbosity=3 --cov --cov-report=term-missing --cov-report=xml"
+log_level = "DEBUG"
+log_cli_level = "DEBUG"
+testpaths = ["testing"]
+xfail_strict = true
+markers = [
+]
+
+[tool.coverage.run]
+branch = false
+parallel = true
+source = ["manager", "worker", "webinterface", "tools"]
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+omit = [
+]
+
+
+
+# ===================
+# Tasks configuration
+# ===================
+
+[tool.poe.tasks]
+# format = ["black", "isort"]
+build = {cmd="python -m build"}

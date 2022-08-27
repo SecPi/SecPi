@@ -16,8 +16,7 @@ then
 		python manager.py $PROJECT_PATH
 	elif [ $1 = "worker" ]
 	then
-		cd worker
-		python worker.py $PROJECT_PATH
+		secpi-worker --app-config=worker/config.json
 	elif [ $1 = "webinterface" ]
 	then
 		cd webinterface

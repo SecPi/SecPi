@@ -1,7 +1,9 @@
 *.pyc
 __pycache__
+*.egg-info
 /.venv*
 /.idea
+/dist
 
 webinterface/logs/*
 worker/*.jpg
