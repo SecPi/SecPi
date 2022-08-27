@@ -29,6 +29,9 @@ class AMQPAdapter:
         # List of undelivered messages.
         self.undelivered_messages = []
 
+        # Whether to continue trying to reconnect.
+        self.do_reconnect = True
+
     def connect(self, retries=None):
         credentials = pika.PlainCredentials(self.username, self.password)
         parameters = pika.ConnectionParameters(
@@ -39,6 +42,7 @@ class AMQPAdapter:
             socket_timeout=10,
             # blocked_connection_timeout=300,
             # ssl=True,
+            # TODO: Bring back SSL feature.
             # ssl_options = {
             # 	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
             # 	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
@@ -132,28 +136,39 @@ class AMQPAdapter:
         self.connection.add_callback_threadsafe(func)
 
     def subscribe_forever(self, on_error: t.Optional[t.Callable] = None):
-        good = False
-        while True:
+        established = False
+        while self.do_reconnect:
             logger.info("Start consuming AMQP queue")
             try:
                 # Blocking call.
                 if self.available:
-                    good = True
+                    established = True
                     self.channel.start_consuming()
                 else:
-                    good = False
+                    established = False
 
             # Connection is lost, e.g. RabbitMQ not running.
             except Exception:
-                if good:
+                if not self.do_reconnect:
+                    return
+                if established:
                     logger.exception("Lost connection to AMQP broker")
-                good = False
+                established = False
 
-            self.sleep(self.CONVERSATION_DELAY)
-
-            if not good:
+            if not established:
                 if callable(on_error):
                     on_error()
+
+    def unsubscribe(self):
+        logger.info("Stop consuming AMQP queue")
+        self.do_reconnect = False
+        self.channel.stop_consuming()
+
+    def shutdown(self):
+        def doit():
+            self.unsubscribe()
+            self.disconnect()
+        self.connection.add_callback_threadsafe(doit)
 
     def process_undelivered_messages(self, delay=None):
         """

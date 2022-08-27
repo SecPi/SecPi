@@ -29,6 +29,7 @@ class Worker:
 		self.actions = []
 		self.sensors = []
 		self.active = False
+		self.do_shutdown = False
 
 		# TODO: Make paths configurable.
 		self.data_directory = "/var/tmp/secpi/worker_data"
@@ -88,6 +89,7 @@ class Worker:
 			worker_identifier = str(self.config.get("pi_id"))
 
 			# Declare all the queues.
+			channel.queue_declare(queue=utils.QUEUE_OPERATIONAL + worker_identifier)
 			channel.queue_declare(queue=utils.QUEUE_ACTION + worker_identifier)
 			channel.queue_declare(queue=utils.QUEUE_CONFIG + worker_identifier)
 			channel.queue_declare(queue=utils.QUEUE_DATA)
@@ -95,12 +97,18 @@ class Worker:
 			channel.queue_declare(queue=utils.QUEUE_LOG)
 
 			# Specify the queues we want to listen to, including the callback.
+			channel.basic_consume(self.got_operational, queue=utils.QUEUE_OPERATIONAL + worker_identifier, no_ack=True)
 			channel.basic_consume(self.got_action, queue=utils.QUEUE_ACTION + worker_identifier, no_ack=True)
 			channel.basic_consume(self.got_config, queue=utils.QUEUE_CONFIG + worker_identifier, no_ack=True)
 
 	def start(self):
 
 		def on_error():
+
+			# Do not reconnect when shutdown has been signaled.
+			if self.do_shutdown:
+				return
+
 			logger.info("Trying to reconnect to AMQP broker")
 			self.bus.disconnect()
 			self.connect()
@@ -111,10 +119,16 @@ class Worker:
 
 		self.bus.subscribe_forever(on_error=on_error)
 
+	def stop(self):
+		self.do_shutdown = True
+		self.bus.shutdown()
+
 	def __del__(self):
 		try:
-			self.bus.disconnect()
-		except AttributeError: #If there is no connection object closing won't work
+			self.stop()
+
+		# If there is no connection object closing won't work.
+		except AttributeError:
 			logger.info("No connection cleanup possible")
 
 	# sends a message to the manager
@@ -163,8 +177,17 @@ class Worker:
 				self.post_err(f"Finding class '{class_name}' failed: {ex}")
 
 	def get_ip_addresses(self):
+	def got_operational(self, ch, method, properties, body):
 		"""
 		Return the configured ip addresses (v4 & v6) as list.
+		AMQP: Receive and process operational messages.
+
+		Currently, this implements the handler for the shutdown signal, which is mostly
+		needed in testing scenarios.
+
+		Usage::
+
+			echo '{"action": "shutdown"}' | amqp-publish --url="amqp://guest:guest@localhost:5672" --routing-key=secpi-op-1
 		"""
 		result = []
 		# Iterate through interfaces: eth0, eth1, wlan0, etc.
@@ -181,8 +204,22 @@ class Worker:
 		return result
 
 	# function which requests the initial config from the manager
+		logging.info(f"Got message on operational channel: {body}")
+		try:
+			message = json.loads(body)
+			action = message.get("action")
+
+			# Invoke shutdown.
+			if action == "shutdown":
+				self.stop()
+		except:
+			logging.exception("Processing operational message failed")
+
 	def fetch_init_config(self):
 		ip_addresses = self.get_ip_addresses()
+		"""
+		AMQP: Request initial configuration from Manager.
+		"""
 		if ip_addresses:
 			self.corr_id = str(uuid.uuid4())
 			logger.info("Sending initial configuration request to manager")
@@ -194,8 +231,10 @@ class Worker:
 			logger.error("Wasn't able to find any IP address(es), please check your network configuration. Exiting.")
 			quit()
 
-	# callback function which is executed when the manager replies with the initial config which is then applied
 	def got_init_config(self, ch, method, properties, body):
+		"""
+		AMQP: Receive initial configuration from Manager.
+		"""
 
 		if len(body) == 0:
 			logger.warning("Received empty configuration, will skip processing")
@@ -397,6 +436,7 @@ class Worker:
 			
 			# send a message to the alarmQ and tell which sensor signaled
 			self.send_json_msg(utils.QUEUE_ALARM, msg)
+
 		else:
 			logger.warning("Not submitting alarm because worker is not active")
 		

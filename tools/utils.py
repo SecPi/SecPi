@@ -24,6 +24,7 @@ QUEUE_ON_OFF="secpi-on_off"
 QUEUE_ACTION="secpi-action-"
 QUEUE_CONFIG="secpi-config-"
 QUEUE_INIT_CONFIG="secpi-init_config"
+QUEUE_OPERATIONAL="secpi-op-"
 
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()
