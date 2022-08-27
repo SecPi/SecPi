@@ -3,7 +3,6 @@ import sys
 import datetime
 import importlib
 import json
-import netifaces
 import os
 import pika
 import shutil
@@ -14,8 +13,7 @@ from tools import utils
 from tools.amqp import AMQPAdapter
 from tools.cli import parse_cmd_args, StartupOptions
 from tools.config import ApplicationConfig
-from tools.utils import setup_logging
-
+from tools.utils import setup_logging, get_ip_addresses
 
 logger = logging.getLogger(__name__)
 
@@ -176,10 +174,8 @@ class Worker:
 			except AttributeError as ex:
 				self.post_err(f"Finding class '{class_name}' failed: {ex}")
 
-	def get_ip_addresses(self):
 	def got_operational(self, ch, method, properties, body):
 		"""
-		Return the configured ip addresses (v4 & v6) as list.
 		AMQP: Receive and process operational messages.
 
 		Currently, this implements the handler for the shutdown signal, which is mostly
@@ -189,21 +185,6 @@ class Worker:
 
 			echo '{"action": "shutdown"}' | amqp-publish --url="amqp://guest:guest@localhost:5672" --routing-key=secpi-op-1
 		"""
-		result = []
-		# Iterate through interfaces: eth0, eth1, wlan0, etc.
-		for interface in netifaces.interfaces():
-			if (interface != "lo") and (netifaces.AF_INET in netifaces.ifaddresses(interface)): # filter loopback, and active ipv4
-				for ip_address in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
-					logger.debug("Adding %s IP to result" % ip_address['addr'])
-					result.append(ip_address['addr'])
-			if (interface != "lo") and (netifaces.AF_INET6 in netifaces.ifaddresses(interface)): # filter loopback, and active ipv6
-				for ipv6_address in netifaces.ifaddresses(interface)[netifaces.AF_INET6]:
-					logger.debug("Adding %s IP to result" % ipv6_address['addr'])
-					result.append(ipv6_address['addr'])
-
-		return result
-
-	# function which requests the initial config from the manager
 		logging.info(f"Got message on operational channel: {body}")
 		try:
 			message = json.loads(body)
@@ -216,10 +197,10 @@ class Worker:
 			logging.exception("Processing operational message failed")
 
 	def fetch_init_config(self):
-		ip_addresses = self.get_ip_addresses()
 		"""
 		AMQP: Request initial configuration from Manager.
 		"""
+		ip_addresses = get_ip_addresses()
 		if ip_addresses:
 			self.corr_id = str(uuid.uuid4())
 			logger.info("Sending initial configuration request to manager")

@@ -3,6 +3,7 @@ import pathlib
 import sys
 from collections import OrderedDict
 import dateutil.parser
+import netifaces
 import pytz
 
 import json
@@ -25,6 +26,10 @@ QUEUE_ACTION="secpi-action-"
 QUEUE_CONFIG="secpi-config-"
 QUEUE_INIT_CONFIG="secpi-init_config"
 QUEUE_OPERATIONAL="secpi-op-"
+
+
+logger = logging.getLogger(__name__)
+
 
 def filter_fields(fields, filter):
 	filtered_data = OrderedDict()
@@ -92,3 +97,22 @@ def setup_logging(level=logging.INFO, config_file=None):
 	if logging.getLogger().level == logging.DEBUG:
 		pika_logger = logging.getLogger("pika")
 		pika_logger.setLevel(logging.INFO)
+
+
+def get_ip_addresses(self):
+	"""
+	Return the configured ip addresses (v4 & v6) as list.
+	"""
+	result = []
+	# Iterate through interfaces: eth0, eth1, wlan0, etc.
+	for interface in netifaces.interfaces():
+		if (interface != "lo") and (netifaces.AF_INET in netifaces.ifaddresses(interface)): # filter loopback, and active ipv4
+			for ip_address in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+				logger.debug("Adding %s IP to result" % ip_address['addr'])
+				result.append(ip_address['addr'])
+		if (interface != "lo") and (netifaces.AF_INET6 in netifaces.ifaddresses(interface)): # filter loopback, and active ipv6
+			for ipv6_address in netifaces.ifaddresses(interface)[netifaces.AF_INET6]:
+				logger.debug("Adding %s IP to result" % ipv6_address['addr'])
+				result.append(ipv6_address['addr'])
+
+	return result
