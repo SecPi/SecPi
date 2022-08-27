@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ] # , macos-latest, windows-latest ]
-        python-version: [ "3.6" ] #  "3.7", "3.8", "3.9", "3.10", "3.11-dev" ]
+        python-version: [ "3.9" ] #  "3.7", "3.8", "3.9", "3.10", "3.11-dev" ]
 
     env:
       OS_TYPE: ${{ matrix.os }}
@@ -34,6 +34,16 @@ jobs:
     - name: Acquire sources
       uses: actions/checkout@v3
 
+    - name: Install dependencies
+      run: |
+
+        # Install `socat`.
+        sudo apt-get update
+        sudo apt-get install --yes socat
+
+        # Display information about `socat`.
+        socat -V
+
     - name: Setup Python
       uses: actions/setup-python@v3
       with:
@@ -44,11 +54,14 @@ jobs:
 
     - name: Setup project
       run: |
-        # Temporary workaround until setuptools implements PEP 660
-        # https://stackoverflow.com/a/71946741
-        touch setup.cfg
-        pip install --editable=.[test]
 
+        # `setuptools 0.64.0` adds support for editable install hooks (PEP 660).
+        # https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400
+        pip install "setuptools>=64" --upgrade
+        
+        # Install package in editable mode.
+        pip install --editable=.[test]
+        
     - name: Run tests
       run: |
         pytest
