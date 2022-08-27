@@ -76,7 +76,7 @@ class Worker:
 		# setup to receive an initial configuration from the manager.
 		if not worker_identifier:
 			# init config queue
-			result = channel.queue_declare(exclusive=True)
+			result = channel.queue_declare(queue="init-callback", exclusive=True)
 			self.callback_queue = result.method.queue
 			channel.queue_bind(exchange=utils.EXCHANGE, queue=self.callback_queue)
 			channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
