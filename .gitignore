@@ -6,6 +6,7 @@ __pycache__
 /dist
 .coverage*
 coverage.xml
+/.vagrant
 
 webinterface/logs/*
 worker/*.jpg
