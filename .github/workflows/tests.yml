@@ -39,7 +39,7 @@ jobs:
 
         # Install `socat`.
         sudo apt-get update
-        sudo apt-get install --yes socat
+        sudo apt-get install --yes socat amqp-tools
 
         # Display information about `socat`.
         socat -V
