@@ -457,8 +457,9 @@ def run_worker(options: StartupOptions):
 
 def main():
 	options = parse_cmd_args()
-	setup_logging(config_file=options.logging_config, level=logging.DEBUG)
+	setup_logging(level=logging.DEBUG, config_file=options.logging_config, log_file=options.log_file)
 	run_worker(options)
+	logging.shutdown()
 
 
 if __name__ == '__main__':

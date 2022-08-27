@@ -1,30 +1,52 @@
+import logging
 import subprocess
-import sys
 import time
 
+from testing.util.service import ServiceWrapper
 
-def test_worker_with_tcplistener(worker_daemon, capsys):
+logger = logging.getLogger(__name__)
 
-    # Submit a sensor signal.
-    command = "echo hello | socat - tcp:localhost:1234"
-    print(subprocess.check_output(command, shell=True), file=sys.stderr)
 
-    # 1. Send shutdown signal to make the service terminate itself.
-    command = """echo '{"action": "shutdown"}' | amqp-publish --routing-key=secpi-op-1"""
-    print(subprocess.check_output(command, shell=True), file=sys.stderr)
-    time.sleep(0.75)
+def test_worker_start_stop():
+    """
+    Start Worker and immediately shut it down again. Verify that the log output matches the expectations.
+    """
 
-    # Read output of STDERR.
-    application_log = capsys.readouterr().err
+    # Start Worker in separate process.
+    service = ServiceWrapper()
+    service.run_worker()
 
-    # Debug output.
-    # print(application_log); assert 1 == 2
+    # Send Worker a shutdown signal.
+    service.shutdown()
 
+    # Read application log.
+    application_log = service.read_log()
+
+    # Verify everything is in place.
     assert "Loading configuration from testing/etc/config-worker.json" in application_log
     assert "Connecting to AMQP broker at localhost:5672" in application_log
     assert "Setting up sensors and actions" in application_log
     assert "Loading class successful: worker.tcpportlistener.TCPPortListener" in application_log
     assert "Start consuming AMQP queue" in application_log
+    assert """Got message on operational channel: b\'{"action": "shutdown"}""" in application_log
+    assert "Stop consuming AMQP queue" in application_log
+    assert "Disconnected from RabbitMQ" in application_log
+
+
+def test_worker_with_tcplistener(worker_service):
+    """
+    Start Worker and submit a sensor trigger using TCP. Verify that the log output matches the expectations.
+    """
+
+    # Submit a sensor signal.
+    command = "echo hello | socat - tcp:localhost:1234"
+    subprocess.check_output(command, shell=True)
+    time.sleep(0.21)
+
+    # Read application log.
+    application_log = worker_service.read_log()
+
+    # Verify everything is in place.
     assert "Sensor with id 1 detected something" in application_log
     assert \
         "Publishing message:" in application_log and \

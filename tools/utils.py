@@ -1,6 +1,11 @@
+import functools
 import logging
+import logging.config
 import pathlib
 import sys
+import tempfile
+import threading
+import time
 from collections import OrderedDict
 import dateutil.parser
 import netifaces
@@ -84,22 +89,28 @@ def json_handler(*args, **kwargs):
     return json_encoder.iterencode(value)
 
 
-def setup_logging(level=logging.INFO, config_file=None):
+def setup_logging(level=logging.INFO, config_file=None, log_file=None):
 	if config_file:
 		config_file = pathlib.Path(config_file)
 		if not config_file.exists():
 			raise FileNotFoundError(f"Logging configuration file '{config_file}' not found")
-		logging.config.fileConfig(config_file, defaults={'logfilename': 'worker.log'})
+		if log_file is None:
+			tmpfile = tempfile.NamedTemporaryFile(delete=False)
+			log_file = tmpfile.name
+		logging.config.fileConfig(config_file, defaults={'logfile': log_file}, disable_existing_loggers=False)
 	else:
 		log_format = "%(asctime)-15s [%(name)-34s] %(levelname)-7s: %(message)s"
 		logging.basicConfig(format=log_format, stream=sys.stderr, level=level)
 
-	if logging.getLogger().level == logging.DEBUG:
-		pika_logger = logging.getLogger("pika")
-		pika_logger.setLevel(logging.INFO)
+	#if logging.getLogger().level == logging.DEBUG:
+	pika_logger = logging.getLogger("pika")
+	pika_logger.setLevel(logging.INFO)
+
+	if config_file and log_file:
+		logger.info(f"Using log file {log_file}")
 
 
-def get_ip_addresses(self):
+def get_ip_addresses():
 	"""
 	Return the configured ip addresses (v4 & v6) as list.
 	"""
@@ -116,3 +127,9 @@ def get_ip_addresses(self):
 				result.append(ipv6_address['addr'])
 
 	return result
+
+
+def sleep_threaded(delay):
+	waiter = threading.Thread(target=functools.partial(time.sleep, delay), args=())
+	waiter.start()
+	waiter.join()
