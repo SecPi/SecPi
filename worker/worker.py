@@ -68,13 +68,10 @@ class Worker:
 		# Declare exchanges and queues.
 		channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type="direct")
 
-		# Get worker identifier from configuration.
-		worker_identifier = str(self.config.get("pi_id"))
-
 		# INIT CONFIG MODE
 		# When the worker does not have an identifier, only define a basic
 		# setup to receive an initial configuration from the manager.
-		if not worker_identifier:
+		if not self.config.get("pi_id"):
 			# init config queue
 			result = channel.queue_declare(queue="init-callback", exclusive=True)
 			self.callback_queue = result.method.queue
@@ -87,6 +84,9 @@ class Worker:
 		# received a valid configuration. In this case, connect all the queues and
 		# callbacks.
 		else:
+			# Get worker identifier from configuration.
+			worker_identifier = str(self.config.get("pi_id"))
+
 			# Declare all the queues.
 			channel.queue_declare(queue=utils.QUEUE_ACTION + worker_identifier)
 			channel.queue_declare(queue=utils.QUEUE_CONFIG + worker_identifier)
