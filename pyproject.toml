@@ -64,7 +64,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
   "pytest<8",
-  "pytest-cov[all]<4",
+  "pytest-cov<4",
 ]
 develop = [
   "isort<6",
@@ -109,7 +109,7 @@ src_paths = ["testing"]
 
 [tool.pytest.ini_options]
 minversion = "2.0"
-addopts = "-rsfEX --capture=tee-sys -p pytester --strict-markers --verbosity=3 --cov --cov-report=term-missing --cov-report=xml"
+addopts = "-rfEX --capture=no -p pytester --strict-markers --verbosity=3 --cov --cov-report=term-missing --cov-report=xml"
 log_level = "DEBUG"
 log_cli_level = "DEBUG"
 testpaths = ["testing"]
