@@ -11,6 +11,6 @@ from testing.util.process import capturing_run
 def worker_daemon(capsys):
     sys.argv = ["secpi-worker", "--app-config=testing/etc/config-worker.json"]
     proc = capturing_run(target=worker.worker.main, args=())
-    time.sleep(1.85)
+    time.sleep(3.85)
     yield proc
     proc.terminate()
