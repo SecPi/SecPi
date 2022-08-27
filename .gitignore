@@ -4,6 +4,8 @@ __pycache__
 /.venv*
 /.idea
 /dist
+.coverage*
+coverage.xml
 
 webinterface/logs/*
 worker/*.jpg
