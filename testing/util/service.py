@@ -49,4 +49,5 @@ class ServiceWrapper:
         self.process.join(timeout=4.2)
 
     def read_log(self):
+        self.logfile.seek(0)
         return self.logfile.read().decode("utf-8")
