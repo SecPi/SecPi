@@ -3,6 +3,7 @@ import time
 
 import pytest
 import worker.worker
+
 from testing.util.process import capturing_run
 
 

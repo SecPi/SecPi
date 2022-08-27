@@ -98,12 +98,16 @@ changelog = "https://github.com/isarengineering/SecPi/blob/next/CHANGES.rst"
 
 # Configuration snippets for Black, isort, pytest, and coverage.
 
-[tool.isort]
-profile = "black"
-src_paths = []
-
 [tool.black]
 line-length = 120
+# include = ["manager", "worker", "webinterface", "tools", "testing"]
+#src = ["testing"]
+include = 'pytest\/.*\.pyi?$|testing\/.*\.pyi?$'
+
+[tool.isort]
+profile = "black"
+# src_paths = ["manager", "worker", "webinterface", "tools", "testing"]
+src_paths = ["testing"]
 
 [tool.pytest.ini_options]
 minversion = "2.0"
@@ -133,5 +137,8 @@ omit = [
 # ===================
 
 [tool.poe.tasks]
-# format = ["black", "isort"]
+format = [
+  {cmd="black ."},
+  {cmd="isort ."},
+]
 build = {cmd="python -m build"}
