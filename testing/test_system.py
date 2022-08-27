@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import time
 
 
 def test_worker_with_tcplistener(worker_daemon, capsys):
@@ -7,6 +8,11 @@ def test_worker_with_tcplistener(worker_daemon, capsys):
     # Submit a sensor signal.
     command = "echo hello | socat - tcp:localhost:1234"
     print(subprocess.check_output(command, shell=True), file=sys.stderr)
+
+    # 1. Send shutdown signal to make the service terminate itself.
+    command = """echo '{"action": "shutdown"}' | amqp-publish --routing-key=secpi-op-1"""
+    print(subprocess.check_output(command, shell=True), file=sys.stderr)
+    time.sleep(0.75)
 
     # Read output of STDERR.
     application_log = capsys.readouterr().err
