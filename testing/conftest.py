@@ -14,7 +14,6 @@ def worker_service():
 
     service = ServiceWrapper()
     service.run_worker()
-    time.sleep(0.85)
 
     yield service
 

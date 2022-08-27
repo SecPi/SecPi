@@ -41,7 +41,7 @@ def test_worker_with_tcplistener(worker_service):
     # Submit a sensor signal.
     command = "echo hello | socat - tcp:localhost:1234"
     subprocess.check_output(command, shell=True)
-    time.sleep(0.21)
+    time.sleep(0.25)
 
     # Read application log.
     application_log = worker_service.read_log()

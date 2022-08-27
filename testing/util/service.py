@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import typing as t
 
 import worker.worker
@@ -34,6 +35,10 @@ class ServiceWrapper:
 
         self.process = multiprocessing.Process(target=worker.worker.main, args=())
         self.process.start()
+
+        # Make sure the service is ready.
+        # TODO: How to improve this? Look for a specific marking in the log output?
+        time.sleep(0.85)
 
     def shutdown(self):
         """
