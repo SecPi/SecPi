@@ -49,7 +49,9 @@ class SecPiTCPHandler(socketserver.BaseRequestHandler):
 		self.request.close()
 		return
 
-class SecPiTCPServer(socketserver.TCPServer, object):
+class SecPiTCPServer(socketserver.TCPServer):
+
+	allow_reuse_address = True
 
 	def __init__(self,sensor, server_address, handler_class=SecPiTCPHandler):
 		super( SecPiTCPServer, self).__init__(server_address, handler_class)
