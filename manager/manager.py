@@ -3,10 +3,13 @@ import hashlib
 import json
 import logging
 import os
+import pathlib
 import sys
+import tempfile
 import threading
 import time
 
+import appdirs
 import pika
 from tools import utils
 from tools.amqp import AMQPAdapter
@@ -31,9 +34,9 @@ class Manager(Service):
 		self.data_timeout = int(config.get("data_timeout", 180))
 		self.holddown_timer = int(config.get("holddown_timer", 210))
 
-		# TODO: Make paths configurable.
-		self.alarm_dir = "/var/tmp/secpi/alarms"
-		self.current_alarm_dir = "/var/tmp/secpi/alarms"
+		# Configure "alarms" directory.
+		self.alarm_dir = config.get("directories", {}).get("alarms", str(self.alarms_directory))
+		logger.info(f"Storing alarms to {self.alarm_dir}")
 
 		logger.info("Initializing manager")
 
@@ -246,9 +249,9 @@ class Manager(Service):
 			self.current_alarm_dir = os.path.join(self.alarm_dir, time.strftime("%Y%m%d_%H%M%S"))
 			try:
 				os.makedirs(self.current_alarm_dir)
-				logger.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+				logger.debug(f"Created directory for alarm: {self.current_alarm_dir}")
 			except OSError:
-				logger.exception("Creating directory for current alarm failed")
+				logger.exception(f"Creating directory for alarm failed: {self.current_alarm_dir}")
 			self.received_data_counter = 0
 
 			# iterate over workers and send "execute"
@@ -406,6 +409,15 @@ class Manager(Service):
 
 		logger.info("Generated config: %s" % conf)
 		return conf
+
+	@property
+	def alarms_directory(self):
+		data_directory = os.path.join(appdirs.user_data_dir("secpi"))
+		if "PYTEST_CURRENT_TEST" in os.environ:
+			data_directory = tempfile.mkdtemp()
+		path = pathlib.Path(data_directory).joinpath("alarms")
+		path.mkdir(parents=True, exist_ok=True)
+		return path
 
 
 def run_manager(options: StartupOptions):

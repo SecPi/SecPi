@@ -25,6 +25,7 @@ def test_manager_start_stop():
 
     # Verify everything is in place.
     assert "Loading configuration from testing/etc/config-manager.json" in application_log
+    assert "Storing alarms to" in application_log
     assert "Connecting to database sqlite:///secpi-database-test.sqlite" in application_log
     assert "Connecting to AMQP broker at localhost:5672" in application_log
     assert "Manager is ready" in application_log
@@ -40,7 +41,7 @@ def test_manager_with_alarm(manager_service):
     """
 
     # Submit an alarm signal.
-    data = {"pi_id": 1, "sensor_id": 1, "message": "Got TCP connection, raising alarm", "datetime": "2022-08-28 02:33:33"}
+    data = {"pi_id": 1, "sensor_id": 1, "message": "Got TCP connection, raising alarm", "datetime": "2022-08-27 02:33:33"}
     payload = json.dumps(data)
     command = f"""echo '{payload}' | amqp-publish --routing-key=secpi-alarm"""
     subprocess.check_output(command, shell=True)
@@ -55,6 +56,6 @@ def test_manager_with_alarm(manager_service):
     assert \
         "Received old alarm:" in application_log and \
         '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in application_log
-    assert "Created directory for alarm: /var/tmp/secpi/alarms" in application_log
+    assert "Created directory for alarm:" in application_log
     assert "Old alarm from 1 on sensor 1: Got TCP connection, raising alarm" in application_log
     assert "Received all data from workers, cancelling the timeout" in application_log

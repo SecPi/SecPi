@@ -7,7 +7,7 @@ SecPi backlog
 Iteration 1
 ***********
 - [x] AMQP: refactoring and deduplication.
-- [/] AMQP: Upgrade to Pika 1.3.0 again.
+- [o] AMQP: Upgrade to Pika 1.3.0 again.
   See https://github.com/isarengineering/SecPi/commit/c21eb4f59f2.
 - [x] AMQP: Resolve flaws with concurrent access.
   https://github.com/isarengineering/SecPi/issues/5

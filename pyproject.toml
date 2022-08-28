@@ -33,6 +33,7 @@ classifiers = [
 dependencies = [
 
   # Baseline modules.
+  "appdirs<2",
   "pika<1",
   "python-dateutil<3",
   "SQLAlchemy>=1.0.4,<1.1",
