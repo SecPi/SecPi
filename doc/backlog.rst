@@ -29,6 +29,10 @@ Iteration 2
 - [o] Mount ``/var/tmp`` as tmpfs
 - [o] Tests: Replace ``socat`` with Python routine
 - [o] CI: Improve efficiency by implementing ``socat`` and ``amqp-publish`` in Python
+- [o] More test scenarios, e.g. uninitialized Worker, Manager+Mailer
+- [o] Remove dead code
+- [o] Namespace refactoring
+- [o] Improve docs; from installation to operation (e.g. ``journalctl``)
 
 
 ***********
@@ -47,3 +51,6 @@ Iteration 3
 - [o] Improve UI
   https://github.com/SecPi/SecPi/issues/101
 - [o] Add documentation from Wiki
+- [o] Turn Wiki into dedicated repository
+  https://github.com/SecPi/SecPi/wiki/
+- [o] Download Wiki images from imgur.

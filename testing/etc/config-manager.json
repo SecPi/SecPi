@@ -6,7 +6,7 @@
 		"password": "guest"
 	},
 	"database": {
-		"uri": "sqlite:///secpi-database-test.sqlite"
+		"uri": "sqlite:///secpi-database-testing.sqlite"
 	},
 	"global": {
 		"adam6000": {

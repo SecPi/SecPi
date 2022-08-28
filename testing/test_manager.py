@@ -26,7 +26,7 @@ def test_manager_start_stop():
     # Verify everything is in place.
     assert "Loading configuration from testing/etc/config-manager.json" in application_log
     assert "Storing alarms to" in application_log
-    assert "Connecting to database sqlite:///secpi-database-test.sqlite" in application_log
+    assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in application_log
     assert "Connecting to AMQP broker at localhost:5672" in application_log
     assert "Manager is ready" in application_log
     assert "Start consuming AMQP queue" in application_log
