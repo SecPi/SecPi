@@ -40,7 +40,7 @@
 	</div>
 
 	<footer>
-		SecPi, a project by Martin Liebl and Philip W&ouml;lfel
+		<a href="https://github.com/isarengineering/SecPi" target="_blank">SecPi, a software framework for building alarm systems with Linux.</a>
         <%! from webinterface.constants import __version__ %>
 		Version ${__version__}.
 	</footer>

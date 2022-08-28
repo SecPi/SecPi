@@ -495,3 +495,12 @@ h1 {
 	font-weight: bold;
 	display: block;
 }
+
+footer a {
+	color: white;
+	text-decoration: underline;
+}
+
+footer a:hover, footer a:visited {
+	color: white;
+}
