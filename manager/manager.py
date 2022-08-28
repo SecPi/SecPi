@@ -16,9 +16,8 @@ from tools.amqp import AMQPAdapter
 from tools.base import Service
 from tools.cli import StartupOptions, parse_cmd_args
 from tools.config import ApplicationConfig
-from tools.db import database as db
 from tools.db.database import DatabaseAdapter
-from tools.db.objects import Action, Alarm, LogEntry, Sensor, Setup, Worker, Zone
+from tools.db.objects import Action, Alarm, LogEntry, Sensor, Setup, Worker, Zone, Notifier
 from tools.utils import load_class, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -62,7 +61,7 @@ class Manager(Service):
 		self.connect()
 
 		# Debug output about setups and state.
-		setups = self.db.session.query(db.objects.Setup).all()
+		setups = self.db.session.query(Setup).all()
 		activate_notifiers = False
 		for setup in setups:
 			logger.debug("name: %s active:%s" % (setup.name, setup.active_state))
@@ -97,7 +96,7 @@ class Manager(Service):
 		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_INIT_CONFIG)
 		
 		# Load workers from database.
-		workers = self.db.session.query(db.objects.Worker).all()
+		workers = self.db.session.query(Worker).all()
 		for pi in workers:
 			channel.queue_declare(queue=utils.QUEUE_ACTION+str(pi.id))
 			channel.queue_declare(queue=utils.QUEUE_CONFIG+str(pi.id))
@@ -171,7 +170,7 @@ class Manager(Service):
 		logger.info("Got config request with following IP addresses: %s" % ip_addresses)
 
 		pi_id = None
-		worker = self.db.session.query(db.objects.Worker).filter(db.objects.Worker.address.in_(ip_addresses)).first()
+		worker = self.db.session.query(Worker).filter(Worker.address.in_(ip_addresses)).first()
 		if worker:
 			pi_id = worker.id
 			logger.debug("Found worker id %s for IP address %s" % (pi_id, worker.address))
@@ -220,7 +219,7 @@ class Manager(Service):
 			logger.info("Activating setup: %s" % msg['setup_name'])
 		
 		
-		workers = self.db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
+		workers = self.db.session.query(Worker).filter(Worker.active_state == True).all()
 		for pi in workers:
 			config = self.prepare_config(pi.id)
 			# check if we are deactivating --> worker should be deactivated!
@@ -263,8 +262,8 @@ class Manager(Service):
 			for pi in workers:
 				self.send_json_message(utils.QUEUE_ACTION+str(pi.id), action_message)
 			
-			worker = self.db.session.query(db.objects.Worker).filter(db.objects.Worker.id == msg['pi_id']).first()
-			sensor = self.db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
+			worker = self.db.session.query(Worker).filter(Worker.id == msg['pi_id']).first()
+			sensor = self.db.session.query(Sensor).filter(Sensor.id == msg['sensor_id']).first()
 			
 			# create log entry for db
 			if not late_arrival:
@@ -298,7 +297,7 @@ class Manager(Service):
 	# initialize the notifiers
 	def setup_notifiers(self):
 		logger.info("Setting up notifiers")
-		notifiers = self.db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
+		notifiers = self.db.session.query(Notifier).filter(Notifier.active_state == True).all()
 		
 		for notifier in notifiers:
 			params = {}
