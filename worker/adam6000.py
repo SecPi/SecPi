@@ -24,10 +24,10 @@ Setup
     pip install paho-mqtt pymodbus[repl] func-timeout
 
     # Start RabbitMQ AMQP broker.
-    docker run -it --rm --publish=5672:5672 rabbitmq:3.9
+    docker run --name=garagemq --rm -it --publish=5672:5672 amplitudo/garagemq
 
     # Start Mosquitto MQTT broker.
-    docker run -it --rm --publish=1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
+    docker run --name=rabbitmq --rm -it --publish=1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
 
 
 Configuration
