@@ -1,12 +1,5 @@
-# web framework
-import cherrypy
-
-
-# our stuff
 from tools.db import objects
-from tools import config
-from base_webpage import BaseWebPage
-
+from ..base_webpage import BaseWebPage
 
 
 class SensorsPage(BaseWebPage):
@@ -20,10 +13,3 @@ class SensorsPage(BaseWebPage):
 		self.fields['worker_id'] = {'name':'Worker ID', 'visible':['list', 'add', 'update'], 'type': 'number'}
 		self.fields['cl'] = {'name':'Class', 'visible':['list', 'add', 'update']}
 		self.fields['module'] = {'name':'Module', 'visible':['list', 'add', 'update']}
-
-
-
-
-
-
-

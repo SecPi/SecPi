@@ -1,6 +1,6 @@
 import pytest
 
-from testing.util.service import ServiceWrapper
+from testing.util.service import ManagerServiceWrapper, WorkerServiceWrapper, WebinterfaceServiceWrapper
 from tools.utils import setup_logging
 
 
@@ -11,8 +11,8 @@ setup_logging()
 def manager_service():
 
     # Run Manager service.
-    service = ServiceWrapper()
-    service.run_manager()
+    service = ManagerServiceWrapper()
+    service.run()
 
     # Hand over to test case.
     yield service
@@ -25,11 +25,25 @@ def manager_service():
 def worker_service():
 
     # Run Worker service.
-    service = ServiceWrapper()
-    service.run_worker()
+    service = WorkerServiceWrapper()
+    service.run()
 
     # Hand over to test case.
     yield service
 
     # Signal the service to shut down.
     service.shutdown(identifier="1")
+
+
+@pytest.fixture(scope="function")
+def webinterface_service():
+
+    # Run Worker service.
+    service = WebinterfaceServiceWrapper()
+    service.run()
+
+    # Hand over to test case.
+    yield service
+
+    # Signal the service to shut down.
+    service.shutdown()

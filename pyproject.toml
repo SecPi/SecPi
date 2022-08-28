@@ -34,6 +34,7 @@ dependencies = [
 
   # Baseline modules.
   "appdirs<2",
+  "requests<3",
   "pika<1",
   "python-dateutil<3",
   "SQLAlchemy>=1.0.4,<1.1",
@@ -83,6 +84,7 @@ packages = ["manager", "worker", "webinterface", "tools"]
 [project.scripts]
 secpi-manager = "manager.manager:main"
 secpi-worker = "worker.worker:main"
+secpi-web = "webinterface.main:main"
 
 
 [project.urls]

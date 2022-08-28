@@ -18,9 +18,8 @@ then
 		secpi-worker --app-config=worker/config.json
 	elif [ $1 = "webinterface" ]
 	then
-		cd webinterface
-		python main.py $PROJECT_PATH
-	elif [ $1 = "setup" ]
+		secpi-web --app-config=webinterface/config.json
+	elif [ $1 = "webinterface" ]
 	then
 		cd tools/db
 		python setup.py $PROJECT_PATH

@@ -162,9 +162,10 @@ class AMQPAdapter:
                     on_error()
 
     def unsubscribe(self):
-        logger.info("Stop consuming AMQP queue")
         self.do_reconnect = False
-        self.channel.stop_consuming()
+        if self.channel:
+            logger.info("Stop consuming AMQP queue")
+            self.channel.stop_consuming()
 
     def shutdown(self):
         self.do_shutdown = True

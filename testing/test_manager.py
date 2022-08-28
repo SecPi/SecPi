@@ -3,7 +3,7 @@ import logging
 import subprocess
 import time
 
-from testing.util.service import ServiceWrapper
+from testing.util.service import ManagerServiceWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +13,11 @@ def test_manager_start_stop():
     Start Manager and immediately shut it down again. Verify that the log output matches the expectations.
     """
 
-    # Start Worker in separate process.
-    service = ServiceWrapper()
-    service.run_manager()
+    # Start service in separate process.
+    service = ManagerServiceWrapper()
+    service.run()
 
-    # Send Worker a shutdown signal.
+    # Send service a shutdown signal.
     service.shutdown(identifier="m")
 
     # Read application log.
@@ -47,7 +47,7 @@ def test_manager_with_alarm(manager_service):
     subprocess.check_output(command, shell=True)
 
     # Give system some time for processing.
-    time.sleep(0.35)
+    time.sleep(0.45)
 
     # Read application log.
     application_log = manager_service.read_log()

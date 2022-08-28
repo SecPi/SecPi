@@ -1,16 +1,8 @@
-# web framework
-import cherrypy
-
-# our stuff
-from tools.db import objects
-from tools import config
-from tools import utils
-
+from tools.db.objects import Setup, Zone
 from .baserelationshippage import BaseRelationshipPage
+
 
 class SetupsZonesPage(BaseRelationshipPage):
 	
 	def __init__(self):
-		super(SetupsZonesPage, self).__init__(objects.Setup, "setup", objects.Zone, "zone")
-
-
+		super(SetupsZonesPage, self).__init__(Setup, "setup", Zone, "zone")

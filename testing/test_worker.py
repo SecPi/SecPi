@@ -2,7 +2,7 @@ import logging
 import subprocess
 import time
 
-from testing.util.service import ServiceWrapper
+from testing.util.service import WorkerServiceWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -12,11 +12,11 @@ def test_worker_start_stop():
     Start Worker and immediately shut it down again. Verify that the log output matches the expectations.
     """
 
-    # Start Worker in separate process.
-    service = ServiceWrapper()
-    service.run_worker()
+    # Start service in separate process.
+    service = WorkerServiceWrapper()
+    service.run()
 
-    # Send Worker a shutdown signal.
+    # Send service a shutdown signal.
     service.shutdown(identifier="1")
 
     # Read application log.
@@ -53,3 +53,7 @@ def test_worker_with_tcplistener(worker_service):
     assert \
         "Publishing message:" in application_log and \
         '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in application_log
+
+    # Remove alarm message from AMQP queue again.
+    command = "amqp-get --queue=secpi-alarm"
+    subprocess.check_output(command, shell=True)

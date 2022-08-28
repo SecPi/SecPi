@@ -1,4 +1,3 @@
-# web framework
 import cherrypy
 from cherrypy.lib.static import serve_file
 
@@ -9,17 +8,11 @@ import datetime
 import math
 import zipfile
 
-
-# our stuff
-from tools.db import objects
-from tools import config
 from tools import utils
 
 
-
 class AlarmDataPage():
-	
-	
+
 	def __init__(self):
 		self.datapath = "/var/tmp/secpi/alarms"
 		self.suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
@@ -83,12 +76,12 @@ class AlarmDataPage():
 					files = [f for f in listdir(fp) if path.isfile(path.join(fp, f))]
 					return {'status': 'success', 'data': files}
 				except Exception as e:
-					return {'status': 'error', 'message': "Couldn't list files! %s"%e}
+					return {'status': 'error', 'message': "Couldn't list files: %s"%e}
 				
 			else:
-				return {'status': 'error', 'message': "Invalid folder name!"}
+				return {'status': 'error', 'message': "Invalid folder name"}
 		else:
-			return {'status': 'error', 'message': "No folder name given!"}
+			return {'status': 'error', 'message': "No folder name given"}
 		
 	
 	@cherrypy.expose
@@ -99,7 +92,7 @@ class AlarmDataPage():
 		else:
 			tmpl = self.lookup.get_template("404.mako")
 			cherrypy.response.status = 404
-			return tmpl.render(page_title="File not found!")
+			return tmpl.render(page_title="File not found")
 	
 
 	@cherrypy.expose
@@ -110,7 +103,7 @@ class AlarmDataPage():
 		else:
 			tmpl = self.lookup.get_template("404.mako")
 			cherrypy.response.status = 404
-			return tmpl.render(page_title="File not found!")
+			return tmpl.render(page_title="File not found")
 
 
 	@cherrypy.expose
@@ -127,10 +120,10 @@ class AlarmDataPage():
 				if(path.exists(fp)):
 					with zipfile.ZipFile(fp, "r") as z:
 						z.extractall(fdir)
-						return {'status': 'success', 'message': "File %s/%s extracted!"%(dir, name)}
+						return {'status': 'success', 'message': "File %s/%s extracted"%(dir, name)}
 				else:
-					return {'status': 'error', 'message': "File doesn't exist!"}
+					return {'status': 'error', 'message': "File doesn't exist"}
 			else:
-				return {'status': 'error', 'message': "Invalid filename!"}
+				return {'status': 'error', 'message': "Invalid filename"}
 		else:
-			return {'status': 'error', 'message': "No filename given!"}
+			return {'status': 'error', 'message': "No filename given"}

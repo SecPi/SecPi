@@ -38,7 +38,7 @@ app.service('FlashService', ['$log', '$timeout',function($log, $timeout){
 	};
 	
 	self.handle_error = function(response){
-		self.flash(('Error with status ' +response.status +' while retrieving data!'), self.TYPE_ERR);
+		self.flash(('Error with status ' +response.status +' while retrieving data'), self.TYPE_ERR);
 	}
 }]);
 
@@ -107,8 +107,8 @@ function DataModalController($uibModalInstance, dataCtrl){
 app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$timeout', '$attrs', 'FlashService', 'HTTPService', function($uibModal, $http, $log, $scope, $timeout, $attrs, FlashService, HTTPService){
 	var self = this;
 	
-	if (!$attrs.baseclass) throw new Error("No class defined!");
-	if (!$attrs.basetitle) throw new Error("No title defined!");
+	if (!$attrs.baseclass) throw new Error("No class defined");
+	if (!$attrs.basetitle) throw new Error("No title defined");
 	
 	self.baseclass = $attrs.baseclass;
 	self.basetitle = $attrs.basetitle;
@@ -257,7 +257,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 		self.orig_data = null;
 		self.edit_data = null;
 		self.edit_id = -1;
-		self.dialog.close("Canceled edit!");
+		self.dialog.close("Canceled edit");
 	};
 	
 	self.showNew = function(){
@@ -296,7 +296,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 			function(data, msg){
 				FlashService.flash(msg, FlashService.TYPE_INFO)
 				self.data.splice(self.delNo, 1);
-				self.dialog.close("Canceled delete!")
+				self.dialog.close("Canceled delete")
 				self.loading = false;
 			},
 			function(){
@@ -308,7 +308,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	self.cancelDelete = function(){
 		self.delID = -1;
 		self.delNo = -1;
-		self.dialog.close("Canceled delete!")
+		self.dialog.close("Canceled delete")
 	}
 	
 	
@@ -443,7 +443,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashService', 'HTTPService', function($http, $log, $interval, $attrs, FlashService, HTTPService){
 	var self = this;
 	
-	if (!$attrs.ackclass) throw new Error("No class defined!");
+	if (!$attrs.ackclass) throw new Error("No class defined");
 	
 	if ($attrs.sort){
 		self.sort = $attrs.sort;
@@ -501,7 +501,7 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 		// refresh list every 5 seconds
 		if(!self.refresh_inter){
 			self.refresh_inter = $interval(self.refresh, 5000);
-			FlashService.flash('Started refresh of messages!', FlashService.TYPE_INFO, 2000);
+			FlashService.flash('Started refresh of messages', FlashService.TYPE_INFO, 2000);
 			//$('#refresh_toggle_'+self.ackclass).prop('value', "stop refresh");
 			self.btnText = "stop refresh";
 		}
@@ -511,7 +511,7 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 		if(self.refresh_inter){
 			$interval.cancel(self.refresh_inter);
 			self.refresh_inter = null;
-			FlashService.flash('Stopped refresh of messages!', FlashService.TYPE_INFO, 2000);
+			FlashService.flash('Stopped refresh of messages', FlashService.TYPE_INFO, 2000);
 			//$('#refresh_toggle_'+self.ackclass).prop('value', "start refresh");
 			self.btnText = "start refresh";
 		}
@@ -582,8 +582,8 @@ function RelationshipModalController($uibModalInstance, rlCtrl){
 app.controller('RelationshipController', ['$log', '$timeout', '$attrs', '$uibModal', 'FlashService', 'HTTPService', function($log, $timeout, $attrs, $uibModal, FlashService, HTTPService){
 	var self = this;
 	
-	if (!$attrs.leftclass) throw new Error("No left class defined!");
-	if (!$attrs.rightclass) throw new Error("No right class defined!");
+	if (!$attrs.leftclass) throw new Error("No left class defined");
+	if (!$attrs.rightclass) throw new Error("No right class defined");
 	
 	self.leftclass = $attrs.leftclass;
 	self.rightclass = $attrs.rightclass;
@@ -700,7 +700,7 @@ app.controller('TestController', ['$http', '$log', '$interval', 'FlashService', 
 	
 	self.push_flash = function(){
 		var rand = Math.floor(Math.random() * 10)%self.ftypes.length;
-		FlashService.flash("Flash message getting very very very long! What should we do now ohnoeeees asdfasdfasdfasdfasdf!!!! "+new Date(), self.ftypes[rand])
+		FlashService.flash("This is a test how to handle an extremely very very very very very very very very long flash message on " + new Date(), self.ftypes[rand])
 	}
 	
 	self.showFlash = function(){

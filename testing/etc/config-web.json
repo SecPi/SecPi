@@ -1,0 +1,11 @@
+{
+	"rabbitmq":{
+		"master_ip": "localhost",
+		"master_port": 5672,
+		"user": "guest",
+		"password": "guest"
+	},
+	"database": {
+		"uri": "sqlite:///secpi-database-testing.sqlite"
+	}
+}

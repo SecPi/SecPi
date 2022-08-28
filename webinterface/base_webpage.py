@@ -84,9 +84,9 @@ class BaseWebPage(object):
 				if(obj):
 					self.db.delete(obj)
 					self.db.commit()
-					return {'status': 'success', 'message': 'Object deleted!'}
+					return {'status': 'success', 'message': 'Object deleted'}
 		
-		return {'status': 'error', 'message': 'ID not found!'}
+		return {'status': 'error', 'message': 'ID not found'}
 		
 		
 	@cherrypy.expose
@@ -108,7 +108,7 @@ class BaseWebPage(object):
 				self.db.commit()
 				return {'status': 'success','message':"Added new object with id %i"%newObj.id}	
 			
-		return {'status': 'error', 'message': 'No data recieved!'}
+		return {'status': 'error', 'message': 'No data recieved'}
 		
 		
 	@cherrypy.expose
@@ -136,12 +136,6 @@ class BaseWebPage(object):
 					return {'status': 'success', 'message': "Updated object with id %i"%obj.id}
 					
 			else:
-				return {'status':'error', 'message': "Invalid ID!" }
+				return {'status':'error', 'message': "Invalid ID" }
 		
-		return {'status': 'error', 'message': 'No data recieved!'}
-
-
-
-
-
-
+		return {'status': 'error', 'message': 'No data received'}

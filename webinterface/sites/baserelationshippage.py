@@ -1,11 +1,5 @@
-# web framework
 import cherrypy
-
-# our stuff
-from tools.db import objects
-from tools import config
 from tools import utils
-
 
 
 class BaseRelationshipPage(object):
@@ -24,7 +18,6 @@ class BaseRelationshipPage(object):
 	def lookup(self):
 		return cherrypy.request.lookup
 
-
 	@cherrypy.expose()
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out(handler=utils.json_handler)
@@ -39,10 +32,10 @@ class BaseRelationshipPage(object):
 				
 				getattr(left, self.rclname+"s").append(right)
 				self.db.commit()
-				return {'status': 'success', 'message': 'Added %s to %s!'%(right.name, left.name)}
+				return {'status': 'success', 'message': 'Added %s to %s'%(right.name, left.name)}
 			
 		
-		return {'status': 'error', 'message': 'Invalid IDs!'}
+		return {'status': 'error', 'message': 'Invalid IDs'}
 
 	@cherrypy.expose()
 	@cherrypy.tools.json_in()
@@ -58,11 +51,10 @@ class BaseRelationshipPage(object):
 				
 				getattr(left, self.rclname+"s").remove(right)
 				self.db.commit()
-				return {'status': 'success', 'message': 'Removed %s from %s!'%(right.name, left.name)}
+				return {'status': 'success', 'message': 'Removed %s from %s'%(right.name, left.name)}
 			
 		
-		return {'status': 'error', 'message': 'Invalid IDs!'}
-
+		return {'status': 'error', 'message': 'Invalid IDs'}
 
 	@cherrypy.expose()
 	@cherrypy.tools.json_in()
@@ -80,7 +72,3 @@ class BaseRelationshipPage(object):
 			data.append({"name": l.name, "id": l.id, self.rclname+"s": rights})
 		
 		return {'status': 'success', 'data': data}
-
-
-
-
