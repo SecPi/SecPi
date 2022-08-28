@@ -43,7 +43,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         echo "Installing required packages"
         set -x
         sudo apt-get update
-        sudo apt-get install --yes python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients
+        sudo apt-get install --yes python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients httpie socat
     SHELL
 
     # Setup SecPi sandbox
