@@ -68,6 +68,7 @@ dependencies = [
 test = [
   "pytest<8",
   "pytest-cov<4",
+  "pyfakefs<5",
 ]
 develop = [
   "isort<6",
