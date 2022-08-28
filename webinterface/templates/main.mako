@@ -41,6 +41,8 @@
 
 	<footer>
 		SecPi, a project by Martin Liebl and Philip W&ouml;lfel
+        <%! from webinterface.constants import __version__ %>
+		Version ${__version__}.
 	</footer>
 
 	<div ng-controller="FlashController as flashCtrl" id="flash_container">

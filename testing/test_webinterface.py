@@ -1,6 +1,7 @@
 import logging
 
 import requests
+from webinterface.constants import __version__
 
 from testing.util.service import WebinterfaceServiceWrapper
 
@@ -74,3 +75,11 @@ def test_webinterface_with_activate(webinterface_service):
     assert "Deactivating setup id=1" in application_log
     assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": false}'}""" in application_log
     assert """Action successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")""" in application_log
+
+
+def test_webinterface_version_in_footer(webinterface_service):
+    """
+    Verify that the current software version is reflected in the website footer.
+    """
+    response = requests.get(url="http://localhost:8000/")
+    assert f"Version {__version__}" in response.text

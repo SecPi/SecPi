@@ -40,6 +40,7 @@ dependencies = [
   "SQLAlchemy>=1.0.4,<1.1",
   "netifaces",
   "dataclasses; python_version<'3.7'",
+  "importlib-metadata; python_version<'3.8'",
 
   # Web interface modules.
   "CherryPy<19",
