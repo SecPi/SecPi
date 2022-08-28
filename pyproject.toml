@@ -7,7 +7,7 @@
 [project]
 name = "secpi"
 version = "2.0.0-dev1"
-description = "SecPi is a software framework for building alarm systems"
+description = "SecPi is a software framework for building alarm systems with Linux"
 readme = "README.md"
 requires-python = ">=3.7"
 license = {file = "LICENSE.txt"}

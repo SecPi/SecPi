@@ -29,10 +29,16 @@ Iteration 2
 - [o] Mount ``/var/tmp`` as tmpfs
 - [o] Tests: Replace ``socat`` with Python routine
 - [o] CI: Improve efficiency by implementing ``socat`` and ``amqp-publish`` in Python
-- [o] More test scenarios, e.g. uninitialized Worker, Manager+Mailer
+- [o] More test scenarios, e.g. uninitialized Worker, Manager+Mailer, Web+Activate
 - [o] Remove dead code
 - [o] Namespace refactoring
 - [o] Improve docs; from installation to operation (e.g. ``journalctl``)
+- [o] Webinterface: Shouldn't it better be implemented using a real web server?
+
+  - Rip out SSL completely?
+  - Rip out ``.htdigest`` authentication completely?
+- [o] Test and use ``speaker.py``
+- [o] Bump JavaScript dependencies and rebundle using Yarn and webpack.
 
 
 ***********
@@ -41,8 +47,9 @@ Iteration 3
 - [o] SQLAlchemy: Resolve flaws with concurrent access.
   https://github.com/isarengineering/SecPi/issues/6
 - [o] Webinterface: Optimize (reduce) number backend requests
-- [o] Webinterface: When many entities are in database (i.e. millions of records),
-  the frontend becomes completely unresponsive.
+- [o] Webinterface: When many entities (Alarm and LogEntry entities) are in the database
+  (i.e. millions of records), the frontend becomes completely unresponsive.
+  Maybe only fetch the last N entities per request?
 - [o] Improve notifications: Discriminate between subject and message.
   Maybe map from subsystem to subject.
 - [o] Bring back AMQP SSL connection abilities.

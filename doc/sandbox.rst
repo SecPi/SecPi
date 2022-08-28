@@ -18,10 +18,10 @@ Choose AMQP broker.
 Start an AMQP broker using Docker::
 
     # GarageMQ
-    docker run --rm -it --publish=5672:5672 amplitudo/garagemq
+    docker run --name=garagemq --rm -it --publish=5672:5672 amplitudo/garagemq
 
     # RabbitMQ
-    docker run --rm -it --publish=5672:5672 rabbitmq:3.9
+    docker run --name=rabbitmq --rm -it --publish=5672:5672 rabbitmq:3.9
 
 
 *****

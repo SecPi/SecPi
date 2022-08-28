@@ -6,14 +6,15 @@
 
 ## About
 
-SecPi is an open source project which gives people the ability to build their
-own inexpensive, expandable and feature-rich alarm system.
+SecPi is a software framework for building alarm systems with Linux.
 
-We tailored the system to run on the Raspberry Pi but other platforms like the
-Banana Pi and any other Linux machines should be capable to run the software too.
+It is an open source project aiming to give people the ability to build their
+own expandable and feature-rich alarm systems. It is possible to connect
+multiple systems via network and have them work together.
 
-With SecPi it is also possible to connect multiple systems via network and have
-them work together.
+The system has originally been conceived to run on the Raspberry Pi, but other
+Linux machines should be capable to run the software too. SecPi is written in 
+Python.
 
 Please visit the [wiki pages](https://github.com/SecPi/SecPi/wiki) for more information.
 
@@ -35,7 +36,8 @@ The major features are:
 
 We recommend to make yourself accustomed to the jargon of SecPi. You should know a bit
 about the Manager, Worker, and Webinterface/WebUI software components, and how they work
-together. A corresponding summary is https://github.com/SecPi/SecPi/wiki/Introduction.
+together. A corresponding summary can be found at 
+https://github.com/SecPi/SecPi/wiki/Introduction.
 
 
 ### Technologies
@@ -67,10 +69,9 @@ you should be ready to start hacking.
 
 ### License
 
-This project is licensed under the GNU General Public License.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
+This project is licensed under the GNU General Public License. You should have 
+received a copy of the license along with this program. If not, see 
+<http://www.gnu.org/licenses/>.
 
 
 ### Acknowledgements
