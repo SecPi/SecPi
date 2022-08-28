@@ -38,7 +38,7 @@ dependencies = [
   "pika<1",
   "python-dateutil<3",
   "SQLAlchemy>=1.0.4,<1.1",
-  "netifaces",
+  "netifaces<1",
   "dataclasses; python_version<'3.7'",
   "importlib-metadata; python_version<'3.8'",
 
@@ -48,13 +48,13 @@ dependencies = [
   "Mako<2",
 
   # Sensor modules. Support for host pinging.
-  "pyping",
+  "pyping<1",
 
   # Notifier modules. Support for Dropbox, SMS, Slack, Twitter.
-  "dropbox",
-  "python-gsmmodem",
-  "slacker",
-  "tweepy",
+  "dropbox<12",
+  "python-gsmmodem<1",
+  "slacker<1",
+  "tweepy<5",
 
   # IsarEngineering modules. Support for VCR, SIP, ADAM.
   "ffmpy<1",
