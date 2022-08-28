@@ -2,10 +2,7 @@
 
 <%def name="active_tab()"><% return "home" %></%def>
 
-<h1>Welcome...</h1>
-... to the SecPi control interface.
-
-<h2>Activate</h2>
+<h2>Activate setup</h2>
 
 <div ng-controller="ActivateController as actCtrl">
 	<div ng-show="actCtrl.active_setups.length == 0">
