@@ -21,21 +21,21 @@ def test_manager_start_stop():
     service.shutdown(identifier="m")
 
     # Read application log.
-    application_log = service.read_log()
+    app_log = service.read_log()
 
     # Verify everything is in place.
-    assert "Loading configuration from testing/etc/config-manager.json" in application_log
-    assert "Storing alarms to" in application_log
-    assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in application_log
-    assert "Connecting to AMQP broker at localhost:5672" in application_log
-    assert "Manager is ready" in application_log
-    assert "Start consuming AMQP queue" in application_log
-    assert """Got message on operational channel: b\'{"action": "shutdown"}""" in application_log
-    assert "Stop consuming AMQP queue" in application_log
-    assert "Disconnected from RabbitMQ" in application_log
 
 
 def test_manager_with_alarm(manager_service):
+    assert "Loading configuration from testing/etc/config-manager.json" in app_log
+    assert "Storing alarms to" in app_log
+    assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
+    assert "Connecting to AMQP broker at localhost:5672" in app_log
+    assert "Manager is ready" in app_log
+    assert "Start consuming AMQP queue" in app_log
+    assert """Got message on operational channel: b\'{"action": "shutdown"}""" in app_log
+    assert "Stop consuming AMQP queue" in app_log
+    assert "Disconnected from RabbitMQ" in app_log
     """
     Start Manager and submit an alarm using AMQP. Verify that the log output matches the expectations.
     """
@@ -50,12 +50,12 @@ def test_manager_with_alarm(manager_service):
     time.sleep(0.45)
 
     # Read application log.
-    application_log = manager_service.read_log()
+    app_log = manager_service.read_log()
 
     # Verify everything is in place.
     assert \
-        "Received old alarm:" in application_log and \
-        '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in application_log
-    assert "Created directory for alarm:" in application_log
-    assert "Old alarm from 1 on sensor 1: Got TCP connection, raising alarm" in application_log
-    assert "Received all data from workers, cancelling the timeout" in application_log
+        "Received old alarm:" in app_log and \
+        '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
+    assert "Created directory for alarm:" in app_log
+    assert "Old alarm from 1 on sensor 1: Got TCP connection, raising alarm" in app_log
+    assert "Received all data from workers, cancelling the timeout" in app_log

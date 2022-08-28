@@ -20,17 +20,17 @@ def test_worker_start_stop():
     service.shutdown(identifier="1")
 
     # Read application log.
-    application_log = service.read_log()
+    app_log = service.read_log()
 
     # Verify everything is in place.
-    assert "Loading configuration from testing/etc/config-worker.json" in application_log
-    assert "Connecting to AMQP broker at localhost:5672" in application_log
-    assert "Setting up sensors and actions" in application_log
-    assert "Loading class successful: worker.tcpportlistener.TCPPortListener" in application_log
-    assert "Start consuming AMQP queue" in application_log
-    assert """Got message on operational channel: b\'{"action": "shutdown"}""" in application_log
-    assert "Stop consuming AMQP queue" in application_log
-    assert "Disconnected from RabbitMQ" in application_log
+    assert "Loading configuration from testing/etc/config-worker.json" in app_log
+    assert "Connecting to AMQP broker at localhost:5672" in app_log
+    assert "Setting up sensors and actions" in app_log
+    assert "Loading class successful: worker.tcpportlistener.TCPPortListener" in app_log
+    assert "Start consuming AMQP queue" in app_log
+    assert """Got message on operational channel: b\'{"action": "shutdown"}""" in app_log
+    assert "Stop consuming AMQP queue" in app_log
+    assert "Disconnected from RabbitMQ" in app_log
 
 
 def test_worker_with_tcplistener(worker_service):
@@ -46,13 +46,13 @@ def test_worker_with_tcplistener(worker_service):
     time.sleep(0.25)
 
     # Read application log.
-    application_log = worker_service.read_log()
+    app_log = worker_service.read_log()
 
     # Verify everything is in place.
-    assert "Sensor with id 1 detected something" in application_log
+    assert "Sensor with id 1 detected something" in app_log
     assert \
-        "Publishing message:" in application_log and \
-        '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in application_log
+        "Publishing message:" in app_log and \
+        '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
 
     # Remove alarm message from AMQP queue again.
     command = "amqp-get --queue=secpi-alarm"

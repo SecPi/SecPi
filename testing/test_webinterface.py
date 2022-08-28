@@ -21,28 +21,28 @@ def test_webinterface_start_stop():
     service.shutdown()
 
     # Read application log.
-    application_log = service.read_log()
+    app_log = service.read_log()
 
     # Verify everything is in place.
-    assert "Configuring Webinterface" in application_log
-    assert "Using template path" in application_log
-    assert "Loading configuration from testing/etc/config-web.json" in application_log
-    assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in application_log
-    assert "Initializing Webserver" in application_log
-    assert "Connecting to AMQP broker at localhost:5672" in application_log
-    assert "Connecting to AMQP broker successful" in application_log
-    assert "AMQP: Connected to broker" in application_log
+    assert "Configuring Webinterface" in app_log
+    assert "Using template path" in app_log
+    assert "Loading configuration from testing/etc/config-web.json" in app_log
+    assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
+    assert "Initializing Webserver" in app_log
+    assert "Connecting to AMQP broker at localhost:5672" in app_log
+    assert "Connecting to AMQP broker successful" in app_log
+    assert "AMQP: Connected to broker" in app_log
 
     # TODO: Occasionally missing?
-    assert "Serving on http://0.0.0.0:8000" in application_log
-    assert "ENGINE Bus STARTED" in application_log
+    assert "Serving on http://0.0.0.0:8000" in app_log
+    assert "ENGINE Bus STARTED" in app_log
 
-    assert "Got message on operational endpoint: {'action': 'shutdown'}" in application_log
-    assert "Shutting down" in application_log
-    assert "Stop consuming AMQP queue" in application_log
-    assert "Disconnected from RabbitMQ at localhost:5672" in application_log
-    assert "ENGINE Bus STOPPING" in application_log
-    assert "ENGINE Bus EXITED" in application_log
+    assert "Got message on operational endpoint: {'action': 'shutdown'}" in app_log
+    assert "Shutting down" in app_log
+    assert "Stop consuming AMQP queue" in app_log
+    assert "Disconnected from RabbitMQ at localhost:5672" in app_log
+    assert "ENGINE Bus STOPPING" in app_log
+    assert "ENGINE Bus EXITED" in app_log
 
 
 def test_webinterface_with_activate(webinterface_service):
@@ -65,16 +65,16 @@ def test_webinterface_with_activate(webinterface_service):
     requests.post(url="http://localhost:8000/setups/delete", json={"id": setup_identifier})
 
     # Read application log.
-    application_log = webinterface_service.read_log()
+    app_log = webinterface_service.read_log()
 
     # Verify everything is in place.
-    assert "Activating setup id=1" in application_log
-    assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": true}'}""" in application_log
-    assert """Action successful: SuccessfulResponse(message="Activating setup 'secpi-testing' succeeded")""" in application_log
+    assert "Activating setup id=1" in app_log
+    assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": true}'}""" in app_log
+    assert """Action successful: SuccessfulResponse(message="Activating setup 'secpi-testing' succeeded")""" in app_log
 
-    assert "Deactivating setup id=1" in application_log
-    assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": false}'}""" in application_log
-    assert """Action successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")""" in application_log
+    assert "Deactivating setup id=1" in app_log
+    assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": false}'}""" in app_log
+    assert """Action successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")""" in app_log
 
 
 def test_webinterface_version_in_footer(webinterface_service):
