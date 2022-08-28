@@ -1,76 +1,53 @@
-#!/usr/bin/env python
-
-import sys
-
-if(len(sys.argv)>1):
-	PROJECT_PATH = sys.argv[1]
-	sys.path.append(PROJECT_PATH)
-else:
-	print("Error initializing Manager, no path given!");
-	sys.exit(1)
-
 import datetime
 import hashlib
-import importlib
 import json
 import logging
-import logging.config
 import os
-import pika
+import sys
 import threading
 import time
 
-from tools import config
+import pika
 from tools import utils
 from tools.amqp import AMQPAdapter
+from tools.base import Service
+from tools.cli import StartupOptions, parse_cmd_args
+from tools.config import ApplicationConfig
 from tools.db import database as db
-from sqlalchemy import text
+from tools.db.database import DatabaseAdapter
+from tools.db.objects import Action, Alarm, LogEntry, Sensor, Setup, Worker, Zone
+from tools.utils import load_class, setup_logging
+
+logger = logging.getLogger(__name__)
 
 
-class Manager:
+class Manager(Service):
 
-	def __init__(self):
-		logging_conf = os.path.join(PROJECT_PATH, 'logging.conf')
-		print(f"Loading config file for logging from {logging_conf}", file=sys.stderr)
-		try: #TODO: this should be nicer...
-			logging.config.fileConfig(logging_conf, defaults={'logfilename': 'manager.log'})
-		except Exception as e:
-			print(f"Error while trying to load config file for logging from {logging_conf}: {e}", file=sys.stderr)
-
-		logging.info("Initializing manager")
-
-		try:
-			config.load(PROJECT_PATH +"/manager/config.json")
-		except ValueError: # Config file can't be loaded, e.g. no valid JSON
-			logging.exception("Wasn't able to load config file, exiting...")
-			quit()
-
-		try:
-			db.connect(PROJECT_PATH)
-			db.setup()
-		except:
-			logging.exception("Couldn't connect to database!")
-			quit()
-		
+	def __init__(self, config: ApplicationConfig):
+		self.config = config
 		self.notifiers = []
-		self.received_data_counter = 0
+
+		self.database_uri = config.get("database", {}).get("uri")
+		self.data_timeout = int(config.get("data_timeout", 180))
+		self.holddown_timer = int(config.get("holddown_timer", 210))
+
+		# TODO: Make paths configurable.
 		self.alarm_dir = "/var/tmp/secpi/alarms"
 		self.current_alarm_dir = "/var/tmp/secpi/alarms"
-		
-		try:
-			self.data_timeout = int(config.get("data_timeout"))
-		except Exception: # if not specified in the config file we set a default value
-			self.data_timeout = 180
-			logging.debug("Couldn't find or use config parameter for data timeout in manager config file. Setting default value: %d" % self.data_timeout)
-		
-		try:
-			self.holddown_timer = int(config.get("holddown_timer"))
-		except Exception: # if not specified in the config file we set a default value
-			self.holddown_timer = 210
-			logging.debug("Couldn't find or use config parameter for holddown timer in manager config file. Setting default value: %d" % self.holddown_timer)
+
+		logger.info("Initializing manager")
 
 		self.holddown_state = False
 		self.num_of_workers = 0
+		self.received_data_counter = 0
+
+		# Connect to database.
+		self.db = DatabaseAdapter(uri=self.database_uri)
+		try:
+			self.db.connect()
+		except:
+			logger.exception(f"Connecting to database at '{self.database_uri}' failed")
+			sys.exit(1)
 
 		# Connect to messaging bus.
 		self.bus = AMQPAdapter(
@@ -81,19 +58,19 @@ class Manager:
 		)
 		self.connect()
 
-		# debug output, setups & state
-		setups = db.session.query(db.objects.Setup).all()
-		rebooted = False
+		# Debug output about setups and state.
+		setups = self.db.session.query(db.objects.Setup).all()
+		activate_notifiers = False
 		for setup in setups:
-			logging.debug("name: %s active:%s" % (setup.name, setup.active_state))
+			logger.debug("name: %s active:%s" % (setup.name, setup.active_state))
 			if setup.active_state:
-				rebooted = True
+				activate_notifiers = True
 
-		if rebooted:
+		if activate_notifiers:
 			self.setup_notifiers()
-			self.num_of_workers = db.session.query(db.objects.Worker).join((db.objects.Action, db.objects.Worker.actions)).filter(db.objects.Worker.active_state == True).filter(db.objects.Action.active_state == True).count()
+			self.num_of_workers = self.db.session.query(Worker).join((Action, Worker.actions)).filter(Worker.active_state == True).filter(Action.active_state == True).count()
 
-		logging.info("Setup done!")
+		logger.info("Manager is ready")
 
 	def connect(self):
 
@@ -103,7 +80,8 @@ class Manager:
 		# Declare exchanges and queues.
 		channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type='direct')
 
-		#define queues: data, alarm and action & config for every pi
+		# Define queues: data, alarm and action & config for every pi.
+		channel.queue_declare(queue=utils.QUEUE_OPERATIONAL + "m")
 		channel.queue_declare(queue=utils.QUEUE_DATA)
 		channel.queue_declare(queue=utils.QUEUE_ALARM)
 		channel.queue_declare(queue=utils.QUEUE_ON_OFF)
@@ -115,15 +93,16 @@ class Manager:
 		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_LOG)
 		channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_INIT_CONFIG)
 		
-		# load workers from db
-		workers = db.session.query(db.objects.Worker).all()
+		# Load workers from database.
+		workers = self.db.session.query(db.objects.Worker).all()
 		for pi in workers:
 			channel.queue_declare(queue=utils.QUEUE_ACTION+str(pi.id))
 			channel.queue_declare(queue=utils.QUEUE_CONFIG+str(pi.id))
 			channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_ACTION+str(pi.id))
 			channel.queue_bind(exchange=utils.EXCHANGE, queue=utils.QUEUE_CONFIG+str(pi.id))
 
-		#define callbacks for alarm and data queues
+		# Define callbacks for alarm and data queues.
+		channel.basic_consume(self.got_operational, queue=utils.QUEUE_OPERATIONAL + "m", no_ack=True)
 		channel.basic_consume(self.got_alarm, queue=utils.QUEUE_ALARM, no_ack=True)
 		channel.basic_consume(self.got_on_off, queue=utils.QUEUE_ON_OFF, no_ack=True)
 		channel.basic_consume(self.got_data, queue=utils.QUEUE_DATA, no_ack=True)
@@ -131,43 +110,31 @@ class Manager:
 		channel.basic_consume(self.got_config_request, queue=utils.QUEUE_INIT_CONFIG, no_ack=True)
 
 	def start(self):
+		self.bus.subscribe_forever(on_error=self.on_bus_error)
 
-		def on_error():
-			logging.info("Trying to reconnect to AMQP broker")
-			self.bus.disconnect()
-			self.connect()
+	def on_bus_error(self):
+		logger.info("Trying to reconnect to AMQP broker")
+		self.bus.disconnect()
+		self.connect()
 
-		self.bus.subscribe_forever(on_error=on_error)
-
-	def __del__(self):
-		try:
-			self.bus.disconnect()
-		except AttributeError: #If there is no connection object closing won't work
-			logging.info("No connection cleanup possible")
-
-	
-	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
-	def class_for_name(self, module_name, class_name):
-		try:
-			# load the module, will raise ImportError if module cannot be loaded
-			m = importlib.import_module(module_name)
-			# get the class, will raise AttributeError if class cannot be found
-			c = getattr(m, class_name)
-			return c
-		except ImportError as ie:
-			self.log_err("Couldn't import module %s: %s"%(module_name, ie))
-		except AttributeError as ae:
-			self.log_err("Couldn't find class %s: %s"%(class_name, ae))
-	
+	def load_plugin(self, module_name, class_name):
+		"""
+		Load plugin module.
+		"""
+		module_candidates = [f"manager.{module_name}", module_name]
+		component = load_class(module_candidates, class_name)
+		if component is None:
+			self.log_err(f"Unable to import class {class_name} from modules '{module_candidates}'")
+		return component
 
 	# this method is used to send messages to a queue
 	def send_message(self, rk, body, **kwargs):
 		try:
 			self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
-			logging.info("Sending data to %s" % rk)
+			logger.info("Sending data to %s" % rk)
 			return True
 		except Exception as e:
-			logging.exception("Error while sending data to queue:\n%s" % e)
+			logger.exception("Error while sending data to queue:\n%s" % e)
 			return False
 	
 	# this method is used to send json messages to a queue
@@ -175,67 +142,69 @@ class Manager:
 		try:
 			properties = pika.BasicProperties(content_type='application/json')
 			self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs)
-			logging.info("Sending json data to %s" % rk)
+			logger.info("Sending json data to %s" % rk)
 			return True
 		except Exception as e:
-			logging.exception("Error while sending json data to queue:\n%s" % e)
+			logger.exception("Error while sending json data to queue:\n%s" % e)
 			return False
 	
 	# helper method to create error log entry
 	def log_err(self, msg):
-		logging.exception(msg)
-		log_entry = db.objects.LogEntry(level=utils.LEVEL_ERR, message=str(msg), sender="Manager")
-		db.session.add(log_entry)
-		db.session.commit()
+		logger.exception(msg)
+		log_entry = LogEntry(level=utils.LEVEL_ERR, message=str(msg), sender="Manager")
+		self.db.session.add(log_entry)
+		self.db.session.commit()
 	
 	# helper method to create error log entry
 	def log_msg(self, msg, level):
-		logging.info(msg)
-		log_entry = db.objects.LogEntry(level=level, message=str(msg), sender="Manager")
-		db.session.add(log_entry)
-		db.session.commit()
+		logger.info(msg)
+		log_entry = LogEntry(level=level, message=str(msg), sender="Manager")
+		self.db.session.add(log_entry)
+		self.db.session.commit()
 	
 	
 	def got_config_request(self, ch, method, properties, body):
 		ip_addresses = json.loads(body)
-		logging.info("Got config request with following IP addresses: %s" % ip_addresses)
+		logger.info("Got config request with following IP addresses: %s" % ip_addresses)
 
 		pi_id = None
-		worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.address.in_(ip_addresses)).first()
+		worker = self.db.session.query(db.objects.Worker).filter(db.objects.Worker.address.in_(ip_addresses)).first()
 		if worker:
 			pi_id = worker.id
-			logging.debug("Found worker id %s for IP address %s" % (pi_id, worker.address))
+			logger.debug("Found worker id %s for IP address %s" % (pi_id, worker.address))
 		else: # wasn't able to find worker with given ip address(es)
-			logging.error("Wasn't able to find worker for given IP adress(es)")
+			logger.error("Wasn't able to find worker for given IP adress(es)")
 			reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id)
 			self.bus.publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body="")
 			return
 		
 		config = self.prepare_config(pi_id)
-		logging.info("Sending intial config to worker with id %s" % pi_id)
+		logger.info("Sending intial config to worker with id %s" % pi_id)
 		reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id, content_type='application/json')
 		self.bus.publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
 
 	# callback method for when the manager recieves data after a worker executed its actions
 	def got_data(self, ch, method, properties, body):
-		logging.info("Got data")
+		logger.info("Got data")
 		newFile_bytes = bytearray(body)
 		if newFile_bytes: #only write data when body is not empty
+			filename = hashlib.md5(newFile_bytes).hexdigest() + ".zip"
+			filepath = os.path.join(self.current_alarm_dir, filename)
 			try:
-				with open("%s/%s.zip" % (self.current_alarm_dir, hashlib.md5(newFile_bytes).hexdigest()), "wb") as newFile:
+				with open(filepath, "wb") as newFile:
 					newFile.write(newFile_bytes)
-					logging.info("Data written")
+					logger.info("Data written")
 			except IOError as ie: # File can't be written, e.g. permissions wrong, directory doesn't exist
-				logging.exception("Wasn't able to write received data: %s" % ie)
+				logger.exception("Wasn't able to write received data: %s" % ie)
 		self.received_data_counter += 1
 
 	# callback for log messages
 	def got_log(self, ch, method, properties, body):
 		log = json.loads(body)
-		logging.debug("Got log message from %s: %s"%(log['sender'], log['msg']))
-		log_entry = db.objects.LogEntry(level=log['level'], message=str(log['msg']), sender=log['sender'], logtime=utils.str_to_value(log['datetime']))
-		db.session.add(log_entry)
-		db.session.commit()
+		logger.debug("Got log message from %s: %s"%(log['sender'], log['msg']))
+		log_entry = LogEntry(level=log['level'], message=str(log['msg']), sender=log['sender'], logtime=utils.str_to_value(log['datetime']))
+		self.db.session.add(log_entry)
+		self.db.session.commit()
 
 	# callback for when a setup gets activated/deactivated
 	def got_on_off(self, ch, method, properties, body):
@@ -245,19 +214,19 @@ class Manager:
 		
 		if(msg['active_state'] == True):
 			self.setup_notifiers()
-			logging.info("Activating setup: %s" % msg['setup_name'])
+			logger.info("Activating setup: %s" % msg['setup_name'])
 		
 		
-		workers = db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
+		workers = self.db.session.query(db.objects.Worker).filter(db.objects.Worker.active_state == True).all()
 		for pi in workers:
 			config = self.prepare_config(pi.id)
 			# check if we are deactivating --> worker should be deactivated!
 			if(msg['active_state'] == False):
 				config["active"] = False
-				logging.info("Deactivating setup: %s" % msg['setup_name'])
+				logger.info("Deactivating setup: %s" % msg['setup_name'])
 				
 			self.send_json_message(utils.QUEUE_CONFIG+str(pi.id), config)
-			logging.info("Sent config to worker %s"%pi.name)
+			logger.info("Sent config to worker %s"%pi.name)
 
 	# callback method which gets called when a worker raises an alarm
 	def got_alarm(self, ch, method, properties, body):
@@ -265,25 +234,25 @@ class Manager:
 		late_arrival = utils.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
 
 		if not late_arrival:
-			logging.info("Received alarm: %s"%body)
+			logger.info("Received alarm: %s"%body)
 		else:
-			logging.info("Received old alarm: %s"%body)
+			logger.info("Received old alarm: %s"%body)
 
 		if not self.holddown_state:
 			# put into holddown
 			holddown_thread = threading.Thread(name="thread-holddown", target=self.holddown)
 			holddown_thread.start()
 
-			self.current_alarm_dir = "%s/%s" % (self.alarm_dir, time.strftime("/%Y%m%d_%H%M%S"))
+			self.current_alarm_dir = os.path.join(self.alarm_dir, time.strftime("%Y%m%d_%H%M%S"))
 			try:
 				os.makedirs(self.current_alarm_dir)
-				logging.debug("Created directory for alarm: %s" % self.current_alarm_dir)
-			except OSError as oe: # directory can't be created, e.g. permissions wrong, or already exists
-				logging.exception("Wasn't able to create directory for current alarm: %s" % oe)
+				logger.debug("Created directory for alarm: %s" % self.current_alarm_dir)
+			except OSError:
+				logger.exception("Creating directory for current alarm failed")
 			self.received_data_counter = 0
 
 			# iterate over workers and send "execute"
-			workers = db.session.query(db.objects.Worker).join((db.objects.Action, db.objects.Worker.actions)).filter(db.objects.Worker.active_state == True).filter(db.objects.Action.active_state == True).all()
+			workers = self.db.session.query(Worker).join((Action, Worker.actions)).filter(Worker.active_state == True).filter(Action.active_state == True).all()
 			self.num_of_workers = len(workers)
 			action_message = { "msg": "execute",
 								"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -291,19 +260,19 @@ class Manager:
 			for pi in workers:
 				self.send_json_message(utils.QUEUE_ACTION+str(pi.id), action_message)
 			
-			worker = db.session.query(db.objects.Worker).filter(db.objects.Worker.id == msg['pi_id']).first()
-			sensor = db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
+			worker = self.db.session.query(db.objects.Worker).filter(db.objects.Worker.id == msg['pi_id']).first()
+			sensor = self.db.session.query(db.objects.Sensor).filter(db.objects.Sensor.id == msg['sensor_id']).first()
 			
 			# create log entry for db
 			if not late_arrival:
-				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
+				al = Alarm(sensor_id=msg['sensor_id'], message=msg['message'])
 				self.log_msg("New alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
 			else:
-				al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Late Alarm: %s" %msg['message'])
+				al = Alarm(sensor_id=msg['sensor_id'], message="Late Alarm: %s" %msg['message'])
 				self.log_msg("Old alarm from %s on sensor %s: %s"%( (worker.name if worker else msg['pi_id']) , (sensor.name if sensor else msg['sensor_id']) , msg['message']), utils.LEVEL_WARN)
 			
-			db.session.add(al)
-			db.session.commit()
+			self.db.session.add(al)
+			self.db.session.commit()
 			
 			# TODO: add information about late arrival of alarm
 			notif_info = {
@@ -319,32 +288,33 @@ class Manager:
 			timeout_thread.start()
 		else: # --> holddown state
 			self.log_msg("Alarm during holddown state from %s on sensor %s: %s"%(msg['pi_id'], msg['sensor_id'], msg['message']), utils.LEVEL_INFO)
-			al = db.objects.Alarm(sensor_id=msg['sensor_id'], message="Alarm during holddown state: %s" % msg['message'])
-			db.session.add(al)
-			db.session.commit()
+			al = Alarm(sensor_id=msg['sensor_id'], message="Alarm during holddown state: %s" % msg['message'])
+			self.db.session.add(al)
+			self.db.session.commit()
 
 	# initialize the notifiers
 	def setup_notifiers(self):
-		notifiers = db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
+		logger.info("Setting up notifiers")
+		notifiers = self.db.session.query(db.objects.Notifier).filter(db.objects.Notifier.active_state == True).all()
 		
 		for notifier in notifiers:
 			params = {}
 			for p in notifier.params:
 				params[p.key] = p.value
 				
-			n = self.class_for_name(notifier.module, notifier.cl)
+			n = self.load_plugin(notifier.module, notifier.cl)
 			noti = n(notifier.id, params)
 			self.notifiers.append(noti)
-			logging.info("Set up notifier %s" % notifier.cl)
+			logger.info("Set up notifier %s" % notifier.cl)
 
 	# timeout thread which sends the received data from workers
 	def notify(self, info):
 		for i in range(0, self.data_timeout):
 			if self.received_data_counter < self.num_of_workers: #not all data here yet
-				logging.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
+				logger.debug("Waiting for data from workers: data counter: %d, #workers: %d" % (self.received_data_counter, self.num_of_workers))
 				time.sleep(1)
 			else:
-				logging.debug("Received all data from workers, canceling the timeout")
+				logger.debug("Received all data from workers, cancelling the timeout")
 				break
 		# continue code execution
 		if self.received_data_counter < self.num_of_workers:
@@ -359,10 +329,15 @@ class Manager:
 			
 	# go into holddown state, while in this state subsequent alarms are interpreted as one alarm
 	def holddown(self):
+
+		# Skip holddown in testing mode.
+		if "PYTEST_CURRENT_TEST" in os.environ:
+			return
+
 		self.holddown_state = True
 		for i in range(0, self.holddown_timer):
 			time.sleep(1)
-		logging.debug("Holddown is over")
+		logger.debug("Holddown is over")
 		self.holddown_state = False
 
 	# cleanup the notifiers
@@ -373,20 +348,20 @@ class Manager:
 		self.notifiers = [] 
 
 	def prepare_config(self, pi_id):
-		logging.info("Preparing config for worker with id %s" % pi_id)
+		logger.info("Preparing config for worker with id %s" % pi_id)
 		conf = {
 			"pi_id": pi_id,
 			"active": False, # default to false, will be overriden if should be true
 		}
 		
-		sensors = db.session.query(db.objects.Sensor).join(db.objects.Zone).join((db.objects.Setup, db.objects.Zone.setups)).filter(db.objects.Setup.active_state == True).filter(db.objects.Sensor.worker_id == pi_id).all()
+		sensors = self.db.session.query(Sensor).join(Zone).join((Setup, Zone.setups)).filter(Setup.active_state == True).filter(Sensor.worker_id == pi_id).all()
 		
 		# if we have sensors we are active
 		if(len(sensors)>0):
 			conf['active'] = True
 		
 		# A configuration setting container which will be available on all workers.
-		conf['global'] = config.get('global')
+		conf['global'] = self.config.get('global')
 
 		conf_sensors = []
 		for sen in sensors:
@@ -406,7 +381,7 @@ class Manager:
 		
 		conf['sensors'] = conf_sensors
 		
-		actions = db.session.query(db.objects.Action).join((db.objects.Worker, db.objects.Action.workers)).filter(db.objects.Worker.id == pi_id).filter(db.objects.Action.active_state == True).all()
+		actions = self.db.session.query(Action).join((Worker, Action.workers)).filter(Worker.id == pi_id).filter(Action.active_state == True).all()
 		# if we have actions we are also active
 		if(len(actions)>0):
 			conf['active'] = True
@@ -429,20 +404,38 @@ class Manager:
 		
 		conf['actions'] = conf_actions
 
-		logging.info("Generated config: %s" % conf)
+		logger.info("Generated config: %s" % conf)
 		return conf
 
 
-if __name__ == '__main__':
+def run_manager(options: StartupOptions):
+
 	try:
-		mg = Manager()
+		app_config = ApplicationConfig(filepath=options.app_config)
+	except:
+		logger.exception("Loading configuration failed")
+		sys.exit(1)
+
+	mg = None
+	try:
+		mg = Manager(config=app_config)
 		mg.start()
 	except KeyboardInterrupt:
-		logging.info("Shutting down manager!")
-		# TODO: cleanup?
-		if(mg):
+		logger.info("Shutting down manager")
+		if mg:
 			mg.cleanup_notifiers()
-		try:
-			sys.exit(0)
-		except SystemExit:
-			os._exit(0)
+
+		# Help a bit to completely terminate the AMQP connection.
+		# TODO: Probably the root cause for this is elsewhere. Investigate.
+		sys.exit(130)
+
+
+def main():
+	options = parse_cmd_args()
+	setup_logging(level=logging.DEBUG, config_file=options.logging_config, log_file=options.log_file)
+	run_manager(options)
+	logging.shutdown()
+
+
+if __name__ == '__main__':
+	main()

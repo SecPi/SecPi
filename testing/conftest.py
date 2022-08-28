@@ -1,5 +1,3 @@
-import time
-
 import pytest
 
 from testing.util.service import ServiceWrapper
@@ -10,17 +8,28 @@ setup_logging()
 
 
 @pytest.fixture(scope="function")
+def manager_service():
+
+    # Run Manager service.
+    service = ServiceWrapper()
+    service.run_manager()
+
+    # Hand over to test case.
+    yield service
+
+    # Signal the service to shut down.
+    service.shutdown(identifier="m")
+
+
+@pytest.fixture(scope="function")
 def worker_service():
 
+    # Run Worker service.
     service = ServiceWrapper()
     service.run_worker()
 
+    # Hand over to test case.
     yield service
 
-    # 1. Send shutdown signal to make the service terminate itself.
-    service.shutdown()
-
-    # 2. Terminate service process.
-    # In this case, there will be no code coverage information. Because the process did
-    # not shut down cleanly, it failed to record it.
-    service.process.terminate()
+    # Signal the service to shut down.
+    service.shutdown(identifier="1")

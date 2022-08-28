@@ -1,4 +1,5 @@
 import functools
+import importlib
 import logging
 import logging.config
 import pathlib
@@ -133,3 +134,41 @@ def sleep_threaded(delay):
 	waiter = threading.Thread(target=functools.partial(time.sleep, delay), args=())
 	waiter.start()
 	waiter.join()
+
+
+def to_list(x, default=None):
+    if x is None:
+        return default
+    if not isinstance(x, (list, tuple)):
+        return [x]
+    else:
+        return x
+
+
+def load_class(module_names, class_names):
+	"""
+	Load class from dotted string notation.
+
+	https://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
+	"""
+	module_names = to_list(module_names)
+	class_names = to_list(class_names)
+
+	# TODO: Implement multiple class names.
+	class_name = class_names[0]
+
+	for module in module_names:
+		try:
+			# Load the module.
+			m = importlib.import_module(module)
+
+			# Get the class from module.
+			c = getattr(m, class_name)
+			logger.info(f"Loading class successful: {module}.{class_name}")
+			return c
+
+		except ImportError:
+			pass
+
+		except AttributeError as ex:
+			pass

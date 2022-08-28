@@ -53,8 +53,8 @@ Start all services::
     pytest
 
     # Start Manager, Worker, and Webinterface, in different terminals.
-    ./startup.sh manager
-    secpi-worker --app-config worker/config.json
+    secpi-manager --app-config=manager/config.json
+    secpi-worker --app-config=worker/config.json
     ./startup.sh webinterface
 
 
@@ -76,8 +76,8 @@ virtual machine, two directories will be provisioned:
 - ``/opt/secpi``
   This directory holds the virtual environment for the SecPi installation on Linux.
 
-On top of that, the program ``secpi-worker`` is available in the global program search
-path.
+On top of that, the programs ``secpi-manager`` and ``secpi-worker`` are available in
+the global program search path.
 
 
 =====
@@ -91,7 +91,8 @@ Usage
     vagrant ssh
 
     # Run SecPi Worker.
-    secpi-worker --app-config /usr/src/secpi/worker/config.json
+    secpi-manager --app-config=/usr/src/secpi/manager/config.json
+    secpi-worker --app-config=/usr/src/secpi/worker/config.json
 
 Run software tests::
 

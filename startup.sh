@@ -12,8 +12,7 @@ then
 	
 	if [ $1 = "manager" ]
 	then
-		cd manager
-		python manager.py $PROJECT_PATH
+		secpi-manager --app-config=manager/config.json
 	elif [ $1 = "worker" ]
 	then
 		secpi-worker --app-config=worker/config.json

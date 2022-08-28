@@ -10,7 +10,7 @@ coverage.xml
 
 webinterface/logs/*
 worker/*.jpg
-data.db
+*.sqlite
 certs/*
 logs/*
 webinterface/.htdigest

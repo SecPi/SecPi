@@ -30,6 +30,7 @@ class AMQPAdapter:
         self.undelivered_messages = []
 
         # Whether to continue trying to reconnect.
+        self.do_shutdown = False
         self.do_reconnect = True
 
     def connect(self, retries=None):
@@ -155,7 +156,8 @@ class AMQPAdapter:
                     logger.exception("Lost connection to AMQP broker")
                 established = False
 
-            if not established:
+            # Do not reconnect when shutdown has been signaled.
+            if not established and not self.do_shutdown:
                 if callable(on_error):
                     on_error()
 
@@ -165,6 +167,7 @@ class AMQPAdapter:
         self.channel.stop_consuming()
 
     def shutdown(self):
+        self.do_shutdown = True
         def doit():
             self.unsubscribe()
             self.disconnect()

@@ -1,24 +1,24 @@
-import logging
-import sys
 import datetime
-import importlib
 import json
+import logging
 import os
-import pika
 import shutil
+import sys
 import threading
 import uuid
 
+import pika
 from tools import utils
 from tools.amqp import AMQPAdapter
-from tools.cli import parse_cmd_args, StartupOptions
+from tools.base import Service
+from tools.cli import StartupOptions, parse_cmd_args
 from tools.config import ApplicationConfig
-from tools.utils import setup_logging, get_ip_addresses
+from tools.utils import get_ip_addresses, load_class, setup_logging
 
 logger = logging.getLogger(__name__)
 
 
-class Worker:
+class Worker(Service):
 
 	CONVERSATION_DELAY = 4.2
 
@@ -27,7 +27,6 @@ class Worker:
 		self.actions = []
 		self.sensors = []
 		self.active = False
-		self.do_shutdown = False
 
 		# TODO: Make paths configurable.
 		self.data_directory = "/var/tmp/secpi/worker_data"
@@ -100,34 +99,16 @@ class Worker:
 			channel.basic_consume(self.got_config, queue=utils.QUEUE_CONFIG + worker_identifier, no_ack=True)
 
 	def start(self):
+		self.bus.subscribe_forever(on_error=self.on_bus_error)
 
-		def on_error():
+	def on_bus_error(self):
+		logger.info("Trying to reconnect to AMQP broker")
+		self.bus.disconnect()
+		self.connect()
 
-			# Do not reconnect when shutdown has been signaled.
-			if self.do_shutdown:
-				return
-
-			logger.info("Trying to reconnect to AMQP broker")
-			self.bus.disconnect()
-			self.connect()
-
-			# Process undelivered messages.
-			# TODO: Could invoking `process_message_queue` make problems if the manager replies too fast?
-			self.bus.process_undelivered_messages(delay=self.CONVERSATION_DELAY)
-
-		self.bus.subscribe_forever(on_error=on_error)
-
-	def stop(self):
-		self.do_shutdown = True
-		self.bus.shutdown()
-
-	def __del__(self):
-		try:
-			self.stop()
-
-		# If there is no connection object closing won't work.
-		except AttributeError:
-			logger.info("No connection cleanup possible")
+		# Process undelivered messages.
+		# TODO: Could invoking `process_message_queue` make problems if the manager replies too fast?
+		self.bus.process_undelivered_messages(delay=self.CONVERSATION_DELAY)
 
 	# sends a message to the manager
 	def send_msg(self, rk, body, **kwargs):
@@ -157,44 +138,21 @@ class Worker:
 				"datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 				
 		self.send_json_msg(utils.QUEUE_LOG, lg)
-	
-	# see: http://stackoverflow.com/questions/1176136/convert-string-to-python-class-object
-	def class_for_name(self, module_name, class_name):
+
+	def load_plugin(self, module_name, class_name):
+		"""
+		Load plugin module.
+		"""
 		module_candidates = [f"worker.{module_name}", module_name]
-		for module_candidate in module_candidates:
-			try:
-				# load the module, will raise ImportError if module cannot be loaded
-				m = importlib.import_module(module_candidate)
-				# get the class, will raise AttributeError if class cannot be found
-				c = getattr(m, class_name)
-				logger.info(f"Loading class successful: {module_candidate}.{class_name}")
-				return c
-			except ImportError as ex:
-				self.post_err(f"Importing module '{module_candidate}' failed: {ex}")
-			except AttributeError as ex:
-				self.post_err(f"Finding class '{class_name}' failed: {ex}")
-
-	def got_operational(self, ch, method, properties, body):
-		"""
-		AMQP: Receive and process operational messages.
-
-		Currently, this implements the handler for the shutdown signal, which is mostly
-		needed in testing scenarios.
-
-		Usage::
-
-			echo '{"action": "shutdown"}' | amqp-publish --url="amqp://guest:guest@localhost:5672" --routing-key=secpi-op-1
-		"""
-		logging.info(f"Got message on operational channel: {body}")
+		error_message = f"Failed to import class {class_name} from modules '{module_candidates}'"
+		component = None
 		try:
-			message = json.loads(body)
-			action = message.get("action")
-
-			# Invoke shutdown.
-			if action == "shutdown":
-				self.stop()
+			component = load_class(module_candidates, class_name)
 		except:
-			logging.exception("Processing operational message failed")
+			logger.exception(error_message)
+		if component is None:
+			self.post_err(error_message)
+		return component
 
 	def fetch_init_config(self):
 		"""
@@ -365,7 +323,7 @@ class Worker:
 		for sensor in self.config.get("sensors"):
 			try:
 				logger.info("Registering sensor: %s" % sensor["id"])
-				s = self.class_for_name(sensor["module"], sensor["class"])
+				s = self.load_plugin(sensor["module"], sensor["class"])
 				sen = s(sensor["id"], sensor["params"], self)
 				sen.activate()
 			except Exception as e:
@@ -391,7 +349,7 @@ class Worker:
 		for action in self.config.get("actions"):
 			try:
 				logger.info("Trying to register action: %s" % action["id"])
-				a = self.class_for_name(action["module"], action["class"])
+				a = self.load_plugin(action["module"], action["class"])
 				act = a(action["id"], action["params"], self)
 			except Exception as e: #AttributeError, KeyError
 				self.post_err("Pi with id '%s' wasn't able to register action '%s':\n%s" % (self.config.get('pi_id'), action["class"],e))

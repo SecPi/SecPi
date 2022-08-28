@@ -80,6 +80,7 @@ develop = [
 packages = ["manager", "worker", "webinterface", "tools"]
 
 [project.scripts]
+secpi-manager = "manager.manager:main"
 secpi-worker = "worker.worker:main"
 
 

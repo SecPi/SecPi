@@ -17,7 +17,7 @@ def test_worker_start_stop():
     service.run_worker()
 
     # Send Worker a shutdown signal.
-    service.shutdown()
+    service.shutdown(identifier="1")
 
     # Read application log.
     application_log = service.read_log()
@@ -41,6 +41,8 @@ def test_worker_with_tcplistener(worker_service):
     # Submit a sensor signal.
     command = "echo hello | socat - tcp:localhost:1234"
     subprocess.check_output(command, shell=True)
+
+    # Give system some time for processing.
     time.sleep(0.25)
 
     # Read application log.
