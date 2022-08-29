@@ -3,8 +3,9 @@ import pathlib
 import pytest
 
 from testing.util.service import ManagerServiceWrapper, WorkerServiceWrapper, WebinterfaceServiceWrapper
+from tools.config import ApplicationConfig
 from tools.utils import setup_logging
-
+from worker.worker import Worker
 
 setup_logging()
 
@@ -63,3 +64,17 @@ def webinterface_service():
 
     # Signal the service to shut down.
     service.shutdown()
+
+
+@pytest.fixture(scope="function")
+def worker_mock(mocker) -> Worker:
+    """
+    Provide the test cases with a mocked SecPi Worker, but using a real `ApplicationConfig` instance.
+    """
+    worker = mocker.patch("worker.worker.Worker", autospec=True)
+    worker_instance = worker.return_value
+
+    app_config = ApplicationConfig()
+    worker_instance.config = app_config
+
+    yield worker_instance
