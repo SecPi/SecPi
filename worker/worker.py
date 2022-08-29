@@ -145,11 +145,7 @@ class Worker(Service):
 		"""
 		module_candidates = [f"worker.{module_name}", module_name]
 		error_message = f"Failed to import class {class_name} from modules '{module_candidates}'"
-		component = None
-		try:
-			component = load_class(module_candidates, class_name)
-		except:
-			logger.exception(error_message)
+		component = load_class(module_candidates, class_name, errors="ignore")
 		if component is None:
 			self.post_err(error_message)
 		return component

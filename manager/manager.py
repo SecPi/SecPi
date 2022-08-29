@@ -124,7 +124,7 @@ class Manager(Service):
 		Load plugin module.
 		"""
 		module_candidates = [f"manager.{module_name}", module_name]
-		component = load_class(module_candidates, class_name)
+		component = load_class(module_candidates, class_name, errors="ignore")
 		if component is None:
 			self.log_err(f"Unable to import class {class_name} from modules '{module_candidates}'")
 		return component
