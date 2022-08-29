@@ -17,7 +17,7 @@ class Dropbox_Dropper(Notifier):
 		try:
 			self.access_token = params["access_token"]
 		except KeyError as ex:
-			logging.error(f"Dropbox: Initializing notifier failed, configuration parameter missing: {ex}")
+			logger.error(f"Dropbox: Initializing notifier failed, configuration parameter missing: {ex}")
 			self.corrupted = True
 			return
 

@@ -30,7 +30,7 @@ class Mailer(Notifier):
 			self.smtp_security = params["smtp_security"]
 			self.unzip_attachments = str_to_value(params.get("unzip_attachments", False))
 		except KeyError as ex:
-			logging.error(f"Mailer: Initializing notifier failed, configuration parameter missing: {ex}")
+			logger.error(f"Mailer: Initializing notifier failed, configuration parameter missing: {ex}")
 			self.corrupted = True
 			return
 		except ValueError as ve: # if one configuration parameter can't be parsed as int

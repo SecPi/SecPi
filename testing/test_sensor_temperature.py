@@ -6,9 +6,9 @@ from tools.sensor import Sensor
 from tools.utils import load_class
 
 
-@pytest.fixture()
-def fake_device(fs_session):
-    yield fs_session.create_file("/sys/bus/w1/devices/foobar/w1_slave", contents="foo\nbar")
+@pytest.fixture
+def fake_device(fs):
+    yield fs.create_file("/sys/bus/w1/devices/foobar/w1_slave", contents="foo\nbar")
 
 
 @pytest.fixture(scope="function")
@@ -32,7 +32,7 @@ def temperature_sensor(fake_device, worker_mock) -> Sensor:
     yield sensor
 
 
-def test_sensor_temperature_alarm(fake_device, temperature_sensor, caplog):
+def test_sensor_temperature_alarm(temperature_sensor, caplog):
     """
     Test the alarm method of the `TemperatureSensor`. No sensor logic involved.
     """
