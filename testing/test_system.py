@@ -48,7 +48,7 @@ def test_manager_process_alarm(webinterface_service, manager_service):
     subprocess.check_output(command, shell=True)
 
     # Give system some time for processing.
-    time.sleep(0.25)
+    time.sleep(0.50)
 
     # Read application log.
     web_log = webinterface_service.read_log()
