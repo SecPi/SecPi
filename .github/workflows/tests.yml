@@ -46,22 +46,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install --yes socat amqp-tools mosquitto-clients
 
-        # Verify installation.
-        socat -V
-        amqp-publish --usage
-        mosquitto_pub --version
-
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
 
         # Install `socat` and `amqp-publish`.
         brew install socat rabbitmq mosquitto
-
-        # Verify installation.
-        socat -V
-        amqp-publish --usage
-        mosquitto_pub --version
 
     - name: Acquire sources
       uses: actions/checkout@v3
