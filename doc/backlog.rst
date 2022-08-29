@@ -38,7 +38,9 @@ Iteration 2
   - Rip out SSL completely?
   - Rip out ``.htdigest`` authentication completely?
 - [o] Test and use ``speaker.py``
-- [o] Bump JavaScript dependencies and rebundle using Yarn and webpack.
+- [o] Bump JavaScript dependencies and rebundle using Yarn and webpack
+- [o] ADAM: Resolve ambiguation with ``mqtt_broker_ip`` vs. "port"
+- [o] Get rid of ``00D0C9EFDBBD``
 
 
 ***********

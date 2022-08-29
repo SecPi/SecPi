@@ -1,9 +1,5 @@
-import os
 import pathlib
-import pwd
-import re
 import tempfile
-from unittest import mock
 
 import pytest
 
@@ -24,14 +20,14 @@ def test_notifier_dropbox(fs, caplog):
     Test the Dropbox file drop notifier.
     """
 
+    fs.create_dir("/var/tmp/secpi/alarms/20220828_181818")
+    fs.create_file("/var/tmp/secpi/alarms/20220828_181818/hello.txt", contents="Hello, world.")
+
     # Configure notifier.
     component = load_class("manager.dropbox_dropper", "Dropbox_Dropper")
     parameters = {
         "access_token": "foobar-token",
     }
-
-    fs.create_dir("/var/tmp/secpi/alarms/20220828_181818")
-    fs.create_file("/var/tmp/secpi/alarms/20220828_181818/hello.txt", contents="Hello, world.")
 
     # Invoke notifier.
     notifier = component(1, parameters)

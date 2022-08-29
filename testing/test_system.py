@@ -43,7 +43,7 @@ def test_manager_process_alarm(webinterface_service, manager_service):
     # Activate setup.
     requests.post(url="http://localhost:8000/activate", json={"id": setup_identifier})
 
-    # Submit an alarm signal.
+    # Emulate an alarm signal using AMQP.
     command = f"""echo '{json.dumps(ALARM_EVENT)}' | amqp-publish --routing-key=secpi-alarm"""
     subprocess.check_output(command, shell=True)
 
