@@ -469,13 +469,14 @@ def run_webinterface(options: StartupOptions):
 
 	# Read configuration from file.
 	try:
-		config = ApplicationConfig(filepath=options.app_config)
+		app_config = ApplicationConfig(filepath=options.app_config)
+		app_config.load()
 	except:
 		logger.exception("Loading configuration failed")
 		sys.exit(1)
 
 	# Connect to database.
-	database_uri = config.get("database", {}).get("uri")
+	database_uri = app_config.get("database", {}).get("uri")
 	if database_uri is None:
 		raise ConnectionError(f"Unable to connect to database. Database URI is: {database_uri}")
 	logger.info(f"Connecting to database {database_uri}")
@@ -487,7 +488,7 @@ def run_webinterface(options: StartupOptions):
 	sqlalchemy_plugin.subscribe()
 	sqlalchemy_plugin.create()
 	# Create web application object.
-	app = Webinterface(config=config)
+	app = Webinterface(config=app_config)
 
 	# TODO: Configure development vs. production.
 	cherrypy.config.update({

@@ -40,8 +40,8 @@ class Worker(Service):
 		self.bus = AMQPAdapter(
 			hostname=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
 			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
-			username=config.get('rabbitmq')['user'],
-			password=config.get('rabbitmq')['password'],
+			username=config.get('rabbitmq', {}).get('user'),
+			password=config.get('rabbitmq', {}).get('password'),
 			buffer_undelivered=True,
 		)
 		self.connect()
@@ -394,6 +394,7 @@ def run_worker(options: StartupOptions):
 
 	try:
 		app_config = ApplicationConfig(filepath=options.app_config)
+		app_config.load()
 	except:
 		logger.exception("Loading configuration failed")
 		sys.exit(1)
