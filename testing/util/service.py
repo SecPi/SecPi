@@ -98,6 +98,8 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
             app_config="testing/etc/config-manager.json",
             target=manager.manager.main,
         )
+        # Manager needs a bit longer to start?
+        time.sleep(0.25)
 
 
 class WorkerServiceWrapper(AmqpServiceWrapper):
