@@ -8,6 +8,9 @@ from testing.util.service import ManagerServiceWrapper
 logger = logging.getLogger(__name__)
 
 
+ALARM_EVENT = {"pi_id": 1, "sensor_id": 1, "message": "Got TCP connection, raising alarm", "datetime": "2022-08-27 02:33:33"}
+
+
 def test_manager_start_stop():
     """
     Start Manager and immediately shut it down again. Verify that the log output matches the expectations.
@@ -24,9 +27,6 @@ def test_manager_start_stop():
     app_log = service.read_log()
 
     # Verify everything is in place.
-
-
-def test_manager_with_alarm(manager_service):
     assert "Loading configuration from testing/etc/config-manager.json" in app_log
     assert "Storing alarms to" in app_log
     assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
@@ -36,14 +36,15 @@ def test_manager_with_alarm(manager_service):
     assert """Got message on operational channel: b\'{"action": "shutdown"}""" in app_log
     assert "Stop consuming AMQP queue" in app_log
     assert "Disconnected from RabbitMQ" in app_log
+
+
+def test_manager_receive_alarm(manager_service):
     """
-    Start Manager and submit an alarm using AMQP. Verify that the log output matches the expectations.
+    Start Manager and submit an alarm event using AMQP. Verify that the log output matches the expectations.
     """
 
     # Submit an alarm signal.
-    data = {"pi_id": 1, "sensor_id": 1, "message": "Got TCP connection, raising alarm", "datetime": "2022-08-27 02:33:33"}
-    payload = json.dumps(data)
-    command = f"""echo '{payload}' | amqp-publish --routing-key=secpi-alarm"""
+    command = f"""echo '{json.dumps(ALARM_EVENT)}' | amqp-publish --routing-key=secpi-alarm"""
     subprocess.check_output(command, shell=True)
 
     # Give system some time for processing.
