@@ -136,8 +136,9 @@ import func_timeout
 import pymodbus
 from paho.mqtt import subscribe
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-from tools import config, utils
 from sqlalchemy.util import asbool
+
+from tools import utils
 from tools.sensor import Sensor
 
 logger = logging.getLogger()
@@ -389,8 +390,10 @@ class AdvantechAdamSensor(Sensor):
         logger.info(f"ADAM: Initializing sensor id={id} with parameters {params}")
         super(AdvantechAdamSensor, self).__init__(id, params, worker)
 
+        self.config = worker.config
+
         try:
-            settings = config.get("global", {})["adam6000"]
+            settings = self.config.get("global", {})["adam6000"]
             self.mqtt_broker_ip = settings["mqtt_broker_ip"]
             self.mqtt_topic = settings["mqtt_topic"]
             self.modbus_seed_enabled = asbool(settings.get("modbus_seed_enabled", True))
