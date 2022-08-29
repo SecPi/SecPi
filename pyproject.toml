@@ -48,7 +48,7 @@ dependencies = [
   "Mako<2",
 
   # Sensor modules. Support for host pinging.
-  "pyping<1",
+  "ping3<5",
 
   # Notifier modules. Support for Dropbox, SMS, Slack, Twitter.
   "dropbox<12",
