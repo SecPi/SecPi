@@ -31,6 +31,9 @@ jobs:
     name: Python ${{ matrix.python-version }} on OS ${{ matrix.os }}
     steps:
 
+    - name: Acquire sources
+      uses: actions/checkout@v3
+
     - name: Start Mosquitto
       uses: namoshek/mosquitto-github-action@v1
       with:
@@ -52,9 +55,6 @@ jobs:
 
         # Install `socat` and `amqp-publish`.
         brew install socat rabbitmq mosquitto
-
-    - name: Acquire sources
-      uses: actions/checkout@v3
 
     - name: Setup Python
       uses: actions/setup-python@v3
