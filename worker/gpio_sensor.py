@@ -3,9 +3,14 @@ import logging
 
 import RPi.GPIO as GPIO
 
+
+logger = logging.getLogger(__name__)
+
+
 class GPIOSensor(Sensor):
 	
 	def __init__(self, id, params, worker):
+		logger.info(f"Initializing sensor id={id} with parameters {params}")
 		super(GPIOSensor, self).__init__(id, params, worker)
 		self.active = False
 		try:
@@ -24,7 +29,7 @@ class GPIOSensor(Sensor):
 			return
 		
 		GPIO.setmode(GPIO.BCM)
-		logging.debug("GPIOSensor: Sensor initialized")
+		logger.debug("GPIOSensor: Sensor initialized")
 	
 	def setup_sensor(self):
 		try:
@@ -41,7 +46,7 @@ class GPIOSensor(Sensor):
 		except ValueError as ve: # GPIO pin number or bouncetime is not in valid range
 			self.post_err("GPIOSensor: The given pin number or bouncetime is not in a valid range: %s" % ve)
 			return
-		logging.debug("GPIOSensor: Registered sensor at pin %s!" % self.gpio)
+		logger.debug("GPIOSensor: Registered sensor at pin %s" % self.gpio)
 	
 	def cleanup_sensor(self):
 		try:
@@ -49,13 +54,13 @@ class GPIOSensor(Sensor):
 			GPIO.cleanup(self.gpio)
 		except ValueError as ve: # GPIO pin number is not in valid range
 			self.post_err("GPIOSensor: The given pin number is not in a valid range: %s" % ve)
-		logging.debug("GPIOSensor: Removed sensor at pin %s!" % self.gpio)
+		logger.debug("GPIOSensor: Removed sensor at pin %s" % self.gpio)
 	
 	# callback for alarm
 	def cb_alarm(self, channel):
 		if self.active:
 			if self.edge in ['rising', 'falling']:
-				self.alarm("GPIO sensor at pin %s detected something!" % channel)
+				self.alarm("GPIO sensor at pin %s detected something" % channel)
 			else:
 				if GPIO.input(channel):
 					state = 'activated'
@@ -67,12 +72,15 @@ class GPIOSensor(Sensor):
 		if not self.corrupted:
 			self.active = True
 			self.setup_sensor()
+			self.post_log(f"GPIOSensor: Sensor activated successfully, id={self.id}")
 		else:
-			self.post_err("GPIOSensor: Sensor couldn't be activated")
+			self.post_err(f"GPIOSensor: Sensor could not be activated, id={self.id}")
 
 	def deactivate(self):
 		if not self.corrupted:
 			self.active = False
 			self.cleanup_sensor()
+			self.post_log(f"GPIOSensor: Sensor deactivated successfully, id={self.id}")
 		else:
-			self.post_err("GPIOSensor: Sensor couldn't be deactivated") # maybe make this more clear
+			# maybe make this more clear
+			self.post_err(f"GPIOSensor: Sensor could not be deactivated, id={self.id}")
