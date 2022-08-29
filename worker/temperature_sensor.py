@@ -6,9 +6,13 @@ import threading
 import time
 
 
+logger = logging.getLogger(__name__)
+
+
 class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 
 	def __init__(self, id, params, worker):
+		logger.info(f"Initializing sensor id={id} with parameters {params}")
 		super(TemperatureSensor, self).__init__(id, params, worker)
 		#self.active = False
 		try:
@@ -37,7 +41,7 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 			self.post_err("TemperatureSensor: Wasn't able to find temperature file at %s" % self.device_file)
 			return
 
-		logging.debug("TemperatureSensor: Sensor initialized")
+		logger.info("TemperatureSensor: Sensor initialized")
 
 	def activate(self):
 		if not self.corrupted:
@@ -45,14 +49,16 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 			self.checker_thread = threading.Thread(name="thread-checker-%s" % self.device_id,
 												   target=self.check_temperature)
 			self.checker_thread.start()
+			self.post_log(f"TemperatureSensor: Sensor activated successfully, id={self.id}")
 		else:
-			self.post_err("TemperatureSensor: Sensor couldn't be activated")
+			self.post_err(f"TemperatureSensor: Sensor could not be activated, id={self.id}")
 
 	def deactivate(self):
 		if not self.corrupted:
 			self.stop_thread = True
+			self.post_log(f"TemperatureSensor: Sensor deactivated successfully, id={self.id}")
 		else:
-			self.post_err("TemperatureSensor: Sensor couldn't be deactivated")
+			self.post_err(f"TemperatureSensor: Sensor could not be deactivated, id={self.id}")
 
 	def check_temperature(self):
 		while True:
@@ -76,7 +82,7 @@ class TemperatureSensor(Sensor): #DS18B20 digital temperature sensor
 		lines = self.read_temp_raw()
 		while lines[0].strip()[-3:] != 'YES':
 			time.sleep(0.2)
-			lines = read_temp_raw()
+			lines = self.read_temp_raw()
 		equals_pos = lines[1].find('t=')
 		if equals_pos != -1:
 			temp_string = lines[1][equals_pos+2:]
