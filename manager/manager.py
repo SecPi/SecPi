@@ -152,7 +152,7 @@ class Manager(Service):
 	
 	# helper method to create error log entry
 	def log_err(self, msg):
-		logger.exception(msg)
+		logger.error(msg)
 		log_entry = LogEntry(level=utils.LEVEL_ERR, message=str(msg), sender="Manager")
 		self.db.session.add(log_entry)
 		self.db.session.commit()
