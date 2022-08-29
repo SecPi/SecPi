@@ -11,7 +11,16 @@ setup_logging()
 
 @pytest.fixture(scope="function", autouse=True)
 def reset_database():
-    pathlib.Path("secpi-database-testing.sqlite").unlink(missing_ok=True)
+    p = pathlib.Path("secpi-database-testing.sqlite")
+    try:
+        p.unlink(missing_ok=True)
+
+    # Compatibility with Python 3.7.
+    except TypeError:
+        try:
+            p.unlink()
+        except:
+            pass
 
 
 @pytest.fixture(scope="function")

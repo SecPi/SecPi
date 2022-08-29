@@ -90,6 +90,7 @@ def test_notifier_mailer(fs, caplog):
     assert "Mailer: Unexpected error" in caplog.messages
     assert \
         "ConnectionRefusedError: [Errno 61] Connection refused" in caplog.text or \
+        "ConnectionRefusedError: [Errno 111] Connection refused" in caplog.text or \
         "OSError: [Errno 99] Cannot assign requested address" in caplog.text
 
 

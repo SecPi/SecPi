@@ -85,4 +85,5 @@ def test_manager_process_alarm(webinterface_service, manager_service):
     assert "Mailer: Unexpected error"
     assert \
         "ConnectionRefusedError: [Errno 61] Connection refused" in app_log or \
+        "ConnectionRefusedError: [Errno 111] Connection refused" in app_log or \
         "OSError: [Errno 99] Cannot assign requested address" in app_log
