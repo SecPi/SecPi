@@ -120,7 +120,7 @@ class WebinterfaceServiceWrapper(BaseServiceWrapper):
         )
 
         # Web server needs a bit longer to start than AMQP-based service.
-        time.sleep(0.45)
+        time.sleep(0.55)
 
     def shutdown(self, identifier: t.Optional[str] = None):
         """
