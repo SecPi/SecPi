@@ -88,14 +88,18 @@ def test_notifier_mailer(fs, caplog):
 
     # It is expected to fail, because nothing should be listening on port 12525.
     assert "Mailer: Unexpected error" in caplog.messages
-    assert "ConnectionRefusedError: [Errno 61] Connection refused" in caplog.text
+    assert \
+        "ConnectionRefusedError: [Errno 61] Connection refused" in caplog.text or \
+        "OSError: [Errno 99] Cannot assign requested address" in caplog.text
 
 
-@mock.patch("pycall.callfile.getpwnam", return_value=pwd.getpwnam(os.getlogin()))
-def test_notifier_sipcall(_, caplog):
+def test_notifier_sipcall(mocker, caplog):
     """
     Verify the SIP call notifier behaves as expected.
     """
+
+    mocker.patch("pycall.callfile.getpwnam", return_value=(None, None, 999, 999))
+    mocker.patch("pycall.callfile.chown")
 
     callfile_reference = [
         'Channel: SIP/sip-testing/+49-177-1234567\n',

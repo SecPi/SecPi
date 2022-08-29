@@ -83,4 +83,6 @@ def test_manager_process_alarm(webinterface_service, manager_service):
     assert "Mailer: Trying to send mail without authentication" in app_log
     assert "Mailer: Establishing connection to SMTP server" in app_log
     assert "Mailer: Unexpected error"
-    assert "ConnectionRefusedError: [Errno 61] Connection refused" in app_log
+    assert \
+        "ConnectionRefusedError: [Errno 61] Connection refused" in app_log or \
+        "OSError: [Errno 99] Cannot assign requested address" in app_log
