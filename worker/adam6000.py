@@ -141,7 +141,7 @@ from sqlalchemy.util import asbool
 from tools import utils
 from tools.sensor import Sensor
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class AdvantechAdamModbusConnector:
@@ -226,7 +226,7 @@ class AdvantechAdamMqttConnector:
 
     def start(self, modbus_seed_enabled: bool = True, modbus_seed_delay: float = 0.0):
         """
-        Start a single AdvantechAdamCommunicator subscriber thread.
+        Start a single AdvantechAdamMqttConnector subscriber thread.
         """
 
         # 1. Request the initial state from the device using Modbus.
@@ -237,9 +237,9 @@ class AdvantechAdamMqttConnector:
             logger.info(f"Requesting to seed state using Modus in {modbus_seed_delay} seconds")
             threading.Timer(modbus_seed_delay, self.seed_state).start()
 
-        # Then, start the MQTT subscriber thread singleton.
+        # 2. Start the MQTT subscriber thread singleton.
         if AdvantechAdamMqttConnector.thread is None:
-            logger.info(f"ADAM: Starting MQTT subscriber thread")
+            logger.info(f"Starting MQTT subscriber thread")
             AdvantechAdamMqttConnector.thread = threading.Thread(
                 name="thr-adam-mqtt-%s" % self.mqtt_broker, target=self.mqtt_subscribe
             )
@@ -302,7 +302,7 @@ class AdvantechAdamMqttConnector:
         """
 
         # Decode MQTT message.
-        logger.debug(f"Message: {message}")
+        logger.debug(f"Message: {message.payload}")
         payload = message.payload.decode("utf-8", "ignore")
         data = json.loads(payload)
         logger.debug(f"Data: {data}")
@@ -330,7 +330,7 @@ class AdvantechAdamMqttConnector:
         """
         channel = sensor.params["channel"]
         name = sensor.params["name"]
-        logger.info(f"ADAM: Registering event callback for channel={channel}, name={name}")
+        logger.info(f"Registering event callback for channel={channel}, name={name}")
         self.registrations[channel] = RegistrationItem(channel=channel, name=name, sensor=sensor, callback=callback)
 
     def unregister(self, sensor):
@@ -373,8 +373,8 @@ class AdvantechAdamMqttConnector:
         summary_message_long = ResponseItem.summary_humanized("Summary message", all_responses, data)
         summary_message_short = ResponseItem.open_circuit_humanized(all_responses)
         alarm_message = f"Erste Erfassung. {summary_message_short}\n\n{summary_message_long}"
-        logger.info(f"ADAM: Raising alarm with summary message. {alarm_message}")
-        # logger.info(f"ADAM: Long message:\n{summary_message_long}")
+        logger.info(f"Raising alarm with summary message. {alarm_message}")
+        # logger.info(f"Long message:\n{summary_message_long}")
         all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
 
 
@@ -387,7 +387,7 @@ class AdvantechAdamSensor(Sensor):
     connector: AdvantechAdamMqttConnector = None
 
     def __init__(self, id, params, worker):
-        logger.info(f"ADAM: Initializing sensor id={id} with parameters {params}")
+        logger.info(f"Initializing sensor id={id} with parameters {params}")
         super(AdvantechAdamSensor, self).__init__(id, params, worker)
 
         self.config = worker.config
@@ -401,12 +401,16 @@ class AdvantechAdamSensor(Sensor):
 
         # If config parameters are missing in file.
         except KeyError as ex:
-            self.post_err(f"ADAM: Setup failed, configuration parameter missing: {ex}")
+            message = f"Setup failed, configuration parameter missing: {ex}"
+            logger.error(message)
+            self.post_err(message)
             self.corrupted = True
             return
 
     def activate(self):
         if not self.corrupted:
+
+            # Ensure connection to MQTT is there.
             self.start_mqtt_subscriber()
 
             def event_handler(response: ResponseItem, all_responses: t.List["ResponseItem"]):
@@ -416,7 +420,7 @@ class AdvantechAdamSensor(Sensor):
                 message_title = response.circuit_transition_humanized()
                 message = ResponseItem.summary_humanized(message_title, all_responses, response.alldata)
 
-                logger.info(f"ADAM: Raising alarm for individual sensor. {message}")
+                logger.info(f"Raising alarm for individual sensor. {message}")
                 self.alarm(message)
 
             AdvantechAdamSensor.connector.register(self, event_handler)
