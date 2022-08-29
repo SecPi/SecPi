@@ -51,10 +51,12 @@ def test_notifier_dropbox(fs, caplog):
     assert "Dropbox: Wasn't able to upload file" in caplog.text
 
 
-def test_notifier_mailer(caplog):
+def test_notifier_mailer(fs, caplog):
     """
     Test the SMTP email notifier.
     """
+
+    fs.create_dir("/var/tmp/secpi/alarms")
 
     # Configure notifier.
     component = load_class("manager.mailer", "Mailer")
@@ -79,7 +81,8 @@ def test_notifier_mailer(caplog):
     assert "Loading class successful: manager.mailer.Mailer" in caplog.messages
     assert "Mailer: Notifier initialized" in caplog.messages
     assert "Notifying via SMTP email" in caplog.messages
-    assert re.match(".*Mailer: Will look into .+ for data.*", caplog.text, re.DOTALL)
+    assert "Failed to prepare email attachments" in caplog.messages
+    # assert re.match(".*Mailer: Will look into .+ for data.*", caplog.text, re.DOTALL)
     assert "Mailer: Trying to send mail without authentication" in caplog.messages
     assert "Mailer: Establishing connection to SMTP server" in caplog.messages
 

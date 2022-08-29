@@ -52,7 +52,10 @@ class Mailer(Notifier):
 			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
 			self.message.attach(MIMEText(info_str, "plain"))
 			
-			self.prepare_mail_attachments()
+			try:
+				self.prepare_mail_attachments()
+			except:
+				logger.exception("Failed to prepare email attachments")
 			
 			if self.smtp_security == "STARTTLS":
 				self.send_mail_starttls()

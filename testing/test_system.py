@@ -78,7 +78,8 @@ def test_manager_process_alarm(webinterface_service, manager_service):
 
     # Notification.
     assert "Notifying via SMTP email" in app_log
-    assert "Mailer: Will look into" in app_log
+    assert "Failed to prepare email attachments" in app_log
+    # assert "Mailer: Will look into" in app_log
     assert "Mailer: Trying to send mail without authentication" in app_log
     assert "Mailer: Establishing connection to SMTP server" in app_log
     assert "Mailer: Unexpected error"
