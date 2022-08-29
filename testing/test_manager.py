@@ -48,7 +48,7 @@ def test_manager_receive_alarm(manager_service):
     subprocess.check_output(command, shell=True)
 
     # Give system some time for processing.
-    time.sleep(0.45)
+    time.sleep(0.55)
 
     # Read application log.
     app_log = manager_service.read_log()
