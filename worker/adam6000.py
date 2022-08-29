@@ -137,6 +137,7 @@ import pymodbus
 from paho.mqtt import subscribe
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from tools import config, utils
+from sqlalchemy.util import asbool
 from tools.sensor import Sensor
 
 logger = logging.getLogger()
@@ -222,20 +223,18 @@ class AdvantechAdamMqttConnector:
         self.registrations: t.Dict[str, "RegistrationItem"] = {}
         self.state: t.Optional[t.Dict] = None
 
-    def start(self):
+    def start(self, modbus_seed_enabled: bool = True, modbus_seed_delay: float = 0.0):
         """
         Start a single AdvantechAdamCommunicator subscriber thread.
         """
 
-        # First of all, attempt to request the initial state from the device.
+        # 1. Request the initial state from the device using Modbus.
         # However, delay it for some seconds to give the application some time to register
         # all sensors. Otherwise, there will be no chance to generate and submit a summary
         # notification message.
-        def seed_later():
-            time.sleep(3)
-            self.seed_state()
-
-        threading.Thread(target=seed_later).start()
+        if modbus_seed_enabled:
+            logger.info(f"Requesting to seed state using Modus in {modbus_seed_delay} seconds")
+            threading.Timer(modbus_seed_delay, self.seed_state).start()
 
         # Then, start the MQTT subscriber thread singleton.
         if AdvantechAdamMqttConnector.thread is None:
@@ -394,6 +393,8 @@ class AdvantechAdamSensor(Sensor):
             settings = config.get("global", {})["adam6000"]
             self.mqtt_broker_ip = settings["mqtt_broker_ip"]
             self.mqtt_topic = settings["mqtt_topic"]
+            self.modbus_seed_enabled = asbool(settings.get("modbus_seed_enabled", True))
+            self.modbus_seed_delay = float(settings.get("modbus_seed_delay", 3.0))
 
         # If config parameters are missing in file.
         except KeyError as ex:
@@ -435,7 +436,7 @@ class AdvantechAdamSensor(Sensor):
         with AdvantechAdamSensor.lock:
             if AdvantechAdamSensor.connector is None:
                 AdvantechAdamSensor.connector = AdvantechAdamMqttConnector(self.mqtt_broker_ip, self.mqtt_topic)
-                AdvantechAdamSensor.connector.start()
+                AdvantechAdamSensor.connector.start(modbus_seed_enabled=self.modbus_seed_enabled, modbus_seed_delay=self.modbus_seed_delay)
 
 
 @dataclasses.dataclass
