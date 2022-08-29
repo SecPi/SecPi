@@ -5,6 +5,10 @@ import logging
 
 from tools.action import Action
 
+
+logger = logging.getLogger(__name__)
+
+
 class FFMPEGVideo(Action):
 	"""
 	This module is like the "webcam" module but uses the fine "ffmpeg" for capturing picture snapshots.
@@ -18,7 +22,7 @@ class FFMPEGVideo(Action):
 	def __init__(self, id, params, worker):
 		super(FFMPEGVideo, self).__init__(id, params, worker)
 
-		logging.info('FFMPEGVideo: Starting')
+		logger.info('FFMPEGVideo: Starting')
 
 		# Set parameter defaults
 		self.params.setdefault('name', 'default')
@@ -55,7 +59,7 @@ class FFMPEGVideo(Action):
 
 	# Take a series of pictures within a given interval
 	def take_adv_picture(self, num_of_pic, seconds_between):
-		logging.debug("FFMPEGVideo: Trying to take pictures")
+		logger.debug("FFMPEGVideo: Trying to take pictures")
 
 		name = self.params['name']
 		url  = self.params['url']
@@ -64,7 +68,7 @@ class FFMPEGVideo(Action):
 		for index in range(0, num_of_pic):
 			filename = '{name}-{timestamp}-{index}.jpg'.format(**locals())
 			filepath = os.path.join(self.params['data_path'], filename)
-			logging.info("FFMPEGVideo: Trying to take a picture from {url} to {filepath}".format(**locals()))
+			logger.info("FFMPEGVideo: Trying to take a picture from {url} to {filepath}".format(**locals()))
 			try:
 				result = self.exffmpeg(url, filepath,
 					global_options=self.params['ffmpeg_global_options'],
@@ -77,7 +81,7 @@ class FFMPEGVideo(Action):
 			# Wait until next interval
 			time.sleep(seconds_between)
 
-		logging.debug("FFMPEGVideo: Finished taking pictures")
+		logger.debug("FFMPEGVideo: Finished taking pictures")
 
 
 	def execute(self):
@@ -87,4 +91,4 @@ class FFMPEGVideo(Action):
 			self.post_err("FFMPEGVideo: Wasn't able to take pictures because of an initialization error")
 
 	def cleanup(self):
-		logging.debug("FFMPEGVideo: No cleanup necessary at the moment")
+		logger.debug("FFMPEGVideo: No cleanup necessary at the moment")

@@ -56,6 +56,10 @@ dependencies = [
   "slacker<1",
   "tweepy<5",
 
+  # Action modules.
+  "pygame<3",
+  "opencv-python<5",
+
   # IsarEngineering modules. Support for VCR, SIP, ADAM.
   "ffmpy<1",
   "func-timeout<5",
