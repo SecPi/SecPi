@@ -51,7 +51,7 @@ function create_folder(){
 # second parameter is extension (client/server)
 function gen_and_sign_cert(){
 	# generate key
-	openssl genrsa -out $CERT_PATH/$1.key.pem 2048
+	openssl genrsa -out $CERT_PATH/$1.key.pem 4096
 	# generate csr
 	openssl req -config $CERT_PATH/ca/openssl.cnf -new -key $CERT_PATH/$1.key.pem -out $CERT_PATH/$1.req.pem -outform PEM -subj /CN=$1/ -nodes
 	# sign cert
@@ -282,7 +282,7 @@ then
 	cp scripts/renew_cert.sh $SECPI_PATH
 
 	# generate ca cert
-	openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:2048 -days 3650 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$CA_DOMAIN/ -nodes
+	openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:4096 -days 3650 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$COMMON_NAME/ -nodes
 
 	# secure ca key
 	chmod 600 $CERT_PATH/ca/private
