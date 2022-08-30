@@ -81,6 +81,7 @@ develop = [
   "build<1",
   "poethepoet<1",
   "pika-stubs<1; python_version>='3.8'",
+  "pip-review<2",  # Use `pip-review --local --interactive` to upgrade outdated packages.
 ]
 
 [tool.setuptools]
