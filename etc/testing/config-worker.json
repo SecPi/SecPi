@@ -1,12 +1,19 @@
 {
   "pi_id": 1,
   "active": true,
+  "rabbitmq": {
+    "master_ip": "localhost",
+    "master_port": 5672,
+    "user": "guest",
+    "password": "guest"
+  },
   "global": {
     "adam6000": {
       "mqtt_broker_ip": "localhost",
       "mqtt_topic": "Advantech/11E1DAF0ECCE"
     }
   },
+  "actions": [],
   "sensors": [
     {
       "id": 1,
@@ -18,12 +25,5 @@
         "port": "1234"
       }
     }
-  ],
-  "actions": [],
-  "rabbitmq": {
-    "master_ip": "localhost",
-    "master_port": 5672,
-    "user": "guest",
-    "password": "guest"
-  }
+  ]
 }

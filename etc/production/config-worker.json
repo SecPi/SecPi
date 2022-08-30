@@ -1,0 +1,13 @@
+{
+	"rabbitmq":{
+		"master_ip": "localhost",
+		"master_port": 5672,
+		"user": "guest",
+		"password": "guest",
+		"cacert": "/etc/secpi/certs/ca/cacert.pem",
+		"certfile": "/etc/secpi/certs/worker1.cert.pem",
+		"keyfile": "/etc/secpi/certs/worker1.key.pem"
+	},
+	"global": {
+	}
+}

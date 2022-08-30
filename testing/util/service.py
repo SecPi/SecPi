@@ -40,7 +40,7 @@ class BaseServiceWrapper:
         sys.argv = [
             name,
             f"--app-config={app_config}",
-            "--logging-conf=testing/etc/logging.conf",
+            "--logging-conf=etc/testing/logging.conf",
             f"--log-file={self.logfile.name}",
         ]
 
@@ -100,7 +100,7 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
 
         self.start_process(
             name="secpi-manager",
-            app_config="testing/etc/config-manager.json",
+            app_config="etc/testing/config-manager.json",
             target=manager.manager.main,
         )
         # Manager needs a bit longer to start?
@@ -111,7 +111,7 @@ class WorkerServiceWrapper(AmqpServiceWrapper):
     def run(self):
         self.start_process(
             name="secpi-worker",
-            app_config="testing/etc/config-worker.json",
+            app_config="etc/testing/config-worker.json",
             target=worker.worker.main,
         )
 
@@ -120,7 +120,7 @@ class WebinterfaceServiceWrapper(BaseServiceWrapper):
     def run(self):
         self.start_process(
             name="secpi-web",
-            app_config="testing/etc/config-web.json",
+            app_config="etc/testing/config-web.json",
             target=webinterface.main.main,
         )
 

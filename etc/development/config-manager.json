@@ -3,10 +3,13 @@
 		"master_ip": "localhost",
 		"master_port": 5672,
 		"user": "guest",
-		"password": "guest",
-		"cacert": "ca/cacert.pem",
-		"certfile": "<certfile>",
-		"keyfile": "<keyfile>"
+		"password": "guest"
+	},
+	"database": {
+		"uri": "sqlite:///secpi-database-development.sqlite"
+	},
+	"directories": {
+		"alarms": "./var/spool/alarms"
 	},
 	"global": {
 		"adam6000": {

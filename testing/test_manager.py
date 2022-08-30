@@ -32,7 +32,7 @@ def test_manager_start_stop():
     app_log = service.read_log()
 
     # Verify everything is in place.
-    assert "Loading configuration from testing/etc/config-manager.json" in app_log
+    assert "Loading configuration from etc/testing/config-manager.json" in app_log
     assert "Storing alarms to" in app_log
     assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
     assert "Connecting to AMQP broker at localhost:5672" in app_log

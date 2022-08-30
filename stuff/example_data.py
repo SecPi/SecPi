@@ -12,7 +12,7 @@ from secpi.model.dbmodel import (
 from secpi.util.config import ApplicationConfig
 from secpi.util.database import DatabaseAdapter
 
-config = ApplicationConfig(filepath="/opt/secpi/manager/config.json")
+config = ApplicationConfig(filepath="/etc/secpi/config-manager.json")
 db = DatabaseAdapter(uri="sqlite:///secpi-database-example.sqlite")
 
 pi_name = input("Enter worker name: ")
