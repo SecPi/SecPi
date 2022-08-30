@@ -105,7 +105,7 @@ def setup_logging(level=logging.INFO, config_file=None, log_file=None):
 
 	#if logging.getLogger().level == logging.DEBUG:
 	pika_logger = logging.getLogger("pika")
-	pika_logger.setLevel(logging.INFO)
+	pika_logger.setLevel(logging.WARNING)
 
 	if config_file and log_file:
 		logger.info(f"Using log file {log_file}")

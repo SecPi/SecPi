@@ -30,7 +30,6 @@ def test_worker_start_stop():
     assert "Start consuming AMQP queue" in app_log
     assert """Got message on operational channel: b\'{"action": "shutdown"}""" in app_log
     assert "Stop consuming AMQP queue" in app_log
-    assert "Disconnected from RabbitMQ" in app_log
 
 
 def test_worker_with_tcplistener(worker_service):
