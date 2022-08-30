@@ -3,7 +3,7 @@ default_ca = secpica
 
 [ secpica ]
 # Directory and file locations.
-dir               = /opt/secpi/certs
+dir               = /etc/secpi/certs
 certs             = $dir
 crl_dir           = $dir/ca/crl
 new_certs_dir     = $dir/ca/newcerts
@@ -40,7 +40,7 @@ emailAddress            = optional
 
 [ req ]
 default_bits = 2048
-default_keyfile = /opt/secpi/certs/ca/private/cakey.pem
+default_keyfile = /etc/secpi/certs/ca/private/cakey.pem
 default_md = sha1
 prompt = yes
 distinguished_name = root_ca_distinguished_name

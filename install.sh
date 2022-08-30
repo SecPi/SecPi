@@ -15,10 +15,12 @@ echo "  _________            __________.__
 
 
 SECPI_PATH="/opt/secpi"
+CONFIG_PATH="/etc/secpi"
+CERT_PATH="/etc/secpi/certs"
+RMQ_CONFIG="/etc/rabbitmq/rabbitmq.config"
+
 LOG_PATH="/var/log/secpi"
 TMP_PATH="/var/tmp/secpi"
-CERT_PATH="$SECPI_PATH/certs"
-RMQ_CONFIG="/etc/rabbitmq/rabbitmq.config"
 
 # creates a folder and sets permissions to given user and group
 function create_folder(){
@@ -231,8 +233,8 @@ then
 		
 		if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 		then
-			sed -i "s/<certfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.cert.pem/" $RMQ_CONFIG
-			sed -i "s/<keyfile>/\/opt\/secpi\/certs\/mq-server.$CA_DOMAIN.key.pem/" $RMQ_CONFIG
+			sed -i "s/<certfile>/\/etc\/secpi\/certs\/mq-server.cert.pem/" $RMQ_CONFIG
+			sed -i "s/<keyfile>/\/etc\/secpi\/certs\/mq-server.key.pem/" $RMQ_CONFIG
 		fi
 	fi
 fi
@@ -286,7 +288,7 @@ then
 	chmod 600 $CERT_PATH/ca/private
 
 	# generate mq server certificate
-	gen_and_sign_cert mq-server.$CA_DOMAIN server
+	gen_and_sign_cert mq-server server
 fi
 
 
@@ -306,23 +308,23 @@ then
 	
 	echo "Creating config..."
 	
-	sed -i "s/<ip>/$MQ_IP/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
-	sed -i "s/<port>/$MQ_PORT/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
-	sed -i "s/<user>/$MQ_USER/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
-	sed -i "s/<pwd>/$MQ_PWD/" $SECPI_PATH/manager/config.json $SECPI_PATH/webinterface/config.json
+	sed -i "s/<ip>/$MQ_IP/" $CONFIG_PATH/config-manager.json $CONFIG_PATH/config-web.json
+	sed -i "s/<port>/$MQ_PORT/" $CONFIG_PATH/config-manager.json $CONFIG_PATH/config-web.json
+	sed -i "s/<user>/$MQ_USER/" $CONFIG_PATH/config-manager.json $CONFIG_PATH/config-web.json
+	sed -i "s/<pwd>/$MQ_PWD/" $CONFIG_PATH/config-manager.json $CONFIG_PATH/config-web.json
 	
 	
 	if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 	then
-		sed -i "s/<certfile>/manager.$CA_DOMAIN.cert.pem/" $SECPI_PATH/manager/config.json
-		sed -i "s/<keyfile>/manager.$CA_DOMAIN.key.pem/" $SECPI_PATH/manager/config.json
+		sed -i "s/<certfile>/manager.cert.pem/" $CONFIG_PATH/config-manager.json
+		sed -i "s/<keyfile>/manager.key.pem/" $CONFIG_PATH/config-manager.json
 		
-		sed -i "s/<certfile>/webui.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
-		sed -i "s/<keyfile>/webui.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
+		sed -i "s/<certfile>/webui.cert.pem/" $CONFIG_PATH/config-web.json
+		sed -i "s/<keyfile>/webui.key.pem/" $CONFIG_PATH/config-web.json
 
 		echo "Generating rabbitmq certificates..."
-		gen_and_sign_cert manager.$CA_DOMAIN client
-		gen_and_sign_cert webui.$CA_DOMAIN client
+		gen_and_sign_cert manager client
+		gen_and_sign_cert webui client
 	fi
 
 	echo "Copying startup scripts..."
@@ -373,16 +375,16 @@ then
 	echo "Copying worker..."
 	cp -R worker/ $SECPI_PATH/
 	
-	sed -i "s/<ip>/$MQ_IP/" $SECPI_PATH/worker/config.json
-	sed -i "s/<port>/$MQ_PORT/" $SECPI_PATH/worker/config.json
-	sed -i "s/<user>/$MQ_USER/" $SECPI_PATH/worker/config.json
-	sed -i "s/<pwd>/$MQ_PWD/" $SECPI_PATH/worker/config.json
+	sed -i "s/<ip>/$MQ_IP/" $CONFIG_PATH/config-worker.json
+	sed -i "s/<port>/$MQ_PORT/" $CONFIG_PATH/config-worker.json
+	sed -i "s/<user>/$MQ_USER/" $CONFIG_PATH/config-worker.json
+	sed -i "s/<pwd>/$MQ_PWD/" $CONFIG_PATH/config-worker.json
 	
 	if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 	then
-		sed -i "s/<certfile>/worker1.$CA_DOMAIN.cert.pem/" $SECPI_PATH/worker/config.json
-		sed -i "s/<keyfile>/worker1.$CA_DOMAIN.key.pem/" $SECPI_PATH/worker/config.json
-		gen_and_sign_cert worker1.$CA_DOMAIN client
+		sed -i "s/<certfile>/worker1.cert.pem/" $CONFIG_PATH/config-worker.json
+		sed -i "s/<keyfile>/worker1.key.pem/" $CONFIG_PATH/config-worker.json
+		gen_and_sign_cert worker1 client
 	fi
 	
 	echo "Copying startup scripts..."

@@ -4,7 +4,7 @@ then
 	exit 1
 fi
 
-CERT_PATH="/opt/secpi/certs"
+CERT_PATH="/etc/secpi/certs"
 
 # revoke old cert
 openssl ca -config $CERT_PATH/ca/openssl.cnf -revoke $1.cert.pem
