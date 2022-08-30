@@ -12,6 +12,7 @@ import requests
 import manager.manager
 import webinterface.main
 import worker.worker
+from tools.db.database import DatabaseAdapter
 
 
 class BaseServiceWrapper:
@@ -93,6 +94,12 @@ class AmqpServiceWrapper(BaseServiceWrapper):
 class ManagerServiceWrapper(AmqpServiceWrapper):
 
     def run(self):
+
+        # TODO: Read database URI from application configuration file.
+        #       Otherwise, pass "create_schema=True" through `start_process` or app config.
+        #       However, this might be dangerous?
+        DatabaseAdapter(uri="sqlite:///secpi-database-testing.sqlite").connect().setup()
+
         self.start_process(
             name="secpi-manager",
             app_config="testing/etc/config-manager.json",

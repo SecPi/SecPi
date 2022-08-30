@@ -29,7 +29,8 @@ class DatabaseAdapter:
         create_session = sessionmaker(bind=self.engine)
         self.session = create_session()
 
-        self.setup()
+        return self
 
     def setup(self):
         objects.setup(self.engine)
+        return self
