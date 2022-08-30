@@ -16,7 +16,7 @@ def gpio_sensor(worker_mock, mocker) -> Sensor:
     # Configure sensor.
     with surrogate("RPi.GPIO"):
         mocker.patch("RPi.GPIO")
-        component = load_class("worker.gpio_sensor", "GPIOSensor")
+        component = load_class("secpi.sensor.gpio", "GPIOSensor")
     parameters = {
         "gpio": "42",
         "bouncetime": "3",
@@ -33,7 +33,7 @@ def test_gpio_load_fails():
     Because `RPi.GPIO` is not installed, loading the `GPIOSensor` should croak.
     """
     with pytest.raises(ModuleNotFoundError) as ex:
-        load_class("worker.gpio_sensor", "GPIOSensor")
+        load_class("secpi.sensor.gpio", "GPIOSensor")
     assert ex.match("No module named 'RPi'")
 
 
@@ -57,12 +57,12 @@ def test_sensor_gpio_alarm(gpio_sensor, caplog):
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ("secpi.util.common", 20, "Loading class successful: worker.gpio_sensor.GPIOSensor"),
-        ("worker.gpio_sensor", 20, "Initializing sensor id=99 with parameters {'gpio': '42', 'bouncetime': '3'}"),
-        ("worker.gpio_sensor", 10, "GPIOSensor: Sensor initialized"),
+        ("secpi.util.common", 20, "Loading class successful: secpi.sensor.gpio.GPIOSensor"),
+        ("secpi.sensor.gpio", 20, "Initializing sensor id=99 with parameters {'gpio': '42', 'bouncetime': '3'}"),
+        ("secpi.sensor.gpio", 10, "GPIOSensor: Sensor initialized"),
     ]
 
     assert caplog.record_tuples == [
-        ("worker.gpio_sensor", 10, "GPIOSensor: Registered sensor at pin 42"),
-        ("worker.gpio_sensor", 10, "GPIOSensor: Removed sensor at pin 42"),
+        ("secpi.sensor.gpio", 10, "GPIOSensor: Registered sensor at pin 42"),
+        ("secpi.sensor.gpio", 10, "GPIOSensor: Removed sensor at pin 42"),
     ]

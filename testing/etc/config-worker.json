@@ -11,7 +11,7 @@
     {
       "id": 1,
       "name": "tcp-listener-1234",
-      "module": "tcpportlistener",
+      "module": "network",
       "class": "TCPPortListener",
       "params": {
         "ip": "localhost",

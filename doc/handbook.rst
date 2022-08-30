@@ -52,8 +52,8 @@ Worker
 ======
 
 Workers are observing sensors and publish corresponding alarm trigger messages
-to the bus. An example for easily triggering the
-``tcpportlistener.TCPPortListener`` sensor on port 1234 is::
+to the bus. An example for easily triggering the ``network.TCPPortListener``
+sensor on port 1234 is::
 
     echo hello | socat - tcp:localhost:1234
 

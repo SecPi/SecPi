@@ -8,10 +8,10 @@ from secpi.model.sensor import Sensor
 logger = logging.getLogger(__name__)
 
 
-class TemperatureSensor(Sensor):  # DS18B20 digital temperature sensor
+class SystemTemperature(Sensor):  # DS18B20 digital temperature sensor
     def __init__(self, id, params, worker):
         logger.info(f"Initializing sensor id={id} with parameters {params}")
-        super(TemperatureSensor, self).__init__(id, params, worker)
+        super(SystemTemperature, self).__init__(id, params, worker)
         # self.active = False
         try:
             self.min = int(params["min"])
@@ -20,13 +20,13 @@ class TemperatureSensor(Sensor):  # DS18B20 digital temperature sensor
             self.device_id = params["device_id"]
         except ValueError as ve:  # if one configuration parameter can't be parsed as int
             self.post_err(
-                "TemperatureSensor: Wasn't able to initialize the sensor, please check your configuration: %s" % ve
+                "SystemTemperature: Wasn't able to initialize the sensor, please check your configuration: %s" % ve
             )
             self.corrupted = True
             return
         except KeyError as ke:  # if config parameters are missing
             self.post_err(
-                "TemperatureSensor: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s"
+                "SystemTemperature: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s"
                 % ke
             )
             self.corrupted = True
@@ -41,10 +41,10 @@ class TemperatureSensor(Sensor):  # DS18B20 digital temperature sensor
 
         if not os.path.isfile(self.device_file):  # if there is no slave file which contains the temperature
             self.corrupted = True
-            self.post_err("TemperatureSensor: Wasn't able to find temperature file at %s" % self.device_file)
+            self.post_err("SystemTemperature: Wasn't able to find temperature file at %s" % self.device_file)
             return
 
-        logger.info("TemperatureSensor: Sensor initialized")
+        logger.info("SystemTemperature: Sensor initialized")
 
     def activate(self):
         if not self.corrupted:
@@ -53,16 +53,16 @@ class TemperatureSensor(Sensor):  # DS18B20 digital temperature sensor
                 name="thread-checker-%s" % self.device_id, target=self.check_temperature
             )
             self.checker_thread.start()
-            self.post_log(f"TemperatureSensor: Sensor activated successfully, id={self.id}")
+            self.post_log(f"SystemTemperature: Sensor activated successfully, id={self.id}")
         else:
-            self.post_err(f"TemperatureSensor: Sensor could not be activated, id={self.id}")
+            self.post_err(f"SystemTemperature: Sensor could not be activated, id={self.id}")
 
     def deactivate(self):
         if not self.corrupted:
             self.stop_thread = True
-            self.post_log(f"TemperatureSensor: Sensor deactivated successfully, id={self.id}")
+            self.post_log(f"SystemTemperature: Sensor deactivated successfully, id={self.id}")
         else:
-            self.post_err(f"TemperatureSensor: Sensor could not be deactivated, id={self.id}")
+            self.post_err(f"SystemTemperature: Sensor could not be deactivated, id={self.id}")
 
     def check_temperature(self):
         while True:

@@ -13,7 +13,7 @@ def pinger_sensor(worker_mock) -> Sensor:
     """
 
     # Configure sensor.
-    component = load_class("worker.pinger", "Pinger")
+    component = load_class("secpi.sensor.pinger", "Pinger")
     parameters = {
         "destination_ip": "localhost",
         "interval": "0.05",
@@ -47,13 +47,13 @@ def test_sensor_pinger_alarm(pinger_sensor, caplog):
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ("secpi.util.common", 20, "Loading class successful: worker.pinger.Pinger"),
+        ("secpi.util.common", 20, "Loading class successful: secpi.sensor.pinger.Pinger"),
         (
-            "worker.pinger",
+            "secpi.sensor.pinger",
             20,
             "Initializing sensor id=99 with parameters {'destination_ip': 'localhost', 'interval': '0.05', 'max_losses': '0', 'bounce_time': '0'}",
         ),
-        ("worker.pinger", 10, "Pinger: Sensor initialized"),
+        ("secpi.sensor.pinger", 10, "Pinger: Sensor initialized"),
     ]
 
     # This sensor does not send anything to the log by default.

@@ -12,13 +12,13 @@ def fake_device(fs):
 
 
 @pytest.fixture(scope="function")
-def temperature_sensor(fake_device, worker_mock) -> Sensor:
+def system_temperature_sensor(fake_device, worker_mock) -> Sensor:
     """
-    Provide the test cases with a `TemperatureSensor` instance, where its Worker is mocked.
+    Provide the test cases with a `SystemTemperature` instance, where its Worker is mocked.
     """
 
     # Configure sensor.
-    component = load_class("worker.temperature_sensor", "TemperatureSensor")
+    component = load_class("secpi.sensor.system", "SystemTemperature")
     parameters = {
         "device_id": "foobar",
         "bouncetime": "3",
@@ -32,33 +32,33 @@ def temperature_sensor(fake_device, worker_mock) -> Sensor:
     yield sensor
 
 
-def test_sensor_temperature_alarm(temperature_sensor, caplog):
+def test_sensor_temperature_alarm(system_temperature_sensor, caplog):
     """
-    Test the alarm method of the `TemperatureSensor`. No sensor logic involved.
+    Test the alarm method of the `SystemTemperature`. No sensor logic involved.
     """
 
     # Invoke alarm, without actually triggering the sensor logic.
-    temperature_sensor.activate()
-    temperature_sensor.alarm("Hello, world.")
-    temperature_sensor.deactivate()
+    system_temperature_sensor.activate()
+    system_temperature_sensor.alarm("Hello, world.")
+    system_temperature_sensor.deactivate()
 
     # Verify the right calls would have been made to the Worker.
-    assert temperature_sensor.worker.mock_calls == [
-        call.post_log("TemperatureSensor: Sensor activated successfully, id=99", 50),
+    assert system_temperature_sensor.worker.mock_calls == [
+        call.post_log("SystemTemperature: Sensor activated successfully, id=99", 50),
         call.alarm(99, "Hello, world."),
-        call.post_log("TemperatureSensor: Sensor deactivated successfully, id=99", 50),
+        call.post_log("SystemTemperature: Sensor deactivated successfully, id=99", 50),
     ]
 
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ("secpi.util.common", 20, "Loading class successful: worker.temperature_sensor.TemperatureSensor"),
+        ("secpi.util.common", 20, "Loading class successful: secpi.sensor.system.SystemTemperature"),
         (
-            "worker.temperature_sensor",
+            "secpi.sensor.system",
             20,
             "Initializing sensor id=99 with parameters {'device_id': 'foobar', 'bouncetime': '3', 'min': '3', 'max': '60'}",
         ),
-        ("worker.temperature_sensor", 20, "TemperatureSensor: Sensor initialized"),
+        ("secpi.sensor.system", 20, "SystemTemperature: Sensor initialized"),
     ]
 
     # This sensor does not send anything to the log by default.

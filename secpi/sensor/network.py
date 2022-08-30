@@ -1,17 +1,17 @@
 """
 Configuration::
 
-	ID:          1
-	Name:        tcp-listener-1234
-	Description: Example TCP listener
-	Zone ID:     1
-	Worker ID:   1
-	Class:       TCPPortListener
-	Module:      tcpportlistener
+    ID:          1
+    Name:        tcp-listener-1234
+    Description: Example TCP listener
+    Zone ID:     1
+    Worker ID:   1
+    Class:       TCPPortListener
+    Module:      network
 
 Trigger alarm::
 
-	echo hello | socat - tcp:localhost:1234
+    echo hello | socat - tcp:localhost:1234
 """
 import logging
 import socketserver

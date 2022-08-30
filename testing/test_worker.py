@@ -36,6 +36,10 @@ def test_worker_with_tcplistener(worker_service):
     Start Worker and submit a sensor trigger using TCP. Verify that the log output matches the expectations.
     """
 
+    # Give system some time for making sure the TCP listener has started.
+    # FIXME: Wait polling.
+    time.sleep(0.25)
+
     # Submit a sensor signal.
     command = "echo hello | socat - tcp:localhost:1234"
     subprocess.check_output(command, shell=True)
@@ -47,7 +51,7 @@ def test_worker_with_tcplistener(worker_service):
     app_log = worker_service.read_log()
 
     # Verify everything is in place.
-    assert "Loading class successful: worker.tcpportlistener.TCPPortListener" in app_log
+    assert "Loading class successful: secpi.sensor.network.TCPPortListener" in app_log
     assert "Sensor with id 1 detected something" in app_log
     assert (
         "Publishing message:" in app_log and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log

@@ -30,7 +30,7 @@ def adam6000_sensor(worker_mock) -> Sensor:
     )
 
     # Configure sensor.
-    component = load_class("worker.adam6000", "AdvantechAdamSensor")
+    component = load_class("secpi.sensor.adam6000", "AdvantechAdamSensor")
     parameters = {
         "name": "Ferrata",
         "channel": "di4",
@@ -61,20 +61,24 @@ def test_sensor_adam6000_alarm(adam6000_sensor, caplog):
 
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ("secpi.util.common", 20, "Loading class successful: worker.adam6000.AdvantechAdamSensor"),
-        ("worker.adam6000", 20, "Initializing sensor id=99 with parameters {'name': 'Ferrata', 'channel': 'di4'}"),
+        ("secpi.util.common", 20, "Loading class successful: secpi.sensor.adam6000.AdvantechAdamSensor"),
+        (
+            "secpi.sensor.adam6000",
+            20,
+            "Initializing sensor id=99 with parameters {'name': 'Ferrata', 'channel': 'di4'}",
+        ),
     ]
 
     assert caplog.record_tuples == [
-        ("worker.adam6000", 20, "Starting MQTT subscriber thread"),
-        ("worker.adam6000", 20, "Subscribing to MQTT broker at localhost with topic Advantech/11E1DAF0ECCE/data"),
-        ("worker.adam6000", 20, "Registering event callback for channel=di4, name=Ferrata"),
-        ("worker.adam6000", 20, "Stopping MQTT subscriber thread"),
+        ("secpi.sensor.adam6000", 20, "Starting MQTT subscriber thread"),
+        ("secpi.sensor.adam6000", 20, "Subscribing to MQTT broker at localhost with topic Advantech/11E1DAF0ECCE/data"),
+        ("secpi.sensor.adam6000", 20, "Registering event callback for channel=di4, name=Ferrata"),
+        ("secpi.sensor.adam6000", 20, "Stopping MQTT subscriber thread"),
     ]
 
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.adam6000.AdvantechAdamSensor" in setup_messages
+    assert "Loading class successful: secpi.sensor.adam6000.AdvantechAdamSensor" in setup_messages
     assert "Initializing sensor id=99 with parameters {'name': 'Ferrata', 'channel': 'di4'}" in setup_messages
     assert "Starting MQTT subscriber thread" in caplog.messages
     assert "Subscribing to MQTT broker at localhost with topic Advantech/11E1DAF0ECCE/data" in caplog.messages
@@ -122,7 +126,7 @@ def test_sensor_adam6000_with_mqtt(adam6000_sensor, caplog):
 
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.adam6000.AdvantechAdamSensor" in setup_messages
+    assert "Loading class successful: secpi.sensor.adam6000.AdvantechAdamSensor" in setup_messages
     assert "Initializing sensor id=99 with parameters {'name': 'Ferrata', 'channel': 'di4'}" in setup_messages
     assert "Starting MQTT subscriber thread" in caplog.messages
     assert "Subscribing to MQTT broker at localhost with topic Advantech/11E1DAF0ECCE/data" in caplog.messages
