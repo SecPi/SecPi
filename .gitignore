@@ -1,18 +1,15 @@
+/.idea
+/.vagrant
+/.venv*
+/dist
+/run
+/tmp
+/var
+
 *.pyc
 __pycache__
 *.egg-info
-/.venv*
-/.idea
-/dist
 .coverage*
 coverage.xml
-/.vagrant
-/tmp
 
-webinterface/logs/*
-worker/*.jpg
 *.sqlite
-certs/*
-logs/*
-webinterface/.htdigest
-run/

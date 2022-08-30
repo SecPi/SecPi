@@ -36,13 +36,16 @@ Project and code
 - [x] Remove some features
 - [x] Format code
 - [x] Separate configuration directories into {production,development,testing}
+- [x] Refactor to ``secpi`` namespace and rework directory layout
+- [x] Remove ``sys.exit(130)`` on ``KeyboardInterrupt``.
 - [o] Configuration: s/rabbitmq/amqp/
-- [o] Refactor to ``secpi`` namespace and rework directory layout
 - [o] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
 - [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
 - [o] Dependencies: Make installing ``pygame`` optional
-- [o] Remove ``sys.exit(130)`` on ``KeyboardInterrupt``.
 - [o] Check RabbitMQ 3.10.7
+- [o] Check packaging. -- ``poe build``
+- [o] ``mv .ci .github``
+- [o] ``mv scripts stuff contrib``
 
 Bugs
 ====
@@ -60,6 +63,12 @@ Documentation
 - [o] Database setup. How to run ``DatabaseAdapter.setup()`` once?
 - [o] Turn Wiki into dedicated repository. -- https://github.com/SecPi/SecPi/wiki/
 - [o] Download Wiki images from imgur
+- [o] First commit: 14 May 2015. -- https://github.com/SecPi/SecPi/commit/e9d86f31d9
+- [o] Other projects
+
+  - https://pypi.org/project/RPIHomeAlarmSystem/
+  - https://pypi.org/project/automate-home/
+  - https://pypi.org/project/home-service/
 
 Features
 ========
@@ -82,7 +91,9 @@ Project and code
 - [o] Bring back AMQP SSL connection abilities.
 - [o] Add MQTT SSL connection abilities.
 - [o] Improve UI
-  https://github.com/SecPi/SecPi/issues/101
+
+  - https://github.com/SecPi/SecPi/issues/101
+  - https://github.com/SecPi/SecPi/commit/98926004e
 - [o] Tests: Improve efficiency by implementing ``socat``, ``amqp-publish``, and ``amqp-get`` in pure Python
 - [o] More test scenarios and validations, e.g.
 

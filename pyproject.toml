@@ -11,7 +11,7 @@ description = "SecPi is a software framework for building alarm systems with Lin
 readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "GPLv3+"}
-keywords = ["alarm", "monitoring", "observation", "security", "alerting", "notification", "amqp", "mqtt", "modbus"]
+keywords = ["alarm", "monitoring", "observation", "security", "alerting", "notification", "amqp", "mqtt", "modbus", "ifttt"]
 authors = [
   {name = "Philip Wölfel", email = "is141524@fhstp.ac.at"},
   {name = "Martin Liebl", email = "is141513@fhstp.ac.at"},
