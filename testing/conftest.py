@@ -31,11 +31,14 @@ def drain_amqp():
     Drain relevant AMQP queues to have a fresh environment.
     """
 
-    # Remove alarm message from AMQP queue again.
-    command = "amqp-get --queue=secpi-alarm"
-    process = subprocess.run(command, shell=True)
-    if process.returncode not in [1, 2]:
-        process.check_returncode()
+    # Remove all messages from AMQP queues.
+    # TODO: Implement more efficiently in pure Python.
+    queues = ["secpi-op-1", "secpi-op-m", "secpi-init_config", "secpi-config-1", "secpi-alarm", "secpi-log"]
+    for queue in queues:
+        command = f"amqp-get --queue={queue} > /dev/null 2>&1"
+        process = subprocess.run(command, shell=True)
+        if process.returncode not in [1, 2]:
+            process.check_returncode()
 
 
 @pytest.fixture(scope="function")
