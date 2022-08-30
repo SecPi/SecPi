@@ -1,6 +1,6 @@
 import cherrypy
 
-from tools.db.objects import Worker
+from secpi.model.dbmodel import Worker
 
 from ..base_webpage import BaseWebPage
 

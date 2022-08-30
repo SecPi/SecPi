@@ -1,6 +1,6 @@
 import cherrypy
 
-from tools.db.objects import Zone
+from secpi.model.dbmodel import Zone
 
 from ..base_webpage import BaseWebPage
 

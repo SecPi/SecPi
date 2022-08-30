@@ -1,8 +1,8 @@
 import pytest
 from surrogate import surrogate
 
+from secpi.model.action import Action
 from secpi.util.common import load_class
-from tools.action import Action
 
 
 @pytest.fixture(scope="function")

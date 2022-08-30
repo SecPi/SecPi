@@ -1,4 +1,4 @@
-from tools.db.objects import Param
+from secpi.model.dbmodel import Param
 
 from ..base_webpage import BaseWebPage
 

@@ -1,15 +1,10 @@
 #!/bin/bash
 
-# startup script for SecPi
+# Startup script for SecPi
 
 if [ $# -gt 0 ]
 then
 
-	# set python path so all classes are found
-	export PYTHONPATH=$PWD
-	
-	PROJECT_PATH=$PWD
-	
 	if [ $1 = "manager" ]
 	then
 		secpi-manager --app-config=manager/config.json
@@ -19,16 +14,11 @@ then
 	elif [ $1 = "webinterface" ]
 	then
 		secpi-web --app-config=webinterface/config.json
-	elif [ $1 = "webinterface" ]
-	then
-		cd tools/db
-		python setup.py $PROJECT_PATH
-	#	python test.py
 	else
-		echo "Usage: startup.sh <manager|worker|webinterface|setup>"
+		echo "Usage: startup.sh <manager|worker|webinterface>"
 	fi
 
 else
-	echo "Usage: startup.sh <manager|worker|webinterface|setup>"
+	echo "Usage: startup.sh <manager|worker|webinterface>"
 
 fi

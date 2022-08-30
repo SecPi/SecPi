@@ -139,7 +139,7 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from sqlalchemy.util import asbool
 
 from secpi.model import constants
-from tools.sensor import Sensor
+from secpi.model.sensor import Sensor
 
 logger = logging.getLogger(__name__)
 

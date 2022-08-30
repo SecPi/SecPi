@@ -1,7 +1,7 @@
 import cherrypy
 
+from secpi.model.dbmodel import LogEntry
 from secpi.util.web import json_handler
-from tools.db.objects import LogEntry
 
 from ..base_webpage import BaseWebPage
 

@@ -2,7 +2,7 @@ import logging
 
 import pygame
 
-from tools.action import Action
+from secpi.model.action import Action
 
 logger = logging.getLogger(__name__)
 

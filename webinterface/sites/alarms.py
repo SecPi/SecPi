@@ -1,7 +1,7 @@
 import cherrypy
 
+from secpi.model.dbmodel import Alarm
 from secpi.util.web import json_handler
-from tools.db.objects import Alarm
 
 from ..base_webpage import BaseWebPage
 

@@ -81,9 +81,6 @@ if [ $# -ge 2 ]
 then
 	if [ $1 = "-u" ] || [ $1 = "--update" ]
 	then
-		# copy tools folder
-		find tools/ -name '*.py' | cpio -updm $SECPI_PATH
-		
 		# copy other stuff
 		cp logging.conf $SECPI_PATH/
 		
@@ -297,8 +294,6 @@ fi
 echo "Current SecPi folder: $PWD"
 echo "Copying to $SECPI_PATH..."
 
-# copy tools folder
-cp -R tools/ $SECPI_PATH/
 cp logging.conf $SECPI_PATH/
 
 # manager or complete install

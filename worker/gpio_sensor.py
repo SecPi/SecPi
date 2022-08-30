@@ -2,7 +2,7 @@ import logging
 
 import RPi.GPIO as GPIO
 
-from tools.sensor import Sensor
+from secpi.model.sensor import Sensor
 
 logger = logging.getLogger(__name__)
 

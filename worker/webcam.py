@@ -4,7 +4,7 @@ import time
 import pygame.camera
 import pygame.image
 
-from tools.action import Action
+from secpi.model.action import Action
 
 logger = logging.getLogger(__name__)
 

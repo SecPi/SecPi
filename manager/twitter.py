@@ -2,7 +2,7 @@ import logging
 
 import tweepy
 
-from tools.notifier import Notifier
+from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 

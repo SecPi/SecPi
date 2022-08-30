@@ -17,7 +17,7 @@ import logging
 import socketserver
 import threading
 
-from tools.sensor import Sensor
+from secpi.model.sensor import Sensor
 
 logger = logging.getLogger(__name__)
 

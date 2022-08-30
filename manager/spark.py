@@ -3,7 +3,7 @@ import logging
 import requests
 import requests.exceptions
 
-from tools.notifier import Notifier
+from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 

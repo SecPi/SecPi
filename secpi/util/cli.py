@@ -1,14 +1,8 @@
 import argparse
-import dataclasses
 import os
 import pathlib
 
-
-@dataclasses.dataclass
-class StartupOptions:
-    app_config: pathlib.Path
-    logging_config: pathlib.Path
-    log_file: pathlib.Path
+from secpi.model.settings import StartupOptions
 
 
 def parse_cmd_args() -> StartupOptions:

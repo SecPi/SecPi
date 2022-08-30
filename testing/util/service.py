@@ -1,6 +1,5 @@
 import abc
 import multiprocessing
-import os
 import subprocess
 import sys
 import tempfile
@@ -13,7 +12,7 @@ import requests
 import manager.manager
 import webinterface.main
 import worker.worker
-from tools.db.database import DatabaseAdapter
+from secpi.util.database import DatabaseAdapter
 
 
 class BaseServiceWrapper:

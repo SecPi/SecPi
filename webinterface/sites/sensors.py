@@ -1,11 +1,11 @@
-from tools.db import objects
+from secpi.model.dbmodel import Sensor
 
 from ..base_webpage import BaseWebPage
 
 
 class SensorsPage(BaseWebPage):
     def __init__(self):
-        super(SensorsPage, self).__init__(objects.Sensor)
+        super(SensorsPage, self).__init__(Sensor)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["name"] = {"name": "Name", "visible": ["list", "add", "update"]}
         self.fields["description"] = {"name": "Description", "visible": ["list", "add", "update"]}

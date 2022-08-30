@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from tools.db import objects
+from secpi.model import dbmodel
 
 logger = logging.getLogger(__name__)
 
@@ -33,5 +33,5 @@ class DatabaseAdapter:
         return self
 
     def setup(self):
-        objects.setup(self.engine)
+        dbmodel.setup(self.engine)
         return self

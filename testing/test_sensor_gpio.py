@@ -3,8 +3,8 @@ from unittest.mock import call
 import pytest
 from surrogate import surrogate
 
+from secpi.model.sensor import Sensor
 from secpi.util.common import load_class
-from tools.sensor import Sensor
 
 
 @pytest.fixture(scope="function")

@@ -1,4 +1,4 @@
-from tools.db.objects import Action, Worker
+from secpi.model.dbmodel import Action, Worker
 
 from .baserelationshippage import BaseRelationshipPage
 

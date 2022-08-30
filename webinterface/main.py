@@ -11,12 +11,13 @@ import pkg_resources
 from cp_sqlalchemy import SQLAlchemyPlugin, SQLAlchemyTool
 
 from secpi.model import constants
+from secpi.model.dbmodel import Base, LogEntry, Setup
+from secpi.model.settings import StartupOptions
+from secpi.util.amqp import AMQPAdapter
+from secpi.util.cli import parse_cmd_args
 from secpi.util.common import setup_logging
 from secpi.util.config import ApplicationConfig
 from secpi.util.web import json_handler
-from tools.amqp import AMQPAdapter
-from tools.cli import StartupOptions, parse_cmd_args
-from tools.db.objects import Base, LogEntry, Setup
 
 from .mako_template_tool import MakoTemplateTool
 from .sites.actionparams import ActionParamsPage

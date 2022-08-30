@@ -1,6 +1,6 @@
 import cherrypy
 
-from tools.db.objects import Setup
+from secpi.model.dbmodel import Setup
 
 from ..base_webpage import BaseWebPage
 

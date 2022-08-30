@@ -4,7 +4,7 @@ import time
 
 from ping3 import ping
 
-from tools.sensor import Sensor
+from secpi.model.sensor import Sensor
 
 logger = logging.getLogger(__name__)
 

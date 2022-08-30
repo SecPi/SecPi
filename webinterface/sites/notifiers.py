@@ -1,6 +1,6 @@
 import cherrypy
 
-from tools.db.objects import Notifier
+from secpi.model.dbmodel import Notifier
 
 from ..base_webpage import BaseWebPage
 

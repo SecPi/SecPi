@@ -1,10 +1,9 @@
-import glob
 import logging
 import os
 import threading
 import time
 
-from tools.sensor import Sensor
+from secpi.model.sensor import Sensor
 
 logger = logging.getLogger(__name__)
 

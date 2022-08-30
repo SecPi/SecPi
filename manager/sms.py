@@ -3,7 +3,7 @@ import logging
 import gsmmodem
 import serial.serialutil
 
-from tools.notifier import Notifier
+from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 

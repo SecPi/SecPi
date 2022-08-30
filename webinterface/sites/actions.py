@@ -1,6 +1,6 @@
 import cherrypy
 
-from tools.db.objects import Action
+from secpi.model.dbmodel import Action
 
 from ..base_webpage import BaseWebPage
 

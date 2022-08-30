@@ -13,13 +13,7 @@ import appdirs
 import pika
 
 from secpi.model import constants
-from secpi.util.common import check_late_arrival, load_class, setup_logging
-from secpi.util.config import ApplicationConfig
-from tools.amqp import AMQPAdapter
-from tools.base import Service
-from tools.cli import StartupOptions, parse_cmd_args
-from tools.db.database import DatabaseAdapter
-from tools.db.objects import (
+from secpi.model.dbmodel import (
     Action,
     Alarm,
     LogEntry,
@@ -29,6 +23,13 @@ from tools.db.objects import (
     Worker,
     Zone,
 )
+from secpi.model.service import Service
+from secpi.model.settings import StartupOptions
+from secpi.util.amqp import AMQPAdapter
+from secpi.util.cli import parse_cmd_args
+from secpi.util.common import check_late_arrival, load_class, setup_logging
+from secpi.util.config import ApplicationConfig
+from secpi.util.database import DatabaseAdapter
 
 logger = logging.getLogger(__name__)
 

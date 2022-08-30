@@ -1,4 +1,4 @@
-from tools.db.objects import Setup, Zone
+from secpi.model.dbmodel import Setup, Zone
 
 from .baserelationshippage import BaseRelationshipPage
 

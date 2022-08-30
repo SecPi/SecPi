@@ -18,9 +18,9 @@ Setup
 """
 import logging
 
-from pycall import Application, Call, CallFile, Context
+from pycall import Call, CallFile, Context
 
-from tools.notifier import Notifier
+from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,5 @@
 from secpi.model import constants
-from secpi.util.config import ApplicationConfig
-from tools.db.database import DatabaseAdapter
-from tools.db.objects import (
+from secpi.model.dbmodel import (
     Action,
     LogEntry,
     Notifier,
@@ -11,6 +9,8 @@ from tools.db.objects import (
     Worker,
     Zone,
 )
+from secpi.util.config import ApplicationConfig
+from secpi.util.database import DatabaseAdapter
 
 config = ApplicationConfig(filepath="/opt/secpi/manager/config.json")
 db = DatabaseAdapter(uri="sqlite:///secpi-database-example.sqlite")

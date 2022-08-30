@@ -9,8 +9,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.mime.text import MIMEText
 
+from secpi.model.notifier import Notifier
 from secpi.util.common import str_to_value
-from tools.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 
