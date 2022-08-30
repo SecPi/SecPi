@@ -41,6 +41,10 @@ Iteration 2
 - [o] Bump JavaScript dependencies and rebundle using Yarn and webpack
 - [o] ADAM: Resolve ambiguation with ``mqtt_broker_ip`` vs. "port"
 - [o] Get rid of ``00D0C9EFDBBD``
+- [o] Make CherryPy ``--listen-address`` configurable. What about Unix sockets?
+- [o] Docs: Setup
+- [o] Docs: How to run ``DatabaseAdapter.setup()`` once?
+
 
 
 ***********
