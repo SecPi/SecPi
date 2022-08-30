@@ -56,7 +56,3 @@ def test_worker_with_tcplistener(worker_service):
     assert \
         "Publishing message:" in app_log and \
         '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
-
-    # Remove alarm message from AMQP queue again.
-    command = "amqp-get --queue=secpi-alarm"
-    subprocess.check_output(command, shell=True)

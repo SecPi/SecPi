@@ -1,4 +1,5 @@
 import pathlib
+import subprocess
 
 import pytest
 
@@ -22,6 +23,19 @@ def reset_database():
             p.unlink()
         except:
             pass
+
+
+@pytest.fixture(scope="function", autouse=True)
+def drain_amqp():
+    """
+    Drain relevant AMQP queues to have a fresh environment.
+    """
+
+    # Remove alarm message from AMQP queue again.
+    command = "amqp-get --queue=secpi-alarm"
+    process = subprocess.run(command, shell=True)
+    if process.returncode not in [1, 2]:
+        process.check_returncode()
 
 
 @pytest.fixture(scope="function")
