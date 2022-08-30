@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import pika
 
 credentials = pika.PlainCredentials('philip', 'Passw0rd')
