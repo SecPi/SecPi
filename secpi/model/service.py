@@ -6,10 +6,12 @@ logger = logging.getLogger(__name__)
 
 class Service:
     def stop(self):
+        logger.info("Stopping service")
         self.do_shutdown = True
         self.bus.shutdown()
 
     def __del__(self):
+        logger.info("Deleting service instance")
         try:
             self.stop()
 

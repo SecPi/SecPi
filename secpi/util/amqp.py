@@ -78,14 +78,17 @@ class AMQPAdapter:
         return self.connection and self.connection.is_open
 
     def disconnect(self):
-        try:
-            self.channel.close()
-        except:
-            pass
-        try:
-            self.connection.close()
-        except:
-            pass
+
+        if self.available:
+            logger.info("Disconnecting")
+            try:
+                self.channel.close()
+            except:
+                pass
+            try:
+                self.connection.close()
+            except:
+                pass
 
         self.channel = None
         self.connection = None
@@ -171,9 +174,11 @@ class AMQPAdapter:
         self.do_shutdown = True
 
         def doit():
+            logger.info("Running AMQP subsystem shutdown")
             self.unsubscribe()
             self.disconnect()
 
+        logger.info("Signalling AMQP subsystem to shut down")
         self.connection.add_callback_threadsafe(doit)
 
     def process_undelivered_messages(self, delay=None):
