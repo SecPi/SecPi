@@ -28,6 +28,7 @@ class FFMPEGVideo(Action):
 		self.params.setdefault('name', 'default')
 		self.params.setdefault('count', 3)
 		self.params.setdefault('interval', 5)
+		# FIXME: This is hardcoded.
 		self.params.setdefault('data_path', '/var/tmp/secpi/worker_data')
 		self.params.setdefault('ffmpeg_global_options', '-v quiet -stats')
 		self.params.setdefault('ffmpeg_input_options',  None)
