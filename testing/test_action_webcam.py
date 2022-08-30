@@ -1,4 +1,4 @@
-from unittest.mock import call, Mock
+from unittest.mock import Mock, call
 
 import pytest
 from surrogate import surrogate

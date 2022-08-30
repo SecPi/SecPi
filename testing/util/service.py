@@ -76,7 +76,6 @@ class BaseServiceWrapper:
 
 
 class AmqpServiceWrapper(BaseServiceWrapper):
-
     def shutdown(self, identifier: str):
         """
         Shut down service over AMQP.
@@ -93,7 +92,6 @@ class AmqpServiceWrapper(BaseServiceWrapper):
 
 
 class ManagerServiceWrapper(AmqpServiceWrapper):
-
     def run(self):
 
         # TODO: Read database URI from application configuration file.
@@ -111,7 +109,6 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
 
 
 class WorkerServiceWrapper(AmqpServiceWrapper):
-
     def run(self):
         self.start_process(
             name="secpi-worker",
@@ -121,7 +118,6 @@ class WorkerServiceWrapper(AmqpServiceWrapper):
 
 
 class WebinterfaceServiceWrapper(BaseServiceWrapper):
-
     def run(self):
         self.start_process(
             name="secpi-web",

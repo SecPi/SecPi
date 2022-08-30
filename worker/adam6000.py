@@ -259,6 +259,7 @@ class AdvantechAdamMqttConnector:
         def _stop():
             self.mqtt_client.disconnect()
             AdvantechAdamMqttConnector.thread = None
+
         timer = threading.Timer(0.1, _stop)
         timer.start()
         timer.join()
@@ -467,7 +468,9 @@ class AdvantechAdamSensor(Sensor):
         with AdvantechAdamSensor.lock:
             if AdvantechAdamSensor.connector is None:
                 AdvantechAdamSensor.connector = AdvantechAdamMqttConnector(self.mqtt_broker_ip, self.mqtt_topic)
-                AdvantechAdamSensor.connector.start(modbus_seed_enabled=self.modbus_seed_enabled, modbus_seed_delay=self.modbus_seed_delay)
+                AdvantechAdamSensor.connector.start(
+                    modbus_seed_enabled=self.modbus_seed_enabled, modbus_seed_delay=self.modbus_seed_delay
+                )
 
     def stop_mqtt_subscriber(self):
         """

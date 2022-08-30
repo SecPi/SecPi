@@ -5,7 +5,6 @@ logger = logging.getLogger(__name__)
 
 
 class Service:
-
     def stop(self):
         self.do_shutdown = True
         self.bus.shutdown()

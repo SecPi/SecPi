@@ -13,15 +13,21 @@ class StartupOptions:
 
 def parse_cmd_args() -> StartupOptions:
     parser = argparse.ArgumentParser(description="Run the SecPi worker")
-    parser.add_argument("--app-config", dest="app_config", type=pathlib.Path,
-                        required=False,
-                        help="Path to the `config-worker.json` configuration file")
-    parser.add_argument("--logging-config", dest="logging_config", type=pathlib.Path,
-                        help="Path to the `logging.conf` configuration file",
-                        required=False)
-    parser.add_argument("--log-file", dest="log_file", type=pathlib.Path,
-                        help="Path to the log file",
-                        required=False)
+    parser.add_argument(
+        "--app-config",
+        dest="app_config",
+        type=pathlib.Path,
+        required=False,
+        help="Path to the `config-worker.json` configuration file",
+    )
+    parser.add_argument(
+        "--logging-config",
+        dest="logging_config",
+        type=pathlib.Path,
+        help="Path to the `logging.conf` configuration file",
+        required=False,
+    )
+    parser.add_argument("--log-file", dest="log_file", type=pathlib.Path, help="Path to the log file", required=False)
 
     args = parser.parse_args()
 

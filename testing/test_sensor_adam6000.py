@@ -16,16 +16,18 @@ def adam6000_sensor(worker_mock) -> Sensor:
     """
 
     # Configure application mock.
-    worker_mock.config.update({
-        "global": {
-            "adam6000": {
-                "mqtt_broker_ip": "localhost",
-                "mqtt_topic": "Advantech/11E1DAF0ECCE",
-                "modbus_seed_enabled": "false",
-                "modbus_seed_delay": "0.0",
-            },
+    worker_mock.config.update(
+        {
+            "global": {
+                "adam6000": {
+                    "mqtt_broker_ip": "localhost",
+                    "mqtt_topic": "Advantech/11E1DAF0ECCE",
+                    "modbus_seed_enabled": "false",
+                    "modbus_seed_delay": "0.0",
+                },
+            }
         }
-    })
+    )
 
     # Configure sensor.
     component = load_class("worker.adam6000", "AdvantechAdamSensor")
@@ -52,15 +54,15 @@ def test_sensor_adam6000_alarm(adam6000_sensor, caplog):
 
     # Verify the right calls would have been made to the Worker.
     assert adam6000_sensor.worker.mock_calls == [
-        call.post_log('ADAM: Sensor activated successfully, id=99', 50),
-        call.alarm(99, 'Hello, world.'),
-        call.post_log('ADAM: Sensor deactivated successfully, id=99', 50)
+        call.post_log("ADAM: Sensor activated successfully, id=99", 50),
+        call.alarm(99, "Hello, world."),
+        call.post_log("ADAM: Sensor deactivated successfully, id=99", 50),
     ]
 
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ('tools.utils', 20, 'Loading class successful: worker.adam6000.AdvantechAdamSensor'),
-        ('worker.adam6000', 20, "Initializing sensor id=99 with parameters {'name': 'Ferrata', 'channel': 'di4'}"),
+        ("tools.utils", 20, "Loading class successful: worker.adam6000.AdvantechAdamSensor"),
+        ("worker.adam6000", 20, "Initializing sensor id=99 with parameters {'name': 'Ferrata', 'channel': 'di4'}"),
     ]
 
     assert caplog.record_tuples == [
@@ -87,8 +89,12 @@ def test_sensor_adam6000_with_mqtt(adam6000_sensor, caplog):
 
     # Define two device messages, to be delivered using MQTT.
     # They differ on the state value of the ``di4`` channel.
-    DEVICE_MESSAGE_1 = json.loads('{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}')
-    DEVICE_MESSAGE_2 = json.loads('{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":false,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}')
+    DEVICE_MESSAGE_1 = json.loads(
+        '{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
+    )
+    DEVICE_MESSAGE_2 = json.loads(
+        '{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":false,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
+    )
 
     adam6000_sensor.activate()
 
@@ -105,10 +111,13 @@ def test_sensor_adam6000_with_mqtt(adam6000_sensor, caplog):
 
     # Verify the right calls would have been made to the Worker.
     assert adam6000_sensor.worker.mock_calls == [
-        call.post_log('ADAM: Sensor activated successfully, id=99', 50),
-        call.alarm(sensor_id=None, message='Erste Erfassung. Offene Kontakte: Ferrata\n\nSummary message\n\nAlle Kontakte:\n- Kontakt "Ferrata" ist offen\n'),
+        call.post_log("ADAM: Sensor activated successfully, id=99", 50),
+        call.alarm(
+            sensor_id=None,
+            message='Erste Erfassung. Offene Kontakte: Ferrata\n\nSummary message\n\nAlle Kontakte:\n- Kontakt "Ferrata" ist offen\n',
+        ),
         call.alarm(99, 'Kontakt Ferrata wurde geschlossen\n\nAlle Kontakte:\n- Kontakt "Ferrata" ist geschlossen\n'),
-        call.post_log('ADAM: Sensor deactivated successfully, id=99', 50)
+        call.post_log("ADAM: Sensor deactivated successfully, id=99", 50),
     ]
 
     # Verify log output matches the expectations.
@@ -122,7 +131,10 @@ def test_sensor_adam6000_with_mqtt(adam6000_sensor, caplog):
     assert """Message: b'{"s": 1, "t": 0,""" in caplog.text
     assert """Data: {'s': 1, 't': 0,""" in caplog.text
     assert "Raising alarm with summary message. Erste Erfassung. Offene Kontakte: Ferrata" in caplog.text
-    assert "Sensor state changed. id=99, params={'name': 'Ferrata', 'channel': 'di4'}, channel=di4, value=False" in caplog.messages
+    assert (
+        "Sensor state changed. id=99, params={'name': 'Ferrata', 'channel': 'di4'}, channel=di4, value=False"
+        in caplog.messages
+    )
     assert "Raising alarm for individual sensor. Kontakt Ferrata wurde geschlossen" in caplog.text
     # assert "ADAM: Sensor deactivated successfully, id=99" in caplog.messages
     assert "Stopping MQTT subscriber thread" in caplog.messages

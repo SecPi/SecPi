@@ -1,9 +1,9 @@
 import logging
 
 import requests
-from webinterface.constants import __version__
 
 from testing.util.service import WebinterfaceServiceWrapper
+from webinterface.constants import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,9 @@ def test_webinterface_with_activate(webinterface_service):
     """
 
     # Create a setup.
-    requests.post(url="http://localhost:8000/setups/add", json={"name": "secpi-testing", "description": "Created by test suite"})
+    requests.post(
+        url="http://localhost:8000/setups/add", json={"name": "secpi-testing", "description": "Created by test suite"}
+    )
     response = requests.get(url="http://localhost:8000/setups/list").json()
     setup_identifier = response["data"][0]["id"]
 
@@ -68,12 +70,20 @@ def test_webinterface_with_activate(webinterface_service):
 
     # Verify everything is in place.
     assert "Activating setup id=1" in app_log
-    assert """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': True}""" in app_log
+    assert (
+        """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': True}"""
+        in app_log
+    )
     assert """Action successful: SuccessfulResponse(message="Activating setup 'secpi-testing' succeeded")""" in app_log
 
     assert "Deactivating setup id=1" in app_log
-    assert """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': False}""" in app_log
-    assert """Action successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")""" in app_log
+    assert (
+        """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': False}"""
+        in app_log
+    )
+    assert (
+        """Action successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")""" in app_log
+    )
 
 
 def test_webinterface_version_in_footer(webinterface_service):

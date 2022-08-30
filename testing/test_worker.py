@@ -49,6 +49,6 @@ def test_worker_with_tcplistener(worker_service):
     # Verify everything is in place.
     assert "Loading class successful: worker.tcpportlistener.TCPPortListener" in app_log
     assert "Sensor with id 1 detected something" in app_log
-    assert \
-        "Publishing message:" in app_log and \
-        '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
+    assert (
+        "Publishing message:" in app_log and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
+    )

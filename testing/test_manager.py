@@ -8,7 +8,12 @@ from testing.util.service import ManagerServiceWrapper
 logger = logging.getLogger(__name__)
 
 
-ALARM_EVENT = {"pi_id": 1, "sensor_id": 1, "message": "Got TCP connection, raising alarm", "datetime": "2022-08-27 02:33:33"}
+ALARM_EVENT = {
+    "pi_id": 1,
+    "sensor_id": 1,
+    "message": "Got TCP connection, raising alarm",
+    "datetime": "2022-08-27 02:33:33",
+}
 
 
 def test_manager_start_stop():
@@ -53,9 +58,9 @@ def test_manager_receive_alarm(manager_service):
     app_log = manager_service.read_log()
 
     # Verify everything is in place.
-    assert \
-        "Received old alarm:" in app_log and \
-        '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
+    assert (
+        "Received old alarm:" in app_log and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
+    )
     assert "Created directory for alarm:" in app_log
     assert "Old alarm from 1 on sensor 1: Got TCP connection, raising alarm" in app_log
     assert "Received all data from workers, cancelling the timeout" in app_log

@@ -7,8 +7,10 @@ logger = logging.getLogger(__name__)
 
 
 class ApplicationConfig:
-    ERROR_FILE_MISSING = "Path to configuration file missing. " \
-                         "Either specify command line argument --app-config, or environment variable SECPI_APP_CONFIG"
+    ERROR_FILE_MISSING = (
+        "Path to configuration file missing. "
+        "Either specify command line argument --app-config, or environment variable SECPI_APP_CONFIG"
+    )
 
     def __init__(self, filepath: t.Optional[t.Union[pathlib.Path, str]] = None):
         self.filepath = filepath

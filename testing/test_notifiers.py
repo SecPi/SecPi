@@ -5,7 +5,6 @@ import pytest
 
 from tools.utils import load_class
 
-
 NOTIFICATION_INFO = {
     "worker": "worker-testing",
     "worker_id": 1,
@@ -84,10 +83,11 @@ def test_notifier_mailer(fs, caplog):
 
     # It is expected to fail, because nothing should be listening on port 12525.
     assert "Mailer: Unexpected error" in caplog.messages
-    assert \
-        "ConnectionRefusedError: [Errno 61] Connection refused" in caplog.text or \
-        "ConnectionRefusedError: [Errno 111] Connection refused" in caplog.text or \
-        "OSError: [Errno 99] Cannot assign requested address" in caplog.text
+    assert (
+        "ConnectionRefusedError: [Errno 61] Connection refused" in caplog.text
+        or "ConnectionRefusedError: [Errno 111] Connection refused" in caplog.text
+        or "OSError: [Errno 99] Cannot assign requested address" in caplog.text
+    )
 
 
 def test_notifier_sipcall(mocker, caplog):
@@ -99,13 +99,13 @@ def test_notifier_sipcall(mocker, caplog):
     mocker.patch("pycall.callfile.chown")
 
     callfile_reference = [
-        'Channel: SIP/sip-testing/+49-177-1234567\n',
-        'WaitTime: 50\n',
-        'RetryTime: 120\n',
-        'Maxretries: 4\n',
-        'Context: alarm_sensor-testing\n',
-        'Extension: s\n',
-        'Priority: 1',
+        "Channel: SIP/sip-testing/+49-177-1234567\n",
+        "WaitTime: 50\n",
+        "RetryTime: 120\n",
+        "Maxretries: 4\n",
+        "Context: alarm_sensor-testing\n",
+        "Extension: s\n",
+        "Priority: 1",
     ]
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -157,7 +157,10 @@ def test_notifier_slack(caplog):
     assert "Loading class successful: manager.slack.SlackNotifier" in caplog.messages
     assert "Sending Slack notification" in caplog.messages
     assert "Starting new HTTPS connection (1): slack.com:443" in caplog.messages
-    assert 'https://slack.com:443 "GET /api/groups.list?exclude_archived=1&token=foobar-token HTTP/1.1" 200 77' in caplog.messages
+    assert (
+        'https://slack.com:443 "GET /api/groups.list?exclude_archived=1&token=foobar-token HTTP/1.1" 200 77'
+        in caplog.messages
+    )
 
 
 def test_notifier_sms(caplog):
@@ -211,7 +214,10 @@ def test_notifier_spark(caplog):
 
     # It is expected to fail, because invalid token.
     assert 'https://api.ciscospark.com:443 "GET /v1/rooms HTTP/1.1" 401' in caplog.text
-    assert "Error in Spark Notifier: 401 Client Error: Unauthorized for url: https://api.ciscospark.com/v1/rooms" in caplog.messages
+    assert (
+        "Error in Spark Notifier: 401 Client Error: Unauthorized for url: https://api.ciscospark.com/v1/rooms"
+        in caplog.messages
+    )
 
 
 def test_notifier_twitter(caplog):

@@ -49,17 +49,17 @@ def test_sensor_gpio_alarm(gpio_sensor, caplog):
 
     # Verify the right calls would have been made to the Worker.
     assert gpio_sensor.worker.mock_calls == [
-        call.post_log('GPIOSensor: Sensor activated successfully, id=99', 50),
-        call.alarm(99, 'Hello, world.'),
-        call.post_log('GPIOSensor: Sensor deactivated successfully, id=99', 50)
+        call.post_log("GPIOSensor: Sensor activated successfully, id=99", 50),
+        call.alarm(99, "Hello, world."),
+        call.post_log("GPIOSensor: Sensor deactivated successfully, id=99", 50),
     ]
 
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ('tools.utils', 20, 'Loading class successful: worker.gpio_sensor.GPIOSensor'),
-        ('worker.gpio_sensor', 20, "Initializing sensor id=99 with parameters {'gpio': '42', 'bouncetime': '3'}"),
-        ('worker.gpio_sensor', 10, "GPIOSensor: Sensor initialized"),
+        ("tools.utils", 20, "Loading class successful: worker.gpio_sensor.GPIOSensor"),
+        ("worker.gpio_sensor", 20, "Initializing sensor id=99 with parameters {'gpio': '42', 'bouncetime': '3'}"),
+        ("worker.gpio_sensor", 10, "GPIOSensor: Sensor initialized"),
     ]
 
     assert caplog.record_tuples == [

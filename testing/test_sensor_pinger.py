@@ -39,19 +39,22 @@ def test_sensor_pinger_alarm(pinger_sensor, caplog):
 
     # Verify the right calls would have been made to the Worker.
     assert pinger_sensor.worker.mock_calls == [
-        call.post_log('Pinger: Sensor activated successfully, id=99', 50),
-        call.alarm(99, 'Hello, world.'),
-        call.post_log('Pinger: Sensor deactivated successfully, id=99', 50)
+        call.post_log("Pinger: Sensor activated successfully, id=99", 50),
+        call.alarm(99, "Hello, world."),
+        call.post_log("Pinger: Sensor deactivated successfully, id=99", 50),
     ]
 
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ('tools.utils', 20, 'Loading class successful: worker.pinger.Pinger'),
-        ('worker.pinger', 20, "Initializing sensor id=99 with parameters {'destination_ip': 'localhost', 'interval': '0.05', 'max_losses': '0', 'bounce_time': '0'}"),
-        ('worker.pinger', 10, "Pinger: Sensor initialized"),
+        ("tools.utils", 20, "Loading class successful: worker.pinger.Pinger"),
+        (
+            "worker.pinger",
+            20,
+            "Initializing sensor id=99 with parameters {'destination_ip': 'localhost', 'interval': '0.05', 'max_losses': '0', 'bounce_time': '0'}",
+        ),
+        ("worker.pinger", 10, "Pinger: Sensor initialized"),
     ]
 
     # This sensor does not send anything to the log by default.
-    assert caplog.record_tuples == [
-    ]
+    assert caplog.record_tuples == []

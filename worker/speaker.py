@@ -1,5 +1,6 @@
-import pygame
 import logging
+
+import pygame
 
 from tools.action import Action
 
@@ -7,47 +8,48 @@ logger = logging.getLogger(__name__)
 
 
 class Speaker(Action):
+    def __init__(self, id, params, worker):
+        super(Speaker, self).__init__(id, params, worker)
+        try:
+            self.path_to_audio = params["path_to_audio"]
+            self.repetitions = int(params["repetitions"])
+        except ValueError as ve:  # if repetitions can't be parsed as int
+            logger.error("Speaker: Wasn't able to initialize the device, please check your configuration: %s" % ve)
+            self.corrupted = True
+            return
+        except KeyError as ke:  # if config parameters are missing in file
+            logger.error(
+                "Speaker: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % ke
+            )
+            self.corrupted = True
+            return
 
-	def __init__(self, id, params, worker):
-		super(Speaker, self).__init__(id, params, worker)
-		try:
-			self.path_to_audio = params["path_to_audio"]
-			self.repetitions = int(params["repetitions"])
-		except ValueError as ve: # if repetitions can't be parsed as int
-			logger.error("Speaker: Wasn't able to initialize the device, please check your configuration: %s" % ve)
-			self.corrupted = True
-			return
-		except KeyError as ke: # if config parameters are missing in file
-			logger.error("Speaker: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % ke)
-			self.corrupted = True
-			return
+        logger.debug("Speaker: Audio device initialized")
 
-		logger.debug("Speaker: Audio device initialized")
+    def play_audio(self):
+        logger.debug("Speaker: Trying to play audio")
+        pygame.mixer.init()
+        try:
+            pygame.mixer.music.load(self.path_to_audio)
+        except Exception as e:  # audio file doesn't exist or is not playable
+            logger.error("Speaker: Wasn't able to load audio file: %s" % e)
+            pygame.mixer.quit()
+            return
+        pygame.mixer.music.set_volume(1)
 
-	def play_audio(self):
-		logger.debug("Speaker: Trying to play audio")
-		pygame.mixer.init()
-		try:
-			pygame.mixer.music.load(self.path_to_audio)
-		except Exception as e: # audio file doesn't exist or is not playable
-			logger.error("Speaker: Wasn't able to load audio file: %s" % e)
-			pygame.mixer.quit()
-			return
-		pygame.mixer.music.set_volume(1)
+        for i in range(0, self.repetitions):
+            pygame.mixer.music.rewind()
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                continue
+        pygame.mixer.quit()
+        logger.debug("Speaker: Finished playing audio")
 
-		for i in range(0, self.repetitions):
-			pygame.mixer.music.rewind()
-			pygame.mixer.music.play()
-			while pygame.mixer.music.get_busy():
-				continue
-		pygame.mixer.quit()
-		logger.debug("Speaker: Finished playing audio")
+    def execute(self):
+        if not self.corrupted:
+            self.play_audio()
+        else:
+            logger.error("Speaker: Wasn't able to play sound because of an initialization error")
 
-	def execute(self):
-		if not self.corrupted:
-			self.play_audio()
-		else:
-			logger.error("Speaker: Wasn't able to play sound because of an initialization error")
-		
-	def cleanup(self):
-		logger.debug("Speaker: No cleanup necessary at the moment")
+    def cleanup(self):
+        logger.debug("Speaker: No cleanup necessary at the moment")

@@ -1,5 +1,5 @@
-import logging
 import functools
+import logging
 import time
 import typing as t
 
@@ -169,9 +169,11 @@ class AMQPAdapter:
 
     def shutdown(self):
         self.do_shutdown = True
+
         def doit():
             self.unsubscribe()
             self.disconnect()
+
         self.connection.add_callback_threadsafe(doit)
 
     def process_undelivered_messages(self, delay=None):

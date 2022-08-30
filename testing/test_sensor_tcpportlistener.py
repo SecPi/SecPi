@@ -37,19 +37,22 @@ def test_sensor_tcpportlistener_alarm(tcpportlistener_sensor, caplog):
 
     # Verify the right calls would have been made to the Worker.
     assert tcpportlistener_sensor.worker.mock_calls == [
-        call.post_log('TCPPortListener: Sensor activated successfully, id=99', 50),
-        call.alarm(99, 'Hello, world.'),
-        call.post_log('TCPPortListener: Sensor deactivated successfully, id=99', 50)
+        call.post_log("TCPPortListener: Sensor activated successfully, id=99", 50),
+        call.alarm(99, "Hello, world."),
+        call.post_log("TCPPortListener: Sensor deactivated successfully, id=99", 50),
     ]
 
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ('tools.utils', 20, 'Loading class successful: worker.tcpportlistener.TCPPortListener'),
-        ('worker.tcpportlistener', 20, "Initializing sensor id=99 with parameters {'ip': 'localhost', 'port': '54321'}"),
-        ('worker.tcpportlistener', 20, "TCPPortListener: Sensor initialized"),
+        ("tools.utils", 20, "Loading class successful: worker.tcpportlistener.TCPPortListener"),
+        (
+            "worker.tcpportlistener",
+            20,
+            "Initializing sensor id=99 with parameters {'ip': 'localhost', 'port': '54321'}",
+        ),
+        ("worker.tcpportlistener", 20, "TCPPortListener: Sensor initialized"),
     ]
 
     # This sensor does not send anything to the log by default.
-    assert caplog.record_tuples == [
-    ]
+    assert caplog.record_tuples == []

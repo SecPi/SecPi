@@ -3,7 +3,11 @@ import subprocess
 
 import pytest
 
-from testing.util.service import ManagerServiceWrapper, WorkerServiceWrapper, WebinterfaceServiceWrapper
+from testing.util.service import (
+    ManagerServiceWrapper,
+    WebinterfaceServiceWrapper,
+    WorkerServiceWrapper,
+)
 from tools.config import ApplicationConfig
 from tools.utils import setup_logging
 from worker.worker import Worker

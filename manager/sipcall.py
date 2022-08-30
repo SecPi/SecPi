@@ -19,8 +19,8 @@ Setup
 import logging
 
 from pycall import Application, Call, CallFile, Context
-from tools.notifier import Notifier
 
+from tools.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 
