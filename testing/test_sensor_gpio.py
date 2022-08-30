@@ -54,6 +54,7 @@ def test_sensor_gpio_alarm(gpio_sensor, caplog):
         call.post_log('GPIOSensor: Sensor deactivated successfully, id=99', 50)
     ]
 
+    # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
         ('tools.utils', 20, 'Loading class successful: worker.gpio_sensor.GPIOSensor'),
@@ -63,16 +64,5 @@ def test_sensor_gpio_alarm(gpio_sensor, caplog):
 
     assert caplog.record_tuples == [
         ("worker.gpio_sensor", 10, "GPIOSensor: Registered sensor at pin 42"),
-        ("tools.sensor", 20, "GPIOSensor: Sensor activated successfully, id=99"),
         ("worker.gpio_sensor", 10, "GPIOSensor: Removed sensor at pin 42"),
-        ("tools.sensor", 20, "GPIOSensor: Sensor deactivated successfully, id=99"),
     ]
-
-    # Verify log output matches the expectations.
-    setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.gpio_sensor.GPIOSensor" in setup_messages
-    assert "Initializing sensor id=99 with parameters {'gpio': '42', 'bouncetime': '3'}" in setup_messages
-    assert "GPIOSensor: Registered sensor at pin 42" in caplog.messages
-    assert "GPIOSensor: Sensor activated successfully, id=99" in caplog.messages
-    assert "GPIOSensor: Removed sensor at pin 42" in caplog.messages
-    assert "GPIOSensor: Sensor deactivated successfully, id=99" in caplog.messages

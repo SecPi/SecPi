@@ -284,7 +284,7 @@ class Webinterface:
 
 		message = {"setup_name": setup.name, "active_state": active}
 		try:
-			self.publish(message)
+			self.publish(queue=utils.QUEUE_ON_OFF, message=message)
 			response = SuccessfulResponse(f"{verb.title()} setup '{setup.name}' succeeded")
 
 		except pika.exceptions.ConnectionClosed:
@@ -292,7 +292,7 @@ class Webinterface:
 			reconnected = self.connect()
 			if reconnected:
 				logger.info("Reconnect finished")
-				self.publish(message)
+				self.publish(queue=utils.QUEUE_ON_OFF, message=message)
 				response = SuccessfulResponse(f"{verb.title()} setup '{setup.name}' succeeded")
 			else:
 				response = FailedResponse(f"Error {verb} setup '{setup.name}', not connected to bus")
@@ -308,13 +308,13 @@ class Webinterface:
 			logger.error(f"Action failed: {response}")
 		return response
 
-	def publish(self, message):
+	def publish(self, queue, message):
 		"""
 		Publish message to the AMQP bus.
 		"""
+		logger.info(f"Publishing message. queue={queue}, message={message}")
 		message = json.dumps(message)
-		data = dict(exchange=utils.EXCHANGE, routing_key=utils.QUEUE_ON_OFF, body=message)
-		logger.info(f"Publishing message: {data}")
+		data = dict(exchange=utils.EXCHANGE, routing_key=queue, body=message)
 		return self.channel.basic_publish(**data)
 
 	def render_activation_response(self, request: ActivationRequest, response: ActivationResponse, **kwargs):

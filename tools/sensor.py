@@ -18,11 +18,9 @@ class Sensor(object):
 		self.worker.alarm(self.id, message)
 	
 	def post_log(self, msg, lvl=utils.LEVEL_INFO):
-		logger.info(msg)
 		self.worker.post_log(msg, lvl)
 	
 	def post_err(self, msg):
-		logger.error(msg)
 		self.worker.post_err(msg)
 	
 	@abc.abstractmethod

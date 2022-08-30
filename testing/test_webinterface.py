@@ -40,7 +40,6 @@ def test_webinterface_start_stop():
     assert "Got message on operational endpoint: {'action': 'shutdown'}" in app_log
     assert "Shutting down" in app_log
     assert "Stop consuming AMQP queue" in app_log
-    assert "Disconnected from RabbitMQ at localhost:5672" in app_log
     assert "ENGINE Bus STOPPING" in app_log
     assert "ENGINE Bus EXITED" in app_log
 
@@ -69,11 +68,11 @@ def test_webinterface_with_activate(webinterface_service):
 
     # Verify everything is in place.
     assert "Activating setup id=1" in app_log
-    assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": true}'}""" in app_log
+    assert """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': True}""" in app_log
     assert """Action successful: SuccessfulResponse(message="Activating setup 'secpi-testing' succeeded")""" in app_log
 
     assert "Deactivating setup id=1" in app_log
-    assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": false}'}""" in app_log
+    assert """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': False}""" in app_log
     assert """Action successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")""" in app_log
 
 

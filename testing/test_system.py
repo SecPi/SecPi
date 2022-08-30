@@ -58,7 +58,7 @@ def test_manager_process_alarm(webinterface_service, manager_service):
 
     # Setup: Webinterface.
     assert "Activating setup id=1" in web_log
-    assert """Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-on_off', 'body': '{"setup_name": "secpi-testing", "active_state": true}'}""" in web_log
+    assert """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': True}""" in web_log
     assert """Action successful: SuccessfulResponse(message="Activating setup 'secpi-testing' succeeded")""" in web_log
 
     # Setup: Manager.

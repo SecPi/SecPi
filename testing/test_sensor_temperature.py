@@ -49,6 +49,7 @@ def test_sensor_temperature_alarm(temperature_sensor, caplog):
         call.post_log('TemperatureSensor: Sensor deactivated successfully, id=99', 50)
     ]
 
+    # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
         ('tools.utils', 20, 'Loading class successful: worker.temperature_sensor.TemperatureSensor'),
@@ -56,14 +57,6 @@ def test_sensor_temperature_alarm(temperature_sensor, caplog):
         ('worker.temperature_sensor', 20, "TemperatureSensor: Sensor initialized"),
     ]
 
+    # This sensor does not send anything to the log by default.
     assert caplog.record_tuples == [
-        ("tools.sensor", 20, "TemperatureSensor: Sensor activated successfully, id=99"),
-        ("tools.sensor", 20, "TemperatureSensor: Sensor deactivated successfully, id=99"),
     ]
-
-    # Verify log output matches the expectations.
-    setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.temperature_sensor.TemperatureSensor" in setup_messages
-    assert "Initializing sensor id=99 with parameters {'device_id': 'foobar', 'bouncetime': '3', 'min': '3', 'max': '60'}" in setup_messages
-    assert "TemperatureSensor: Sensor activated successfully, id=99" in caplog.messages
-    assert "TemperatureSensor: Sensor deactivated successfully, id=99" in caplog.messages

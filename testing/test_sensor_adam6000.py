@@ -67,8 +67,6 @@ def test_sensor_adam6000_alarm(adam6000_sensor, caplog):
         ("worker.adam6000", 20, "Starting MQTT subscriber thread"),
         ("worker.adam6000", 20, "Subscribing to MQTT broker at localhost with topic Advantech/11E1DAF0ECCE/data"),
         ("worker.adam6000", 20, "Registering event callback for channel=di4, name=Ferrata"),
-        ("tools.sensor", 20, "ADAM: Sensor activated successfully, id=99"),
-        ("tools.sensor", 20, "ADAM: Sensor deactivated successfully, id=99"),
         ("worker.adam6000", 20, "Stopping MQTT subscriber thread"),
     ]
 
@@ -79,8 +77,6 @@ def test_sensor_adam6000_alarm(adam6000_sensor, caplog):
     assert "Starting MQTT subscriber thread" in caplog.messages
     assert "Subscribing to MQTT broker at localhost with topic Advantech/11E1DAF0ECCE/data" in caplog.messages
     assert "Registering event callback for channel=di4, name=Ferrata" in caplog.messages
-    assert "ADAM: Sensor activated successfully, id=99" in caplog.messages
-    assert "ADAM: Sensor deactivated successfully, id=99" in caplog.messages
     assert "Stopping MQTT subscriber thread" in caplog.messages
 
 
@@ -122,11 +118,11 @@ def test_sensor_adam6000_with_mqtt(adam6000_sensor, caplog):
     assert "Starting MQTT subscriber thread" in caplog.messages
     assert "Subscribing to MQTT broker at localhost with topic Advantech/11E1DAF0ECCE/data" in caplog.messages
     assert "Registering event callback for channel=di4, name=Ferrata" in caplog.messages
-    assert "ADAM: Sensor activated successfully, id=99" in caplog.messages
+    # assert "ADAM: Sensor activated successfully, id=99" in caplog.messages
     assert """Message: b'{"s": 1, "t": 0,""" in caplog.text
     assert """Data: {'s': 1, 't': 0,""" in caplog.text
     assert "Raising alarm with summary message. Erste Erfassung. Offene Kontakte: Ferrata" in caplog.text
     assert "Sensor state changed. id=99, params={'name': 'Ferrata', 'channel': 'di4'}, channel=di4, value=False" in caplog.messages
     assert "Raising alarm for individual sensor. Kontakt Ferrata wurde geschlossen" in caplog.text
-    assert "ADAM: Sensor deactivated successfully, id=99" in caplog.messages
+    # assert "ADAM: Sensor deactivated successfully, id=99" in caplog.messages
     assert "Stopping MQTT subscriber thread" in caplog.messages
