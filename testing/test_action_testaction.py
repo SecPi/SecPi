@@ -11,7 +11,7 @@ def testaction_action(worker_mock) -> Action:
     """
 
     # Configure action.
-    component = load_class("worker.testaction", "TestAction")
+    component = load_class("secpi.action.test", "TestAction")
     parameters = {
         "msg": "The message",
     }
@@ -33,7 +33,7 @@ def test_action_testaction(testaction_action, caplog):
 
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.testaction.TestAction" in setup_messages
+    assert "Loading class successful: secpi.action.test.TestAction" in setup_messages
     assert "Test Action initialized" in setup_messages
     assert "Executing Test Action" in caplog.messages
     assert "Test Action Message: The message" in caplog.messages

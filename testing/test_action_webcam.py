@@ -19,7 +19,7 @@ def webcam_action(mocker, worker_mock) -> Action:
         mocker.patch("pygame._camera_opencv.CameraMac", autospec=True)
 
         # Configure action.
-        component = load_class("worker.webcam", "Webcam")
+        component = load_class("secpi.action.webcam", "Webcam")
 
         parameters = {
             "path": "/dev/to/webcam",
@@ -49,7 +49,7 @@ def test_action_webcam(webcam_action, caplog):
 
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.webcam.Webcam" in setup_messages
+    assert "Loading class successful: secpi.action.webcam.Webcam" in setup_messages
     assert "Webcam: Video device initialized: /dev/to/webcam" in setup_messages
     assert "Webcam: Trying to take pictures" in caplog.messages
     assert "Webcam: Finished taking pictures" in caplog.messages

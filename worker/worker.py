@@ -163,8 +163,8 @@ class Worker(Service):
         """
         Load plugin module.
         """
-        # TODO: Think about this when the Worker intends to load other plugins than only Sensors.
-        module_candidates = [f"secpi.sensor.{module_name}", module_name]
+        # TODO: Think about this when the Worker intends to load other plugins than only Sensors or Actions.
+        module_candidates = [f"secpi.sensor.{module_name}", f"secpi.action.{module_name}", module_name]
         error_message = f"Failed to import class {class_name} from modules '{module_candidates}'"
         component = load_class(module_candidates, class_name, errors="ignore")
         if component is None:

@@ -11,7 +11,7 @@ def speaker_action(worker_mock) -> Action:
     """
 
     # Configure action.
-    component = load_class("worker.speaker", "Speaker")
+    component = load_class("secpi.action.speaker", "Speaker")
     parameters = {
         "path_to_audio": "/path/to/elise.mp3",
         "repetitions": "0",
@@ -37,7 +37,7 @@ def test_action_speaker(mocker, speaker_action, caplog):
 
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.speaker.Speaker" in setup_messages
+    assert "Loading class successful: secpi.action.speaker.Speaker" in setup_messages
     assert "Speaker: Audio device initialized" in setup_messages
     assert "Speaker: Trying to play audio" in caplog.messages
     assert "Speaker: Finished playing audio" in caplog.messages

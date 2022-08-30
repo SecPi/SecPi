@@ -14,7 +14,7 @@ def buzzer_action(worker_mock, mocker) -> Action:
     # Configure action.
     with surrogate("RPi.GPIO"):
         mocker.patch("RPi.GPIO")
-        component = load_class("worker.buzzer", "Buzzer")
+        component = load_class("secpi.action.buzzer", "Buzzer")
     parameters = {
         "gpio_pin": "42",
         "duration": "0",
@@ -37,7 +37,7 @@ def test_action_buzzer(buzzer_action, caplog):
 
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.buzzer.Buzzer" in setup_messages
+    assert "Loading class successful: secpi.action.buzzer.Buzzer" in setup_messages
     assert "Buzzer: Audio device initialized" in setup_messages
     assert "Buzzer: Trying to make some noise" in caplog.messages
     assert "Buzzer: Finished making noise" in caplog.messages

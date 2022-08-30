@@ -13,7 +13,7 @@ def ffmpegvideo_action(fs, worker_mock) -> Action:
     fs.create_dir("/path/to/ffmpeg/spool")
 
     # Configure action.
-    component = load_class("worker.ffmpegvideo", "FFMPEGVideo")
+    component = load_class("secpi.action.ffmpegvideo", "FFMPEGVideo")
     parameters = {
         "url": "https://webcam.example.org/path/to/stream.mp4",
         "data_path": "/path/to/ffmpeg/spool",
@@ -38,7 +38,7 @@ def test_action_ffmpegvideo(ffmpegvideo_action, caplog):
 
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
-    assert "Loading class successful: worker.ffmpegvideo.FFMPEGVideo" in setup_messages
+    assert "Loading class successful: secpi.action.ffmpegvideo.FFMPEGVideo" in setup_messages
     assert "FFMPEGVideo: Starting" in setup_messages
     assert "FFMPEGVideo: Trying to take pictures" in caplog.messages
     assert "FFMPEGVideo: Finished taking pictures" in caplog.messages
