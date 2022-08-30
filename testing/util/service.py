@@ -98,6 +98,8 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
             app_config="testing/etc/config-manager.json",
             target=manager.manager.main,
         )
+        # Manager needs a bit longer to start?
+        time.sleep(0.25)
 
 
 class WorkerServiceWrapper(AmqpServiceWrapper):
@@ -120,7 +122,7 @@ class WebinterfaceServiceWrapper(BaseServiceWrapper):
         )
 
         # Web server needs a bit longer to start than AMQP-based service.
-        time.sleep(0.45)
+        time.sleep(0.55)
 
     def shutdown(self, identifier: t.Optional[str] = None):
         """

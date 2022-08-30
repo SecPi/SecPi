@@ -19,8 +19,8 @@ class AMQPAdapter:
     def __init__(self, hostname: str, port: int, username: str, password: str, buffer_undelivered=False):
         self.hostname = hostname
         self.port = port
-        self.username = username
-        self.password = password
+        self.username = username or ""
+        self.password = password or ""
         self.buffer_undelivered = buffer_undelivered
 
         self.connection: pika.BlockingConnection = None

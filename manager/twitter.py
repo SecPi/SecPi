@@ -3,6 +3,10 @@ import tweepy
 
 from tools.notifier import Notifier
 
+
+logger = logging.getLogger(__name__)
+
+
 class Twitter(Notifier):
 
 	def __init__(self, id, params):
@@ -15,7 +19,7 @@ class Twitter(Notifier):
 			self.access_token_secret = params["access_token_secret"]
 			self.recipients = [rec.strip() for rec in params["recipients"].split(",")]
 		except KeyError as ke:
-			logging.error("Twitter: Error while trying to initialize notifier, it seems there is a config parameter missing: %s" % ke)
+			logger.error("Twitter: Error while trying to initialize notifier, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
 
@@ -25,11 +29,11 @@ class Twitter(Notifier):
 
 			self.api = tweepy.API(auth)
 		except Exception as e:
-			logging.error("Twitter: Error while trying to initialize notifier: %s" % e)
+			logger.error("Twitter: Error while trying to initialize notifier: %s" % e)
 			self.corrupted = True
 			return
 			
-		logging.info("Twitter: Notifier initialized")
+		logger.info("Twitter: Notifier initialized")
 
 
 	def notify(self, info):
@@ -39,11 +43,11 @@ class Twitter(Notifier):
 			try:
 				for recipient in self.recipients:
 					self.api.send_direct_message(recipient,text=info_str)
-					logging.info("Twitter: Message to %s was sent successfully" % recipient)
-			except tweepy.error.TweepError as te:
-					logging.error("Twitter: Wasn't able to send message to %s: %s" % (recipient, te))
+					logger.info(f"Twitter: Message to {recipient} was sent successfully")
+			except tweepy.TweepyException:
+					logger.exception(f"Twitter: Sending message to {recipient} failed")
 		else:
-			logging.error("Twitter: Wasn't able to notify because there was an initialization error")
+			logger.error("Twitter: Wasn't able to notify because there was an initialization error")
 
 	def cleanup(self):
-		logging.debug("Twitter: No cleanup necessary at the moment")
+		logger.debug("Twitter: No cleanup necessary at the moment")

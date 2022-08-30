@@ -124,7 +124,7 @@ class Manager(Service):
 		Load plugin module.
 		"""
 		module_candidates = [f"manager.{module_name}", module_name]
-		component = load_class(module_candidates, class_name)
+		component = load_class(module_candidates, class_name, errors="ignore")
 		if component is None:
 			self.log_err(f"Unable to import class {class_name} from modules '{module_candidates}'")
 		return component
@@ -147,12 +147,12 @@ class Manager(Service):
 			logger.info("Sending json data to %s" % rk)
 			return True
 		except Exception as e:
-			logger.exception("Error while sending json data to queue:\n%s" % e)
+			logger.exception("Error while sending json data to queue")
 			return False
 	
 	# helper method to create error log entry
 	def log_err(self, msg):
-		logger.exception(msg)
+		logger.error(msg)
 		log_entry = LogEntry(level=utils.LEVEL_ERR, message=str(msg), sender="Manager")
 		self.db.session.add(log_entry)
 		self.db.session.commit()
@@ -174,14 +174,14 @@ class Manager(Service):
 		if worker:
 			pi_id = worker.id
 			logger.debug("Found worker id %s for IP address %s" % (pi_id, worker.address))
-		else: # wasn't able to find worker with given ip address(es)
-			logger.error("Wasn't able to find worker for given IP adress(es)")
+		else:
+			logger.error("Unable able to find worker for given IP address(es)")
 			reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id)
 			self.bus.publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body="")
 			return
 		
 		config = self.prepare_config(pi_id)
-		logger.info("Sending intial config to worker with id %s" % pi_id)
+		logger.info("Sending initial config to worker with id %s" % pi_id)
 		reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id, content_type='application/json')
 		self.bus.publish(exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=json.dumps(config))
 
@@ -423,6 +423,7 @@ def run_manager(options: StartupOptions):
 
 	try:
 		app_config = ApplicationConfig(filepath=options.app_config)
+		app_config.load()
 	except:
 		logger.exception("Loading configuration failed")
 		sys.exit(1)

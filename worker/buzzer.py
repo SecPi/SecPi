@@ -4,6 +4,10 @@ import time
 
 from tools.action import Action
 
+
+logger = logging.getLogger(__name__)
+
+
 class Buzzer(Action):
 
 	def __init__(self, id, params, worker):
@@ -12,11 +16,11 @@ class Buzzer(Action):
 			self.duration = int(params["duration"])
 			self.gpio_pin = int(params["gpio_pin"])
 		except KeyError as ke: # if config parameters are missing in file
-			logging.error("Buzzer: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % ke)
+			logger.error("Buzzer: Wasn't able to initialize the device, it seems there is a config parameter missing: %s" % ke)
 			self.corrupted = True
 			return
 		except ValueError as ve: # if a parameter can't be parsed as int
-			logging.error("Buzzer: Wasn't able to initialize the device, please check your configuration: %s" % ve)
+			logger.error("Buzzer: Wasn't able to initialize the device, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
 
@@ -24,13 +28,13 @@ class Buzzer(Action):
 			GPIO.setmode(GPIO.BCM)
 			GPIO.setup(self.gpio_pin, GPIO.OUT)
 		except ValueError as ve: # GPIO pin number is not in valid range
-			logging.error("Buzzer: The given pin number is not in a valid range: %s" % ve)
+			logger.error("Buzzer: The given pin number is not in a valid range: %s" % ve)
 			self.corrupted = True
 			return
-		logging.debug("Buzzer: Audio device initialized")
+		logger.debug("Buzzer: Audio device initialized")
 
 	def buzz(self, duration):
-		logging.debug("Buzzer: Trying to make some noise")
+		logger.debug("Buzzer: Trying to make some noise")
 		start_time = time.time()
 		state = True
 		while (time.time() - start_time) < duration:
@@ -44,13 +48,13 @@ class Buzzer(Action):
 		
 		state = False
 		GPIO.output(self.gpio_pin, state)
-		logging.debug("Buzzer: Finished making noise")
+		logger.debug("Buzzer: Finished making noise")
 
 	def execute(self):
 		if not self.corrupted:
 			self.buzz(self.duration)
 		else:
-			logging.error("Buzzer: Wasn't able to make noise because of an initialization error")
+			logger.error("Buzzer: Wasn't able to make noise because of an initialization error")
 
 
 	def cleanup(self):
@@ -58,6 +62,6 @@ class Buzzer(Action):
 			try:
 				GPIO.cleanup(self.gpio_pin)
 			except ValueError as ve: # GPIO pin number is not in valid range
-				logging.error("Buzzer: The given pin number is not in a valid range: %s" % ve)
+				logger.error("Buzzer: The given pin number is not in a valid range: %s" % ve)
 			else:
-				logging.debug("Buzzer: Cleaned up buzzer action")
+				logger.debug("Buzzer: Cleaned up buzzer action")

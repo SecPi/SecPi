@@ -5,6 +5,10 @@ import logging
 
 from tools.action import Action
 
+
+logger = logging.getLogger(__name__)
+
+
 class Webcam(Action):
 
 	def __init__(self, id, params, worker):
@@ -13,6 +17,7 @@ class Webcam(Action):
 		try:
 			self.path = params["path"]
 			self.resolution = (int(params["resolution_x"]), int(params["resolution_y"]))
+			# FIXME: The default value is hard-coded here.
 			self.data_path = params.get("data_path", "/var/tmp/secpi/worker_data")
 		except ValueError as ve: # if resolution can't be parsed as int
 			self.post_err("Webcam: Wasn't able to initialize the device, please check your configuration: %s" % ve)
@@ -25,17 +30,19 @@ class Webcam(Action):
 
 		pygame.camera.init()
 		self.cam = pygame.camera.Camera(self.path, self.resolution)
-		logging.debug("Webcam: Video device initialized: %s" % self.path)
+		logger.debug("Webcam: Video device initialized: %s" % self.path)
 
 	# take a series of pictures within a given interval
 	def take_adv_picture(self, num_of_pic, seconds_between):
-		logging.debug("Webcam: Trying to take pictures")
+		logger.debug("Webcam: Trying to take pictures")
 		try:
 			self.cam.start()
 		except SystemError as se: # device path wrong
+			logger.exception("Starting webcam failed")
 			self.post_err("Webcam: Wasn't able to find video device at device path: %s" % self.path)
 			return
 		except AttributeError as ae: # init failed, taking pictures won't work -> shouldn't happen but anyway
+			logger.exception("Starting webcam failed")
 			self.post_err("Webcam: Couldn't take pictures because video device wasn't initialized properly")
 			return
 
@@ -48,7 +55,7 @@ class Webcam(Action):
 			self.post_err("Webcam: Wasn't able to take pictures: %s" % e)
 
 		self.cam.stop()
-		logging.debug("Webcam: Finished taking pictures")
+		logger.debug("Webcam: Finished taking pictures")
 
 	
 	def execute(self):
@@ -58,4 +65,4 @@ class Webcam(Action):
 			self.post_err("Webcam: Wasn't able to take pictures because of an initialization error")
 		
 	def cleanup(self):
-		logging.debug("Webcam: No cleanup necessary at the moment")
+		logger.debug("Webcam: No cleanup necessary at the moment")

@@ -38,10 +38,9 @@ class ApplicationConfig:
     ERROR_FILE_MISSING = "Path to configuration file missing. " \
                          "Either specify command line argument --app-config, or environment variable SECPI_APP_CONFIG"
 
-    def __init__(self, filepath: t.Union[pathlib.Path, str]):
+    def __init__(self, filepath: t.Optional[t.Union[pathlib.Path, str]] = None):
         self.filepath = filepath
         self.config = None
-        self.load()
 
     def load(self):
         if self.filepath is None:

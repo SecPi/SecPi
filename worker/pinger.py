@@ -1,16 +1,22 @@
+from ping3 import ping
+
 from tools.sensor import Sensor
 import logging
-import pyping
 import threading
 import time
+
+
+logger = logging.getLogger(__name__)
+
 
 class Pinger(Sensor):
 
 	def __init__(self, id, params, worker):
+		logger.info(f"Initializing sensor id={id} with parameters {params}")
 		super(Pinger, self).__init__(id, params, worker)
 		
 		try:
-			self.interval = int(params["interval"])
+			self.interval = float(params["interval"])
 			self.max_losses = int(params["max_losses"])
 			self.destination_ip = params["destination_ip"]
 			self.bouncetime = int(params["bounce_time"])
@@ -23,21 +29,23 @@ class Pinger(Sensor):
 			self.corrupted = True
 			return
 
-		logging.debug("Pinger: Sensor initialized")
+		logger.debug("Pinger: Sensor initialized")
 
 	def activate(self):
 		if not self.corrupted:
 			self.stop_thread = False
 			self.pinger_thread = threading.Thread(name="thread-pinger-%s" % self.destination_ip, target=self.check_up)
 			self.pinger_thread.start()
+			self.post_log(f"Pinger: Sensor activated successfully, id={self.id}")
 		else:
-			self.post_err("Pinger: Sensor couldn't be activated")
+			self.post_err(f"Pinger: Sensor could not be activated, id={self.id}")
 
 	def deactivate(self):
 		if not self.corrupted:
 			self.stop_thread = True
+			self.post_log(f"Pinger: Sensor deactivated successfully, id={self.id}")
 		else:
-			self.post_err("Pinger: Sensor couldn't be deactivated")
+			self.post_err(f"Pinger: Sensor could not be deactivated, id={self.id}")
 
 
 	def check_up(self):
@@ -46,10 +54,9 @@ class Pinger(Sensor):
 			if self.stop_thread:
 				return
 
-			reply = pyping.ping(self.destination_ip) # ret value is 0 when reachable
-			if reply.ret_code:
+			if not ping(self.destination_ip):
 				losses += 1
-				logging.info("Pinger: Loss happened, %d/%d" % (losses, self.max_losses))
+				logger.info("Pinger: Loss happened, %d/%d" % (losses, self.max_losses))
 			else:
 				losses = 0
 

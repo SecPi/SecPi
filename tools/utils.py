@@ -145,7 +145,7 @@ def to_list(x, default=None):
         return x
 
 
-def load_class(module_names, class_names):
+def load_class(module_names, class_names, errors: str = "raise"):
 	"""
 	Load class from dotted string notation.
 
@@ -157,6 +157,7 @@ def load_class(module_names, class_names):
 	# TODO: Implement multiple class names.
 	class_name = class_names[0]
 
+	recorded_exceptions = []
 	for module in module_names:
 		try:
 			# Load the module.
@@ -167,8 +168,18 @@ def load_class(module_names, class_names):
 			logger.info(f"Loading class successful: {module}.{class_name}")
 			return c
 
-		except ImportError:
-			pass
+		except ImportError as ex:
+			recorded_exceptions.append(ex)
 
 		except AttributeError as ex:
-			pass
+			recorded_exceptions.append(ex)
+
+	# Forward all exceptions to log output.
+	for ex in recorded_exceptions:
+		logger.exception(ex)
+
+	# Re-raise first exception.
+	if errors == "raise":
+		exception = recorded_exceptions[0]
+		exception.all_exceptions = recorded_exceptions
+		raise exception

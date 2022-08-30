@@ -24,10 +24,10 @@ Setup
     pip install paho-mqtt pymodbus[repl] func-timeout
 
     # Start RabbitMQ AMQP broker.
-    docker run -it --rm --publish=5672:5672 rabbitmq:3.9
+    docker run --name=garagemq --rm -it --publish=5672:5672 amplitudo/garagemq
 
     # Start Mosquitto MQTT broker.
-    docker run -it --rm --publish=1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
+    docker run --name=rabbitmq --rm -it --publish=1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
 
 
 Configuration
@@ -129,17 +129,19 @@ import json
 import logging
 import sys
 import threading
-import time
 import typing as t
 
 import func_timeout
+import paho.mqtt.client
 import pymodbus
 from paho.mqtt import subscribe
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-from tools import config, utils
+from sqlalchemy.util import asbool
+
+from tools import utils
 from tools.sensor import Sensor
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class AdvantechAdamModbusConnector:
@@ -222,28 +224,44 @@ class AdvantechAdamMqttConnector:
         self.registrations: t.Dict[str, "RegistrationItem"] = {}
         self.state: t.Optional[t.Dict] = None
 
-    def start(self):
+        self.mqtt_client = paho.mqtt.client.Client()
+        self.mqtt_client.on_message = self.on_message
+
+    def start(self, modbus_seed_enabled: bool = True, modbus_seed_delay: float = 0.0):
         """
-        Start a single AdvantechAdamCommunicator subscriber thread.
+        Start a single AdvantechAdamMqttConnector subscriber thread.
         """
 
-        # First of all, attempt to request the initial state from the device.
+        # 1. Request the initial state from the device using Modbus.
         # However, delay it for some seconds to give the application some time to register
         # all sensors. Otherwise, there will be no chance to generate and submit a summary
         # notification message.
-        def seed_later():
-            time.sleep(3)
-            self.seed_state()
+        if modbus_seed_enabled:
+            logger.info(f"Requesting to seed state using Modus in {modbus_seed_delay} seconds")
+            threading.Timer(modbus_seed_delay, self.seed_state).start()
 
-        threading.Thread(target=seed_later).start()
-
-        # Then, start the MQTT subscriber thread singleton.
+        # 2. Start the MQTT subscriber thread singleton.
         if AdvantechAdamMqttConnector.thread is None:
-            logger.info(f"ADAM: Starting MQTT subscriber thread")
+            logger.info(f"Starting MQTT subscriber thread")
             AdvantechAdamMqttConnector.thread = threading.Thread(
                 name="thr-adam-mqtt-%s" % self.mqtt_broker, target=self.mqtt_subscribe
             )
             AdvantechAdamMqttConnector.thread.start()
+
+    def stop(self):
+        """
+        Stop the AdvantechAdamMqttConnector subscriber thread.
+        """
+        logger.info(f"Stopping MQTT subscriber thread")
+
+        # In order to avoid deadlocking when start vs. stop are called in quick succession,
+        # let's delay the `disconnect` a bit. C'est la vie.
+        def _stop():
+            self.mqtt_client.disconnect()
+            AdvantechAdamMqttConnector.thread = None
+        timer = threading.Timer(0.1, _stop)
+        timer.start()
+        timer.join()
 
     def seed_state(self):
         """
@@ -268,7 +286,9 @@ class AdvantechAdamMqttConnector:
         """
         topic = f"{self.mqtt_topic}/data"
         logger.info(f"Subscribing to MQTT broker at {self.mqtt_broker} with topic {topic}")
-        subscribe.callback(self.on_message, topic, hostname=self.mqtt_broker)
+        self.mqtt_client.connect(host=self.mqtt_broker, port=1883, keepalive=60)
+        self.mqtt_client.subscribe(topic)
+        self.mqtt_client.loop_forever()
 
     def on_message(self, client, userdata, message):
         """
@@ -302,7 +322,7 @@ class AdvantechAdamMqttConnector:
         """
 
         # Decode MQTT message.
-        logger.debug(f"Message: {message}")
+        logger.debug(f"Message: {message.payload}")
         payload = message.payload.decode("utf-8", "ignore")
         data = json.loads(payload)
         logger.debug(f"Data: {data}")
@@ -330,7 +350,7 @@ class AdvantechAdamMqttConnector:
         """
         channel = sensor.params["channel"]
         name = sensor.params["name"]
-        logger.info(f"ADAM: Registering event callback for channel={channel}, name={name}")
+        logger.info(f"Registering event callback for channel={channel}, name={name}")
         self.registrations[channel] = RegistrationItem(channel=channel, name=name, sensor=sensor, callback=callback)
 
     def unregister(self, sensor):
@@ -373,8 +393,8 @@ class AdvantechAdamMqttConnector:
         summary_message_long = ResponseItem.summary_humanized("Summary message", all_responses, data)
         summary_message_short = ResponseItem.open_circuit_humanized(all_responses)
         alarm_message = f"Erste Erfassung. {summary_message_short}\n\n{summary_message_long}"
-        logger.info(f"ADAM: Raising alarm with summary message. {alarm_message}")
-        # logger.info(f"ADAM: Long message:\n{summary_message_long}")
+        logger.info(f"Raising alarm with summary message. {alarm_message}")
+        # logger.info(f"Long message:\n{summary_message_long}")
         all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
 
 
@@ -387,22 +407,30 @@ class AdvantechAdamSensor(Sensor):
     connector: AdvantechAdamMqttConnector = None
 
     def __init__(self, id, params, worker):
-        logger.info(f"ADAM: Initializing sensor id={id} with parameters {params}")
+        logger.info(f"Initializing sensor id={id} with parameters {params}")
         super(AdvantechAdamSensor, self).__init__(id, params, worker)
 
+        self.config = worker.config
+
         try:
-            settings = config.get("global", {})["adam6000"]
+            settings = self.config.get("global", {})["adam6000"]
             self.mqtt_broker_ip = settings["mqtt_broker_ip"]
             self.mqtt_topic = settings["mqtt_topic"]
+            self.modbus_seed_enabled = asbool(settings.get("modbus_seed_enabled", True))
+            self.modbus_seed_delay = float(settings.get("modbus_seed_delay", 3.0))
 
         # If config parameters are missing in file.
         except KeyError as ex:
-            self.post_err(f"ADAM: Setup failed, configuration parameter missing: {ex}")
+            message = f"Setup failed, configuration parameter missing: {ex}"
+            logger.error(message)
+            self.post_err(message)
             self.corrupted = True
             return
 
     def activate(self):
         if not self.corrupted:
+
+            # Ensure connection to MQTT is there.
             self.start_mqtt_subscriber()
 
             def event_handler(response: ResponseItem, all_responses: t.List["ResponseItem"]):
@@ -412,7 +440,7 @@ class AdvantechAdamSensor(Sensor):
                 message_title = response.circuit_transition_humanized()
                 message = ResponseItem.summary_humanized(message_title, all_responses, response.alldata)
 
-                logger.info(f"ADAM: Raising alarm for individual sensor. {message}")
+                logger.info(f"Raising alarm for individual sensor. {message}")
                 self.alarm(message)
 
             AdvantechAdamSensor.connector.register(self, event_handler)
@@ -425,6 +453,10 @@ class AdvantechAdamSensor(Sensor):
         if not self.corrupted:
             AdvantechAdamSensor.connector.unregister(self)
             self.post_log(f"ADAM: Sensor deactivated successfully, id={self.id}", utils.LEVEL_INFO)
+
+            # When there are no registrations left, the MQTT subscriber can be stopped.
+            if not AdvantechAdamSensor.connector.registrations:
+                self.stop_mqtt_subscriber()
         else:
             self.post_err(f"ADAM: Sensor could not be deactivated, id={self.id}")
 
@@ -435,7 +467,16 @@ class AdvantechAdamSensor(Sensor):
         with AdvantechAdamSensor.lock:
             if AdvantechAdamSensor.connector is None:
                 AdvantechAdamSensor.connector = AdvantechAdamMqttConnector(self.mqtt_broker_ip, self.mqtt_topic)
-                AdvantechAdamSensor.connector.start()
+                AdvantechAdamSensor.connector.start(modbus_seed_enabled=self.modbus_seed_enabled, modbus_seed_delay=self.modbus_seed_delay)
+
+    def stop_mqtt_subscriber(self):
+        """
+        Stop the MQTT subscriber thread.
+        """
+        with AdvantechAdamSensor.lock:
+            if AdvantechAdamSensor.connector is not None:
+                AdvantechAdamSensor.connector.stop()
+                AdvantechAdamSensor.connector = None
 
 
 @dataclasses.dataclass

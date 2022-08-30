@@ -40,8 +40,8 @@ class Worker(Service):
 		self.bus = AMQPAdapter(
 			hostname=config.get('rabbitmq', {}).get('master_ip', 'localhost'),
 			port=int(config.get('rabbitmq', {}).get('master_port', 5672)),
-			username=config.get('rabbitmq')['user'],
-			password=config.get('rabbitmq')['password'],
+			username=config.get('rabbitmq', {}).get('user'),
+			password=config.get('rabbitmq', {}).get('password'),
 			buffer_undelivered=True,
 		)
 		self.connect()
@@ -145,11 +145,7 @@ class Worker(Service):
 		"""
 		module_candidates = [f"worker.{module_name}", module_name]
 		error_message = f"Failed to import class {class_name} from modules '{module_candidates}'"
-		component = None
-		try:
-			component = load_class(module_candidates, class_name)
-		except:
-			logger.exception(error_message)
+		component = load_class(module_candidates, class_name, errors="ignore")
 		if component is None:
 			self.post_err(error_message)
 		return component
@@ -394,6 +390,7 @@ def run_worker(options: StartupOptions):
 
 	try:
 		app_config = ApplicationConfig(filepath=options.app_config)
+		app_config.load()
 	except:
 		logger.exception("Loading configuration failed")
 		sys.exit(1)

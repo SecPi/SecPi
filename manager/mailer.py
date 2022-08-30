@@ -11,6 +11,9 @@ from email.mime.audio import MIMEAudio
 from tools.notifier import Notifier
 from tools.utils import str_to_value
 
+logger = logging.getLogger(__name__)
+
+
 class Mailer(Notifier):
 
 	def __init__(self, id, params):
@@ -18,6 +21,7 @@ class Mailer(Notifier):
 		
 		try:
 			# SMTP Server config + data dir
+			# FIXME: Directory is hard-coded here.
 			self.data_dir = params.get("data_dir", "/var/tmp/secpi/alarms")
 			self.smtp_address = params["smtp_address"]
 			self.smtp_port = int(params["smtp_port"])
@@ -25,19 +29,19 @@ class Mailer(Notifier):
 			self.smtp_pass = params["smtp_pass"]
 			self.smtp_security = params["smtp_security"]
 			self.unzip_attachments = str_to_value(params.get("unzip_attachments", False))
-		except KeyError as ke: # if config parameters are missing
-			logging.error("Mailer: Wasn't able to initialize the notifier, it seems there is a config parameter missing: %s" % ke)
+		except KeyError as ex:
+			logger.error(f"Mailer: Initializing notifier failed, configuration parameter missing: {ex}")
 			self.corrupted = True
 			return
 		except ValueError as ve: # if one configuration parameter can't be parsed as int
-			logging.error("Mailer: Wasn't able to initialize the notifier, please check your configuration: %s" % ve)
+			logger.error("Mailer: Wasn't able to initialize the notifier, please check your configuration: %s" % ve)
 			self.corrupted = True
 			return
 
-		logging.info("Mailer: Notifier initialized")
+		logger.info("Mailer: Notifier initialized")
 	
 	def notify(self, info):
-		logging.info("Notifying via SMTP email")
+		logger.info("Notifying via SMTP email")
 		if not self.corrupted:
 			# Mail setup
 			self.message = MIMEMultipart()
@@ -48,7 +52,10 @@ class Mailer(Notifier):
 			info_str = "Recieved alarm on sensor %s from worker %s: %s"%(info['sensor'], info['worker'], info['message'])
 			self.message.attach(MIMEText(info_str, "plain"))
 			
-			self.prepare_mail_attachments()
+			try:
+				self.prepare_mail_attachments()
+			except:
+				logger.exception("Failed to prepare email attachments")
 			
 			if self.smtp_security == "STARTTLS":
 				self.send_mail_starttls()
@@ -63,7 +70,7 @@ class Mailer(Notifier):
 			elif self.smtp_security == "NOAUTH_STARTTLS":
 				self.send_mail_noauth_starttls()
 		else:
-			logging.error("Mailer: Wasn't able to notify because there was an initialization error")
+			logger.error("Mailer: Wasn't able to notify because there was an initialization error")
 		
 
 	# Search for the latest alarm folder and attach all files within it to the mail
@@ -76,7 +83,7 @@ class Mailer(Notifier):
 				subdirs.append(full_path)
 		# TODO: check if subdirs is empty
 		latest_subdir = max(subdirs, key=os.path.getmtime)
-		logging.debug("Mailer: Will look into %s for data" % latest_subdir)
+		logger.debug("Mailer: Will look into %s for data" % latest_subdir)
 		#then iterate through it and attach all the files to the mail
 		for file in os.listdir(latest_subdir):
 			filepath = "%s/%s" % (latest_subdir, file)
@@ -93,7 +100,7 @@ class Mailer(Notifier):
 						self.prepare_add_attachment(file, f.read())
 
 			else:
-				logging.debug("Mailer: %s is not a file" % file)
+				logger.debug("Mailer: %s is not a file" % file)
 		# TODO: maybe log something if there are no files?
 
 	def prepare_add_attachment(self, filename, payload):
@@ -125,11 +132,11 @@ class Mailer(Notifier):
 		mimepart.add_header('Content-Disposition','attachment; filename="%s"' % filename)
 		self.message.attach(mimepart)
 
-		logging.debug("Mailer: Attached file '%s' to message" % filename)
+		logger.debug("Mailer: Attached file '%s' to message" % filename)
 
 	def prepare_expand_zip_attachment(self, filepath):
 		"""Decode zip file and add each containing file as attachment to current mail message"""
-		logging.debug("Mailer: Decoding zip file '%s' as requested" % filepath)
+		logger.debug("Mailer: Decoding zip file '%s' as requested" % filepath)
 		import zipfile
 		with zipfile.ZipFile(filepath) as zip:
 			filenames = zip.namelist()
@@ -139,85 +146,85 @@ class Mailer(Notifier):
 				self.prepare_add_attachment(filename, payload)
 
 	def send_mail_starttls(self):
-		logging.debug("Mailer: Trying to send mail with STARTTLS")
+		logger.debug("Mailer: Trying to send mail with STARTTLS")
 		try:
-			logging.debug("Mailer: Establishing connection to SMTP server...")
+			logger.debug("Mailer: Establishing connection to SMTP server")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
 			smtp.starttls()
-			logging.debug("Mailer: Logging in...")
+			logger.debug("Mailer: Logging in")
 			smtp.login(self.smtp_user, self.smtp_pass)
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
-			logging.info("Mailer: Mail sent")
+			logger.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception:
-			logging.exception("Mailer: Unknown error")
+			logger.exception("Mailer: Unexpected error")
 
 	def send_mail_ssl(self):
-		logging.debug("Mailer: Trying to send mail with SSL")
+		logger.debug("Mailer: Trying to send mail with SSL")
 		try:
-			logging.debug("Mailer: Establishing connection to SMTP server...")
+			logger.debug("Mailer: Establishing connection to SMTP server")
 			smtp = smtplib.SMTP_SSL(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
-			logging.debug("Mailer: Logging in...")
+			logger.debug("Mailer: Logging in")
 			smtp.login(self.smtp_user, self.smtp_pass)
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
-			logging.info("Mailer: Mail sent")
+			logger.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception:
-			logging.exception("Mailer: Unknown error")
+			logger.exception("Mailer: Unexpected error")
 
 	def send_mail_nossl(self):
-		logging.debug("Mailer: Trying to send mail without SSL")
+		logger.debug("Mailer: Trying to send mail without SSL")
 		try:
-			logging.debug("Mailer: Establishing connection to SMTP server...")
+			logger.debug("Mailer: Establishing connection to SMTP server")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
-			logging.debug("Mailer: Logging in...")
+			logger.debug("Mailer: Logging in")
 			smtp.login(self.smtp_user, self.smtp_pass)
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
-			logging.info("Mailer: Mail sent")
+			logger.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception:
-			logging.exception("Mailer: Unknown error")
+			logger.exception("Mailer: Unexpected error")
 
 	def send_mail_noauth_nossl(self):
-		logging.debug("Mailer: Trying to send mail without authentication")
+		logger.debug("Mailer: Trying to send mail without authentication")
 		try:
-			logging.debug("Mailer: Establishing connection to SMTP server...")
+			logger.debug("Mailer: Establishing connection to SMTP server")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
-			logging.info("Mailer: Mail sent")
+			logger.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception:
-			logging.exception("Mailer: Unknown error")
+			logger.exception("Mailer: Unexpected error")
 
 	def send_mail_noauth_ssl(self):
-		logging.debug("Mailer: Trying to send mail without authentication")
+		logger.debug("Mailer: Trying to send mail without authentication")
 		try:
-			logging.debug("Mailer: Establishing connection to SMTP server...")
+			logger.debug("Mailer: Establishing connection to SMTP server")
 			smtp = smtplib.SMTP_SSL(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
-			logging.info("Mailer: Mail sent")
+			logger.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception:
-			logging.exception("Mailer: Unknown error")
+			logger.exception("Mailer: Unexpected error")
 
 	def send_mail_noauth_starttls(self):
-		logging.debug("Mailer: Trying to send mail with STARTTLS")
+		logger.debug("Mailer: Trying to send mail with STARTTLS")
 		try:
-			logging.debug("Mailer: Establishing connection to SMTP server...")
+			logger.debug("Mailer: Establishing connection to SMTP server")
 			smtp = smtplib.SMTP(self.smtp_address, self.smtp_port)
 			smtp.ehlo()
 			smtp.starttls()
 			smtp.sendmail(self.message["From"], self.message["To"].split(','), self.message.as_string())
-			logging.info("Mailer: Mail sent")
+			logger.info("Mailer: Mail sent")
 			smtp.quit()
 		except Exception:
-			logging.exception("Mailer: Unknown error")
+			logger.exception("Mailer: Unexpected error")
 
 	def cleanup(self):
-		logging.debug("Mailer: No cleanup necessary at the moment")
+		logger.debug("Mailer: No cleanup necessary at the moment")
 

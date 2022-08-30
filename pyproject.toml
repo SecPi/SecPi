@@ -48,13 +48,17 @@ dependencies = [
   "Mako<2",
 
   # Sensor modules. Support for host pinging.
-  "pyping<1",
+  "ping3<5",
 
   # Notifier modules. Support for Dropbox, SMS, Slack, Twitter.
   "dropbox<12",
   "python-gsmmodem<1",
   "slacker<1",
   "tweepy<5",
+
+  # Action modules.
+  "pygame<3",
+  "opencv-python<5",
 
   # IsarEngineering modules. Support for VCR, SIP, ADAM.
   "ffmpy<1",
@@ -68,6 +72,9 @@ dependencies = [
 test = [
   "pytest<8",
   "pytest-cov<4",
+  "pytest-mock<4",
+  "pyfakefs<5",
+  "surrogate<1",
 ]
 develop = [
   "isort<6",
