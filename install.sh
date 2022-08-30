@@ -210,24 +210,6 @@ fi
 
 if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 2 ]
 then
-	echo "Enter user for webinterface: (default: admin)"
-	read WEB_USER
-
-	if [ -z "$WEB_USER" ]
-	then
-		WEB_USER="admin"
-		echo "Setting user to default value"
-	fi
-	
-	echo "Enter password for webinterface: (default: admin)"
-	read WEB_PWD
-
-	if [ -z "$WEB_PWD" ]
-	then
-		WEB_PWD="admin"
-		echo "Setting password to default value"
-	fi
-
 	echo "Should we take care of rabbitmq.config file? [yes/no] (default: yes)"
 	echo "Select no if you already have an existing rabbitmq setup."
 	read CREATE_RMQ_CONFIG
@@ -348,10 +330,6 @@ then
 		gen_and_sign_cert webui.$CA_DOMAIN client
 	fi
 
-	echo "Creating htdigest file..."
-	webinterface/create_htdigest.sh $SECPI_PATH/webinterface/.htdigest $WEB_USER $WEB_PWD
-	
-	
 	echo "Copying startup scripts..."
 	
 	cp scripts/secpi-manager /etc/init.d/

@@ -716,24 +716,6 @@ app.controller('TestController', ['$http', '$log', '$interval', 'FlashService', 
 }]);
 
 
-app.controller('CredentialsController', ['$log', 'FlashService', 'HTTPService', function($log, FlashService, HTTPService){
-	var self = this;
-
-	self.username = "admin";
-	self.password = "";
-		
-	self.changeCredentials = function(){
-		HTTPService.post('/change_login', {"username": self.username, "password": self.password},
-			function(data,msg){
-				FlashService.flash(msg, FlashService.TYPE_INFO);
-			}
-		);
-		
-	}
-	
-}]);
-
-
 function AlarmDataModalController($uibModalInstance, dataCtrl){
 	var self = this;
 	self.dataCtrl = dataCtrl;

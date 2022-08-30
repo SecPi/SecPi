@@ -14,6 +14,7 @@ from tools import utils
 class AlarmDataPage():
 
 	def __init__(self):
+		# FIXME: This is hardcoded and croaks right away when navigating to "Alarm Data".
 		self.datapath = "/var/tmp/secpi/alarms"
 		self.suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 		

@@ -2,14 +2,12 @@ import dataclasses
 import json
 import logging
 import os
-import subprocess
 import sys
 import traceback
 
 import cherrypy
 import pika
 import pkg_resources
-from cherrypy.lib import auth_digest
 from cp_sqlalchemy import SQLAlchemyPlugin, SQLAlchemyTool
 from tools import utils
 from tools.amqp import AMQPAdapter
@@ -204,11 +202,6 @@ class Webinterface:
 		return tmpl.render(page_title="Testing")
 	
 	@cherrypy.expose
-	def change_credentials(self):
-		tmpl = self.lookup.get_template("change_credentials.mako")
-		return tmpl.render(page_title="Change Login Credentials")
-
-	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	#@cherrypy.tools.json_out(handler=utils.json_handler)
 	def activate(self, **kwargs):
@@ -333,30 +326,6 @@ class Webinterface:
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out(handler=utils.json_handler)
-	def change_login(self):
-		"""
-		Change login credentials.
-
-		TODO: Review and eventually rip it out completely.
-		"""
-		if hasattr(cherrypy.request, 'json'):
-			username = cherrypy.request.json['username']
-			password = cherrypy.request.json['password']
-			try:
-				# FIXME: Get rid of hardcoded details.
-				exit_code = subprocess.call(["/opt/secpi/webinterface/create_htdigest.sh", PROJECT_PATH+"/webinterface/.htdigest", username, password])
-				if exit_code == 0:
-					return SuccessfulResponse("Login credentials have been changed").to_dict()
-				else:
-					return FailedResponse("Error changing login credentials").to_dict()
-			except Exception as ex:
-				message = f"Error changing login credentials: {ex}"
-				logger.exception(message)
-				return FailedResponse(message).to_dict()
-
-	@cherrypy.expose
-	@cherrypy.tools.json_in()
-	@cherrypy.tools.json_out(handler=utils.json_handler)
 	def operational(self):
 		"""
 		HTTP: Receive and process operational messages.
@@ -426,7 +395,6 @@ def run_webinterface(options: StartupOptions):
 	# TODO: Review those locations.
 	root_path = pkg_resources.resource_filename(__name__, "")
 	favicon_path = pkg_resources.resource_filename(__name__, "favicon.ico")
-	htdigest_path = pkg_resources.resource_filename(__name__, ".htdigest")
 	template_path = pkg_resources.resource_filename(__name__, "templates")
 
 	cherrypy.tools.lookup = MakoTemplateTool(template_path)
@@ -448,10 +416,6 @@ def run_webinterface(options: StartupOptions):
 			'tools.db.on': True,
 			'tools.lookup.on': True,
 			'tools.staticdir.root': root_path,
-			'tools.auth_digest.on': False,
-			'tools.auth_digest.realm': 'secpi',
-			'tools.auth_digest.get_ha1': auth_digest.get_ha1_file_htdigest(htdigest_path),
-			'tools.auth_digest.key': 'ae41349f9413b13c'
 		},
 		'/static': {
 			'tools.staticdir.on': True,
