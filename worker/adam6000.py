@@ -38,7 +38,7 @@ Add this snippet to your `manager/config.json`::
     "global": {
             "adam6000": {
                     "mqtt_broker_ip": "localhost",
-                    "mqtt_topic": "Advantech/00D0C9EFDBBD"
+                    "mqtt_topic": "Advantech/11E1DAF0ECCE"
             }
     }
 
@@ -53,8 +53,8 @@ Usage
     # Submit example MQTT message.
     export PAYLOAD1='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
     export PAYLOAD2='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":false,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
-    echo $PAYLOAD1 | mosquitto_pub -h localhost -t "Advantech/00D0C9EFDBBD/data" -l
-    echo $PAYLOAD2 | mosquitto_pub -h localhost -t "Advantech/00D0C9EFDBBD/data" -l
+    echo $PAYLOAD1 | mosquitto_pub -h localhost -t "Advantech/11E1DAF0ECCE/data" -l
+    echo $PAYLOAD2 | mosquitto_pub -h localhost -t "Advantech/11E1DAF0ECCE/data" -l
 
 
 HTTP interface
@@ -171,7 +171,7 @@ class AdvantechAdamModbusConnector:
         Retrieve IP address from retained MQTT message.
 
         mosquitto_sub -t '#' -v
-        {"status":"disconnect","name":"ADAM6050","macid":"00D0C9EFDBBD","ipaddr":"192.168.178.10"}
+        {"status":"disconnect","name":"ADAM6050","macid":"11E1DAF0ECCE","ipaddr":"192.168.178.10"}
         """
         topic = f"{self.mqtt_topic}/Device_Status"
         logger.info(f"Reading IP address from MQTT topic {topic} at broker {self.mqtt_broker}")

@@ -6,11 +6,14 @@ SecPi backlog
 ***********
 Iteration 1
 ***********
+
+Make it work on Python 3. Add adapters for Advantech ADAM 6050 and SIPCall/Asterisk.
+
+- [x] Add compatibility with Python 3. Thanks, @tonkenfo.
 - [x] AMQP: refactoring and deduplication.
-- [o] AMQP: Upgrade to Pika 1.3.0 again.
-  See https://github.com/isarengineering/SecPi/commit/c21eb4f59f2.
-- [x] AMQP: Resolve flaws with concurrent access.
-  https://github.com/isarengineering/SecPi/issues/5
+- [/] AMQP: Upgrade to Pika 1.3. -- https://github.com/isarengineering/SecPi/commit/c21eb4f59f2.
+  Cancelled - patch is not ready yet.
+- [x] AMQP: Resolve flaws with concurrent access. -- https://github.com/isarengineering/SecPi/issues/5
 - [o] ADAM: Summary message should also be submitted on "ACTIVATE".
 - [o] ADAM: Summary message should only be a message, not an alarm.
 
@@ -18,52 +21,70 @@ Iteration 1
 ***********
 Iteration 2
 ***********
-- [o] Get rid of ``PROJECT_PATH``
-- [o] Overhaul directory layout. Add setup.py and command line entrypoints.
-- [o] Add software tests and CI configuration
-- [o] Naming things: Replace ``Pi`` or ``pi_id`` with something more meaningful
-- [o] Improve ``install.sh``.
-- [o] Deployment: Add new systemd unit files, with logging to journald.
+
+Many modernizations across the board.
+
+Project and code
+================
+- [x] Get rid of ``PROJECT_PATH``
+- [x] Add ``pyproject.toml`` and command line entrypoints.
+- [x] Tests: Add software tests and CI configuration
+- [o] Webinterface: Rip out SSL and ``.htdigest`` authentication completely
+- [o] Update to SQLAlchemy 1.4 and Pika 1.3
+- [o] Pika 0.x & Python 3.10: ``AttributeError: module 'collections' has no attribute 'Callable'``
+- [o] Refactor to ``secpi`` namespace and rework directory layout
+- [o] Remove dead code
+- [o] Remove some features
+- [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
+
+Documentation
+=============
+- [o] Update/improve https://github.com/isarengineering/SecPi/blob/next/doc/sandbox.rst
 - [o] Tutorial I: socat -> TCPListener -> Mailer -> mailserver.py
   while true; do echo hello | socat - tcp:localhost:1234; done
-- [o] Mount ``/var/tmp`` as tmpfs
-- [o] Tests: Replace ``socat`` with Python routine
-- [o] CI: Improve efficiency by implementing ``socat`` and ``amqp-publish`` in Python
-- [o] More test scenarios, e.g. uninitialized Worker, Manager+Mailer, Web+Activate
-- [o] Remove dead code
-- [o] Namespace refactoring
-- [o] Improve docs; from installation to operation (e.g. ``journalctl``)
-- [o] Webinterface: Shouldn't it better be implemented using a real web server?
-
-  - Rip out SSL completely?
-  - Rip out ``.htdigest`` authentication completely?
-- [o] Test and use ``speaker.py``
-- [o] Bump JavaScript dependencies and rebundle using Yarn and webpack
-- [o] ADAM: Resolve ambiguation with ``mqtt_broker_ip`` vs. "port"
-- [o] Get rid of ``00D0C9EFDBBD``
-- [o] Make CherryPy ``--listen-address`` configurable. What about Unix sockets?
-- [o] Docs: Setup
-- [o] Docs: How to run ``DatabaseAdapter.setup()`` once?
-
+- [o] Improve. "From installation to operation" (e.g. ``journalctl``)
+- [o] Database setup. How to run ``DatabaseAdapter.setup()`` once?
+- [o] Turn Wiki into dedicated repository. -- https://github.com/SecPi/SecPi/wiki/
+- [o] Download Wiki images from imgur
 
 
 ***********
 Iteration 3
 ***********
+
+Towards 2.0.0.
+
+Project and code
+================
+- [o] Bring back AMQP SSL connection abilities.
+- [o] Add MQTT SSL connection abilities.
+- [o] Improve UI
+  https://github.com/SecPi/SecPi/issues/101
+- [o] Tests: Improve efficiency by implementing ``socat``, ``amqp-publish``, and ``amqp-get`` in pure Python
+- [o] Tests: More test scenarios, e.g. uninitialized Worker, Manager+Mailer, Web+Activate
+- [o] ADAM: Resolve ambiguation with ``mqtt_broker_ip`` vs. "port"
+- [o] Webinterface: Bump JavaScript dependencies and rebundle using Yarn and webpack
+
+Deployment and production
+=========================
+- [o] Improve ``install.sh``.
+- [o] Add new systemd unit files, with logging to journald.
+- [o] Mount ``/var/tmp`` as tmpfs
+
+
+***********
+Iteration 4
+***********
+
+Ideas for the future.
+
+- [o] Naming things: Replace ``Pi`` or ``pi_id`` with something more meaningful
 - [o] SQLAlchemy: Resolve flaws with concurrent access.
   https://github.com/isarengineering/SecPi/issues/6
-- [o] Webinterface: Optimize (reduce) number backend requests
+- [o] Webinterface: Optimize (reduce) number of backend requests
 - [o] Webinterface: When many entities (Alarm and LogEntry entities) are in the database
   (i.e. millions of records), the frontend becomes completely unresponsive.
   Maybe only fetch the last N entities per request?
 - [o] Improve notifications: Discriminate between subject and message.
   Maybe map from subsystem to subject.
-- [o] Bring back AMQP SSL connection abilities.
-- [o] Add MQTT SSL connection abilities.
 - [o] Notifications using Apprise or mqttwarn
-- [o] Improve UI
-  https://github.com/SecPi/SecPi/issues/101
-- [o] Add documentation from Wiki
-- [o] Turn Wiki into dedicated repository
-  https://github.com/SecPi/SecPi/wiki/
-- [o] Download Wiki images from imgur.
