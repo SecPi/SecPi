@@ -1,35 +1,35 @@
 import logging
 import os
 
-import dropbox
+import dropbox as dropbox_lib
 
 from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 
 
-class Dropbox_Dropper(Notifier):
+class DropboxFileUpload(Notifier):
     def __init__(self, id, params):
 
-        super(Dropbox_Dropper, self).__init__(id, params)
+        super(DropboxFileUpload, self).__init__(id, params)
         try:
             self.access_token = params["access_token"]
         except KeyError as ex:
-            logger.error(f"Dropbox: Initializing notifier failed, configuration parameter missing: {ex}")
+            logger.error(f"DropboxFileUpload: Initializing notifier failed, configuration parameter missing: {ex}")
             self.corrupted = True
             return
 
         try:
-            self.dbx = dropbox.Dropbox(self.access_token)
+            self.dbx = dropbox_lib.Dropbox(self.access_token)
         except Exception:
-            logger.exception("Connecting to Dropbox failed")
+            logger.exception("Connecting to DropboxFileUpload failed")
             self.corrupted = True
             return
 
         # FIXME: Directory is hard-coded here.
         self.data_dir = "/var/tmp/secpi/alarms/"
 
-        logger.info("Dropbox initialized")
+        logger.info("DropboxFileUpload initialized")
 
     def notify(self, info):
         if not self.corrupted:
@@ -44,15 +44,15 @@ class Dropbox_Dropper(Notifier):
                         data = f.read()
 
                     try:
-                        logger.info("Dropbox: Trying to upload file %s to %s" % (file, dropbox_dir))
+                        logger.info("DropboxFileUpload: Trying to upload file %s to %s" % (file, dropbox_dir))
                         res = self.dbx.files_upload(data, "%s/%s" % (dropbox_dir, file))
-                        logger.info("Dropbox: Upload of file %s succeeded" % file)
-                    except dropbox.exceptions.ApiError as d:
-                        logger.error("Dropbox: API error: %s" % d)
+                        logger.info("DropboxFileUpload: Upload of file %s succeeded" % file)
+                    except dropbox_lib.exceptions.ApiError as d:
+                        logger.error("DropboxFileUpload: API error: %s" % d)
                     except Exception as e:  # currently this catches wrong authorization, we should change this
-                        logger.error("Dropbox: Wasn't able to upload file: %s" % e)
+                        logger.error("DropboxFileUpload: Wasn't able to upload file: %s" % e)
         else:
-            logger.error("Dropbox: Wasn't able to notify because there was an initialization error")
+            logger.error("DropboxFileUpload: Wasn't able to notify because there was an initialization error")
 
     def get_latest_subdir(self):
         subdirs = []
@@ -65,4 +65,4 @@ class Dropbox_Dropper(Notifier):
         return latest_subdir
 
     def cleanup(self):
-        logger.debug("Dropbox: No cleanup necessary at the moment")
+        logger.debug("DropboxFileUpload: No cleanup necessary at the moment")

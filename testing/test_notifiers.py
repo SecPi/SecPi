@@ -23,7 +23,7 @@ def test_notifier_dropbox(fs, caplog):
     fs.create_file("/var/tmp/secpi/alarms/20220828_181818/hello.txt", contents="Hello, world.")
 
     # Configure notifier.
-    component = load_class("manager.dropbox_dropper", "Dropbox_Dropper")
+    component = load_class("secpi.notifier.dropbox", "DropboxFileUpload")
     parameters = {
         "access_token": "foobar-token",
     }
@@ -33,9 +33,9 @@ def test_notifier_dropbox(fs, caplog):
     notifier.notify(NOTIFICATION_INFO)
 
     # Verify log output matches the expectations.
-    assert "Loading class successful: manager.dropbox_dropper.Dropbox_Dropper" in caplog.messages
-    assert "Dropbox initialized" in caplog.messages
-    assert "Dropbox: Trying to upload file hello.txt to /20220828_181818" in caplog.messages
+    assert "Loading class successful: secpi.notifier.dropbox.DropboxFileUpload" in caplog.messages
+    assert "DropboxFileUpload initialized" in caplog.messages
+    assert "DropboxFileUpload: Trying to upload file hello.txt to /20220828_181818" in caplog.messages
     assert "Request to files/upload" in caplog.messages
 
     # It is expected to fail, because we do not have a valid access token.
@@ -43,7 +43,7 @@ def test_notifier_dropbox(fs, caplog):
     #
     #   Could not find a suitable TLS CA certificate bundle, invalid path:
     #   /path/to/.venv/lib/python3.9/site-packages/certifi/cacert.pem
-    assert "Dropbox: Wasn't able to upload file" in caplog.text
+    assert "DropboxFileUpload: Wasn't able to upload file" in caplog.text
 
 
 def test_notifier_mailer(fs, caplog):
@@ -54,7 +54,7 @@ def test_notifier_mailer(fs, caplog):
     fs.create_dir("/var/tmp/secpi/alarms")
 
     # Configure notifier.
-    component = load_class("manager.mailer", "Mailer")
+    component = load_class("secpi.notifier.mailer", "Mailer")
     parameters = {
         "smtp_address": "localhost",
         "smtp_port": "12525",
@@ -73,7 +73,7 @@ def test_notifier_mailer(fs, caplog):
     notifier.notify(NOTIFICATION_INFO)
 
     # Verify log output matches the expectations.
-    assert "Loading class successful: manager.mailer.Mailer" in caplog.messages
+    assert "Loading class successful: secpi.notifier.mailer.Mailer" in caplog.messages
     assert "Mailer: Notifier initialized" in caplog.messages
     assert "Notifying via SMTP email" in caplog.messages
     assert "Failed to prepare email attachments" in caplog.messages
@@ -110,7 +110,7 @@ def test_notifier_sipcall(mocker, caplog):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # Configure notifier.
-        component = load_class("manager.sipcall", "SipCall")
+        component = load_class("secpi.notifier.sipcall", "SipCall")
         parameters = {
             "sip_number": "+49-177-1234567",
             "sip_route": "sip-testing",
@@ -127,7 +127,7 @@ def test_notifier_sipcall(mocker, caplog):
         assert callfile_current == callfile_reference
 
     # Verify log output matches the expectations.
-    assert "Loading class successful: manager.sipcall.SipCall" in caplog.messages
+    assert "Loading class successful: secpi.notifier.sipcall.SipCall" in caplog.messages
     assert "SipCall: Notifier initialized" in caplog.messages
     assert "SipCall: Starting call to +49-177-1234567, triggered by sensor sensor-testing" in caplog.messages
     assert "SipCall: Call to +49-177-1234567 submitted successfully" in caplog.messages
@@ -140,7 +140,7 @@ def test_notifier_slack(caplog):
     import slacker
 
     # Configure notifier.
-    component = load_class("manager.slack", "SlackNotifier")
+    component = load_class("secpi.notifier.slack", "SlackNotifier")
     parameters = {
         "channel": "secpi-testing",
         "bot_token": "foobar-token",
@@ -154,7 +154,7 @@ def test_notifier_slack(caplog):
     assert ex.match("unknown_method")
 
     # Verify log output matches the expectations.
-    assert "Loading class successful: manager.slack.SlackNotifier" in caplog.messages
+    assert "Loading class successful: secpi.notifier.slack.SlackNotifier" in caplog.messages
     assert "Sending Slack notification" in caplog.messages
     assert "Starting new HTTPS connection (1): slack.com:443" in caplog.messages
     assert (
@@ -169,7 +169,7 @@ def test_notifier_sms(caplog):
     """
 
     # Configure notifier.
-    component = load_class("manager.sms", "Sms")
+    component = load_class("secpi.notifier.sms", "Sms")
     parameters = {
         "port": "/dev/ttyUSB-testing",
         "recipients": "alice,bob",
@@ -181,7 +181,7 @@ def test_notifier_sms(caplog):
     notifier.notify(NOTIFICATION_INFO)
 
     # Verify log output matches the expectations.
-    assert "Loading class successful: manager.sms.Sms" in caplog.messages
+    assert "Loading class successful: secpi.notifier.sms.Sms" in caplog.messages
     assert "Connecting to modem on port /dev/ttyUSB-testing at 115200bps" in caplog.messages
 
     # It is expected to fail, because no GSM hardware.
@@ -196,7 +196,7 @@ def test_notifier_spark(caplog):
     """
 
     # Configure notifier.
-    component = load_class("manager.spark", "SparkNotifier")
+    component = load_class("secpi.notifier.spark", "SparkNotifier")
     parameters = {
         "personal_token": "foobar-token",
         "room": "room-42",
@@ -208,7 +208,7 @@ def test_notifier_spark(caplog):
     notifier.notify(NOTIFICATION_INFO)
 
     # Verify log output matches the expectations.
-    assert "Loading class successful: manager.spark.SparkNotifier" in caplog.messages
+    assert "Loading class successful: secpi.notifier.spark.SparkNotifier" in caplog.messages
     assert "Sending Cisco Spark notification" in caplog.messages
     assert "Starting new HTTPS connection (1): api.ciscospark.com:443" in caplog.messages
 
@@ -226,7 +226,7 @@ def test_notifier_twitter(caplog):
     """
 
     # Configure notifier.
-    component = load_class("manager.twitter", "Twitter")
+    component = load_class("secpi.notifier.twitter", "Twitter")
     parameters = {
         "consumer_key": "foobar-key",
         "consumer_secret": "foobar-secret",
@@ -241,7 +241,7 @@ def test_notifier_twitter(caplog):
     notifier.notify(NOTIFICATION_INFO)
 
     # Verify log output matches the expectations.
-    assert "Loading class successful: manager.twitter.Twitter" in caplog.messages
+    assert "Loading class successful: secpi.notifier.twitter.Twitter" in caplog.messages
     assert "Twitter: Notifier initialized" in caplog.messages
     assert "Starting new HTTPS connection (1): api.twitter.com:443" in caplog.messages
 

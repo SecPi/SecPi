@@ -67,7 +67,7 @@ def test_manager_process_alarm(webinterface_service, manager_service):
 
     # Setup: Manager.
     assert "Setting up notifiers" in app_log
-    assert "Loading class successful: manager.mailer.Mailer" in app_log
+    assert "Loading class successful: secpi.notifier.mailer.Mailer" in app_log
     assert "Mailer: Notifier initialized" in app_log
     assert "Set up notifier Mailer" in app_log
     assert "Activating setup: secpi-testing" in app_log
