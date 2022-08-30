@@ -1,10 +1,10 @@
-from unittest.mock import Mock, call
+from unittest.mock import Mock
 
 import pytest
 from surrogate import surrogate
 
+from secpi.util.common import load_class
 from tools.action import Action
-from tools.utils import load_class
 
 
 @pytest.fixture(scope="function")

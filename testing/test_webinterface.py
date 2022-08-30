@@ -2,8 +2,8 @@ import logging
 
 import requests
 
+from secpi import __version__
 from testing.util.service import WebinterfaceServiceWrapper
-from webinterface.constants import __version__
 
 logger = logging.getLogger(__name__)
 

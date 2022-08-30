@@ -3,8 +3,8 @@ from unittest.mock import call
 import pytest
 from surrogate import surrogate
 
+from secpi.util.common import load_class
 from tools.sensor import Sensor
-from tools.utils import load_class
 
 
 @pytest.fixture(scope="function")
@@ -57,7 +57,7 @@ def test_sensor_gpio_alarm(gpio_sensor, caplog):
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ("tools.utils", 20, "Loading class successful: worker.gpio_sensor.GPIOSensor"),
+        ("secpi.util.common", 20, "Loading class successful: worker.gpio_sensor.GPIOSensor"),
         ("worker.gpio_sensor", 20, "Initializing sensor id=99 with parameters {'gpio': '42', 'bouncetime': '3'}"),
         ("worker.gpio_sensor", 10, "GPIOSensor: Sensor initialized"),
     ]

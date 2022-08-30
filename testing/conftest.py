@@ -3,13 +3,13 @@ import subprocess
 
 import pytest
 
+from secpi.util.common import setup_logging
+from secpi.util.config import ApplicationConfig
 from testing.util.service import (
     ManagerServiceWrapper,
     WebinterfaceServiceWrapper,
     WorkerServiceWrapper,
 )
-from tools.config import ApplicationConfig
-from tools.utils import setup_logging
 from worker.worker import Worker
 
 setup_logging()

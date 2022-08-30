@@ -1,7 +1,7 @@
 import abc
 import logging
 
-from tools import utils
+from secpi.model import constants
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class Sensor(object):
     def alarm(self, message):
         self.worker.alarm(self.id, message)
 
-    def post_log(self, msg, lvl=utils.LEVEL_INFO):
+    def post_log(self, msg, lvl=constants.LEVEL_INFO):
         self.worker.post_log(msg, lvl)
 
     def post_err(self, msg):

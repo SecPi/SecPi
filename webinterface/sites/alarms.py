@@ -1,6 +1,6 @@
 import cherrypy
 
-from tools import utils
+from secpi.util.web import json_handler
 from tools.db.objects import Alarm
 
 from ..base_webpage import BaseWebPage
@@ -23,7 +23,7 @@ class AlarmsPage(BaseWebPage):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def ack(self):
         if hasattr(cherrypy.request, "json"):
             id = cherrypy.request.json["id"]
@@ -38,7 +38,7 @@ class AlarmsPage(BaseWebPage):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def ackAll(self):
         les = self.db.query(Alarm).filter(Alarm.ack == 0).all()
         if les:

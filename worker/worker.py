@@ -9,12 +9,17 @@ import uuid
 
 import pika
 
-from tools import utils
+from secpi.model import constants
+from secpi.util.common import (
+    check_late_arrival,
+    get_ip_addresses,
+    load_class,
+    setup_logging,
+)
+from secpi.util.config import ApplicationConfig
 from tools.amqp import AMQPAdapter
 from tools.base import Service
 from tools.cli import StartupOptions, parse_cmd_args
-from tools.config import ApplicationConfig
-from tools.utils import get_ip_addresses, load_class, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +70,7 @@ class Worker(Service):
         channel: "pika.channel.Channel" = self.bus.channel
 
         # Declare exchanges and queues.
-        channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type="direct")
+        channel.exchange_declare(exchange=constants.EXCHANGE, exchange_type="direct")
 
         # INIT CONFIG MODE
         # When the worker does not have an identifier, only define a basic
@@ -73,8 +78,8 @@ class Worker(Service):
         if not self.config.get("pi_id"):
             result = channel.queue_declare(queue="init-callback", exclusive=True)
             self.callback_queue = result.method.queue
-            channel.queue_bind(queue=self.callback_queue, exchange=utils.EXCHANGE)
-            channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
+            channel.queue_bind(queue=self.callback_queue, exchange=constants.EXCHANGE)
+            channel.queue_declare(queue=constants.QUEUE_INIT_CONFIG)
             channel.basic_consume(queue=self.callback_queue, on_message_callback=self.got_init_config, auto_ack=True)
 
         # OPERATIVE MODE
@@ -86,24 +91,24 @@ class Worker(Service):
             worker_identifier = str(self.config.get("pi_id"))
 
             # Declare all the queues.
-            channel.queue_declare(queue=utils.QUEUE_OPERATIONAL + worker_identifier)
-            channel.queue_declare(queue=utils.QUEUE_ACTION + worker_identifier)
-            channel.queue_declare(queue=utils.QUEUE_CONFIG + worker_identifier)
-            channel.queue_declare(queue=utils.QUEUE_DATA)
-            channel.queue_declare(queue=utils.QUEUE_ALARM)
-            channel.queue_declare(queue=utils.QUEUE_LOG)
+            channel.queue_declare(queue=constants.QUEUE_OPERATIONAL + worker_identifier)
+            channel.queue_declare(queue=constants.QUEUE_ACTION + worker_identifier)
+            channel.queue_declare(queue=constants.QUEUE_CONFIG + worker_identifier)
+            channel.queue_declare(queue=constants.QUEUE_DATA)
+            channel.queue_declare(queue=constants.QUEUE_ALARM)
+            channel.queue_declare(queue=constants.QUEUE_LOG)
 
             # Specify the queues we want to listen to, including the callback.
             channel.basic_consume(
-                queue=utils.QUEUE_OPERATIONAL + worker_identifier,
+                queue=constants.QUEUE_OPERATIONAL + worker_identifier,
                 on_message_callback=self.got_operational,
                 auto_ack=True,
             )
             channel.basic_consume(
-                queue=utils.QUEUE_ACTION + worker_identifier, on_message_callback=self.got_action, auto_ack=True
+                queue=constants.QUEUE_ACTION + worker_identifier, on_message_callback=self.got_action, auto_ack=True
             )
             channel.basic_consume(
-                queue=utils.QUEUE_CONFIG + worker_identifier, on_message_callback=self.got_config, auto_ack=True
+                queue=constants.QUEUE_CONFIG + worker_identifier, on_message_callback=self.got_config, auto_ack=True
             )
 
     def start(self):
@@ -120,14 +125,14 @@ class Worker(Service):
 
     # sends a message to the manager
     def send_msg(self, rk, body, **kwargs):
-        self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
+        self.bus.publish(exchange=constants.EXCHANGE, routing_key=rk, body=body, **kwargs)
         return True
 
     # sends a message to the manager
     def send_json_msg(self, rk, body, **kwargs):
         properties = pika.BasicProperties(content_type="application/json")
         self.bus.publish(
-            exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs
+            exchange=constants.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs
         )
         return True
 
@@ -135,12 +140,12 @@ class Worker(Service):
         logger.error(msg)
         err = {
             "msg": msg,
-            "level": utils.LEVEL_ERR,
+            "level": constants.LEVEL_ERR,
             "sender": f"Worker {self.config.get('pi_id')}",
             "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
-        self.send_json_msg(utils.QUEUE_LOG, err)
+        self.send_json_msg(constants.QUEUE_LOG, err)
 
     def post_log(self, msg, lvl):
         logger.info(msg)
@@ -151,7 +156,7 @@ class Worker(Service):
             "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
-        self.send_json_msg(utils.QUEUE_LOG, lg)
+        self.send_json_msg(constants.QUEUE_LOG, lg)
 
     def load_plugin(self, module_name, class_name):
         """
@@ -175,7 +180,7 @@ class Worker(Service):
             properties = pika.BasicProperties(
                 reply_to=self.callback_queue, correlation_id=self.corr_id, content_type="application/json"
             )
-            self.send_msg(utils.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
+            self.send_msg(constants.QUEUE_INIT_CONFIG, json.dumps(ip_addresses), properties=properties)
         else:
             logger.error("Wasn't able to find any IP address(es), please check your network configuration. Exiting.")
             quit()
@@ -252,7 +257,7 @@ class Worker(Service):
     def got_action(self, ch, method, properties, body):
         if self.active:
             msg = json.loads(body)
-            late_arrival = utils.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
+            late_arrival = check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
 
             if late_arrival:
                 logger.info("Received old action from manager:%s" % body)
@@ -274,13 +279,13 @@ class Worker(Service):
             if self.prepare_data():  # check if there is any data to send
                 with open("%s/%s.zip" % (self.zip_directory, self.config.get("pi_id")), "rb") as zip_file:
                     byte_stream = zip_file.read()
-                self.send_msg(utils.QUEUE_DATA, byte_stream)
+                self.send_msg(constants.QUEUE_DATA, byte_stream)
                 logger.info("Sent data to manager")
                 self.cleanup_data()
             else:
                 logger.info("No data to send")
                 # Send empty message which acts like a finished
-                self.send_msg(utils.QUEUE_DATA, "")
+                self.send_msg(constants.QUEUE_DATA, "")
         else:
             logger.debug("Received action but wasn't active")
 
@@ -396,7 +401,7 @@ class Worker(Service):
             }
 
             # send a message to the alarmQ and tell which sensor signaled
-            self.send_json_msg(utils.QUEUE_ALARM, msg)
+            self.send_json_msg(constants.QUEUE_ALARM, msg)
 
         else:
             logger.warning("Not submitting alarm because worker is not active")

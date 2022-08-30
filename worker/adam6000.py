@@ -138,7 +138,7 @@ from paho.mqtt import subscribe
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 from sqlalchemy.util import asbool
 
-from tools import utils
+from secpi.model import constants
 from tools.sensor import Sensor
 
 logger = logging.getLogger(__name__)
@@ -446,14 +446,14 @@ class AdvantechAdamSensor(Sensor):
 
             AdvantechAdamSensor.connector.register(self, event_handler)
 
-            self.post_log(f"ADAM: Sensor activated successfully, id={self.id}", utils.LEVEL_INFO)
+            self.post_log(f"ADAM: Sensor activated successfully, id={self.id}", constants.LEVEL_INFO)
         else:
             self.post_err(f"ADAM: Sensor could not be activated, id={self.id}")
 
     def deactivate(self):
         if not self.corrupted:
             AdvantechAdamSensor.connector.unregister(self)
-            self.post_log(f"ADAM: Sensor deactivated successfully, id={self.id}", utils.LEVEL_INFO)
+            self.post_log(f"ADAM: Sensor deactivated successfully, id={self.id}", constants.LEVEL_INFO)
 
             # When there are no registrations left, the MQTT subscriber can be stopped.
             if not AdvantechAdamSensor.connector.registrations:

@@ -10,12 +10,13 @@ import pika
 import pkg_resources
 from cp_sqlalchemy import SQLAlchemyPlugin, SQLAlchemyTool
 
-from tools import utils
+from secpi.model import constants
+from secpi.util.common import setup_logging
+from secpi.util.config import ApplicationConfig
+from secpi.util.web import json_handler
 from tools.amqp import AMQPAdapter
 from tools.cli import StartupOptions, parse_cmd_args
-from tools.config import ApplicationConfig
 from tools.db.objects import Base, LogEntry, Setup
-from tools.utils import setup_logging
 
 from .mako_template_tool import MakoTemplateTool
 from .sites.actionparams import ActionParamsPage
@@ -143,11 +144,11 @@ class Webinterface:
             return False
 
         # Define exchange.
-        self.channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type="direct")
+        self.channel.exchange_declare(exchange=constants.EXCHANGE, exchange_type="direct")
 
         # Define queues.
-        self.channel.queue_declare(queue=utils.QUEUE_ON_OFF)
-        self.channel.queue_bind(queue=utils.QUEUE_ON_OFF, exchange=utils.EXCHANGE)
+        self.channel.queue_declare(queue=constants.QUEUE_ON_OFF)
+        self.channel.queue_bind(queue=constants.QUEUE_ON_OFF, exchange=constants.EXCHANGE)
         return True
 
     def connection_cleanup(self):
@@ -213,7 +214,7 @@ class Webinterface:
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    # @cherrypy.tools.json_out(handler=utils.json_handler)
+    # @cherrypy.tools.json_out(handler=json_handler)
     def activate(self, **kwargs):
 
         # Read activation request.
@@ -231,7 +232,7 @@ class Webinterface:
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    # @cherrypy.tools.json_out(handler=utils.json_handler)
+    # @cherrypy.tools.json_out(handler=json_handler)
     def deactivate(self, **kwargs):
 
         # Read activation request.
@@ -287,7 +288,7 @@ class Webinterface:
 
         message = {"setup_name": setup.name, "active_state": active}
         try:
-            self.publish(queue=utils.QUEUE_ON_OFF, message=message)
+            self.publish(queue=constants.QUEUE_ON_OFF, message=message)
             response = SuccessfulResponse(f"{verb.title()} setup '{setup.name}' succeeded")
 
         except pika.exceptions.ConnectionClosed:
@@ -295,7 +296,7 @@ class Webinterface:
             reconnected = self.connect()
             if reconnected:
                 logger.info("Reconnect finished")
-                self.publish(queue=utils.QUEUE_ON_OFF, message=message)
+                self.publish(queue=constants.QUEUE_ON_OFF, message=message)
                 response = SuccessfulResponse(f"{verb.title()} setup '{setup.name}' succeeded")
             else:
                 response = FailedResponse(f"Error {verb} setup '{setup.name}', not connected to bus")
@@ -317,7 +318,7 @@ class Webinterface:
         """
         logger.info(f"Publishing message. queue={queue}, message={message}")
         message = json.dumps(message)
-        data = dict(exchange=utils.EXCHANGE, routing_key=queue, body=message)
+        data = dict(exchange=constants.EXCHANGE, routing_key=queue, body=message)
         return self.channel.basic_publish(**data)
 
     def render_activation_response(self, request: ActivationRequest, response: ActivationResponse, **kwargs):
@@ -335,7 +336,7 @@ class Webinterface:
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def operational(self):
         """
         HTTP: Receive and process operational messages.

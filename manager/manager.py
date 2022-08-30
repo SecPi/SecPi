@@ -12,11 +12,12 @@ import time
 import appdirs
 import pika
 
-from tools import utils
+from secpi.model import constants
+from secpi.util.common import check_late_arrival, load_class, setup_logging
+from secpi.util.config import ApplicationConfig
 from tools.amqp import AMQPAdapter
 from tools.base import Service
 from tools.cli import StartupOptions, parse_cmd_args
-from tools.config import ApplicationConfig
 from tools.db.database import DatabaseAdapter
 from tools.db.objects import (
     Action,
@@ -28,7 +29,6 @@ from tools.db.objects import (
     Worker,
     Zone,
 )
-from tools.utils import load_class, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -97,38 +97,40 @@ class Manager(Service):
         channel: "pika.channel.Channel" = self.bus.channel
 
         # Declare exchanges and queues.
-        channel.exchange_declare(exchange=utils.EXCHANGE, exchange_type="direct")
+        channel.exchange_declare(exchange=constants.EXCHANGE, exchange_type="direct")
 
         # Define queues: data, alarm and action & config for every pi.
-        channel.queue_declare(queue=utils.QUEUE_OPERATIONAL + "m")
-        channel.queue_declare(queue=utils.QUEUE_DATA)
-        channel.queue_declare(queue=utils.QUEUE_ALARM)
-        channel.queue_declare(queue=utils.QUEUE_ON_OFF)
-        channel.queue_declare(queue=utils.QUEUE_LOG)
-        channel.queue_declare(queue=utils.QUEUE_INIT_CONFIG)
-        channel.queue_bind(queue=utils.QUEUE_ON_OFF, exchange=utils.EXCHANGE)
-        channel.queue_bind(queue=utils.QUEUE_DATA, exchange=utils.EXCHANGE)
-        channel.queue_bind(queue=utils.QUEUE_ALARM, exchange=utils.EXCHANGE)
-        channel.queue_bind(queue=utils.QUEUE_LOG, exchange=utils.EXCHANGE)
-        channel.queue_bind(queue=utils.QUEUE_INIT_CONFIG, exchange=utils.EXCHANGE)
+        channel.queue_declare(queue=constants.QUEUE_OPERATIONAL + "m")
+        channel.queue_declare(queue=constants.QUEUE_DATA)
+        channel.queue_declare(queue=constants.QUEUE_ALARM)
+        channel.queue_declare(queue=constants.QUEUE_ON_OFF)
+        channel.queue_declare(queue=constants.QUEUE_LOG)
+        channel.queue_declare(queue=constants.QUEUE_INIT_CONFIG)
+        channel.queue_bind(queue=constants.QUEUE_ON_OFF, exchange=constants.EXCHANGE)
+        channel.queue_bind(queue=constants.QUEUE_DATA, exchange=constants.EXCHANGE)
+        channel.queue_bind(queue=constants.QUEUE_ALARM, exchange=constants.EXCHANGE)
+        channel.queue_bind(queue=constants.QUEUE_LOG, exchange=constants.EXCHANGE)
+        channel.queue_bind(queue=constants.QUEUE_INIT_CONFIG, exchange=constants.EXCHANGE)
 
         # Load workers from database.
         workers = self.db.session.query(Worker).all()
         for pi in workers:
-            channel.queue_declare(queue=utils.QUEUE_ACTION + str(pi.id))
-            channel.queue_declare(queue=utils.QUEUE_CONFIG + str(pi.id))
-            channel.queue_bind(queue=utils.QUEUE_ACTION + str(pi.id), exchange=utils.EXCHANGE)
-            channel.queue_bind(queue=utils.QUEUE_CONFIG + str(pi.id), exchange=utils.EXCHANGE)
+            channel.queue_declare(queue=constants.QUEUE_ACTION + str(pi.id))
+            channel.queue_declare(queue=constants.QUEUE_CONFIG + str(pi.id))
+            channel.queue_bind(queue=constants.QUEUE_ACTION + str(pi.id), exchange=constants.EXCHANGE)
+            channel.queue_bind(queue=constants.QUEUE_CONFIG + str(pi.id), exchange=constants.EXCHANGE)
 
         # Define callbacks for alarm and data queues.
         channel.basic_consume(
-            queue=utils.QUEUE_OPERATIONAL + "m", on_message_callback=self.got_operational, auto_ack=True
+            queue=constants.QUEUE_OPERATIONAL + "m", on_message_callback=self.got_operational, auto_ack=True
         )
-        channel.basic_consume(queue=utils.QUEUE_ALARM, on_message_callback=self.got_alarm, auto_ack=True)
-        channel.basic_consume(queue=utils.QUEUE_ON_OFF, on_message_callback=self.got_on_off, auto_ack=True)
-        channel.basic_consume(queue=utils.QUEUE_DATA, on_message_callback=self.got_data, auto_ack=True)
-        channel.basic_consume(queue=utils.QUEUE_LOG, on_message_callback=self.got_log, auto_ack=True)
-        channel.basic_consume(queue=utils.QUEUE_INIT_CONFIG, on_message_callback=self.got_config_request, auto_ack=True)
+        channel.basic_consume(queue=constants.QUEUE_ALARM, on_message_callback=self.got_alarm, auto_ack=True)
+        channel.basic_consume(queue=constants.QUEUE_ON_OFF, on_message_callback=self.got_on_off, auto_ack=True)
+        channel.basic_consume(queue=constants.QUEUE_DATA, on_message_callback=self.got_data, auto_ack=True)
+        channel.basic_consume(queue=constants.QUEUE_LOG, on_message_callback=self.got_log, auto_ack=True)
+        channel.basic_consume(
+            queue=constants.QUEUE_INIT_CONFIG, on_message_callback=self.got_config_request, auto_ack=True
+        )
 
     def start(self):
         self.bus.subscribe_forever(on_error=self.on_bus_error)
@@ -151,7 +153,7 @@ class Manager(Service):
     # this method is used to send messages to a queue
     def send_message(self, rk, body, **kwargs):
         try:
-            self.bus.publish(exchange=utils.EXCHANGE, routing_key=rk, body=body, **kwargs)
+            self.bus.publish(exchange=constants.EXCHANGE, routing_key=rk, body=body, **kwargs)
             logger.info("Sending data to %s" % rk)
             return True
         except Exception as e:
@@ -163,7 +165,7 @@ class Manager(Service):
         try:
             properties = pika.BasicProperties(content_type="application/json")
             self.bus.publish(
-                exchange=utils.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs
+                exchange=constants.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs
             )
             logger.info("Sending json data to %s" % rk)
             return True
@@ -174,7 +176,7 @@ class Manager(Service):
     # helper method to create error log entry
     def log_err(self, msg):
         logger.error(msg)
-        log_entry = LogEntry(level=utils.LEVEL_ERR, message=str(msg), sender="Manager")
+        log_entry = LogEntry(level=constants.LEVEL_ERR, message=str(msg), sender="Manager")
         self.db.session.add(log_entry)
         self.db.session.commit()
 
@@ -198,7 +200,7 @@ class Manager(Service):
             logger.error("Unable able to find worker for given IP address(es)")
             reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id)
             self.bus.publish(
-                exchange=utils.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=""
+                exchange=constants.EXCHANGE, properties=reply_properties, routing_key=properties.reply_to, body=""
             )
             return
 
@@ -208,7 +210,7 @@ class Manager(Service):
             correlation_id=properties.correlation_id, content_type="application/json"
         )
         self.bus.publish(
-            exchange=utils.EXCHANGE,
+            exchange=constants.EXCHANGE,
             properties=reply_properties,
             routing_key=properties.reply_to,
             body=json.dumps(config),
@@ -237,7 +239,7 @@ class Manager(Service):
             level=log["level"],
             message=str(log["msg"]),
             sender=log["sender"],
-            logtime=utils.str_to_value(log["datetime"]),
+            logtime=constants.str_to_value(log["datetime"]),
         )
         self.db.session.add(log_entry)
         self.db.session.commit()
@@ -260,13 +262,13 @@ class Manager(Service):
                 config["active"] = False
                 logger.info("Deactivating setup: %s" % msg["setup_name"])
 
-            self.send_json_message(utils.QUEUE_CONFIG + str(pi.id), config)
+            self.send_json_message(constants.QUEUE_CONFIG + str(pi.id), config)
             logger.info("Sent config to worker %s" % pi.name)
 
     # callback method which gets called when a worker raises an alarm
     def got_alarm(self, ch, method, properties, body):
         msg = json.loads(body)
-        late_arrival = utils.check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
+        late_arrival = check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
 
         if not late_arrival:
             logger.info("Received alarm: %s" % body)
@@ -301,7 +303,7 @@ class Manager(Service):
                 "late_arrival": late_arrival,
             }
             for pi in workers:
-                self.send_json_message(utils.QUEUE_ACTION + str(pi.id), action_message)
+                self.send_json_message(constants.QUEUE_ACTION + str(pi.id), action_message)
 
             worker = self.db.session.query(Worker).filter(Worker.id == msg["pi_id"]).first()
             sensor = self.db.session.query(Sensor).filter(Sensor.id == msg["sensor_id"]).first()
@@ -316,7 +318,7 @@ class Manager(Service):
                         (sensor.name if sensor else msg["sensor_id"]),
                         msg["message"],
                     ),
-                    utils.LEVEL_WARN,
+                    constants.LEVEL_WARN,
                 )
             else:
                 al = Alarm(sensor_id=msg["sensor_id"], message="Late Alarm: %s" % msg["message"])
@@ -327,7 +329,7 @@ class Manager(Service):
                         (sensor.name if sensor else msg["sensor_id"]),
                         msg["message"],
                     ),
-                    utils.LEVEL_WARN,
+                    constants.LEVEL_WARN,
                 )
 
             self.db.session.add(al)
@@ -349,7 +351,7 @@ class Manager(Service):
             self.log_msg(
                 "Alarm during holddown state from %s on sensor %s: %s"
                 % (msg["pi_id"], msg["sensor_id"], msg["message"]),
-                utils.LEVEL_INFO,
+                constants.LEVEL_INFO,
             )
             al = Alarm(sensor_id=msg["sensor_id"], message="Alarm during holddown state: %s" % msg["message"])
             self.db.session.add(al)
@@ -387,7 +389,7 @@ class Manager(Service):
             self.log_msg(
                 "TIMEOUT: Only %d out of %d workers replied with data"
                 % (self.received_data_counter, self.num_of_workers),
-                utils.LEVEL_INFO,
+                constants.LEVEL_INFO,
             )
 
         # let the notifiers do their work

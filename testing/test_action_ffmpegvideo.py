@@ -1,7 +1,7 @@
 import pytest
 
+from secpi.util.common import load_class
 from tools.action import Action
-from tools.utils import load_class
 
 
 @pytest.fixture(scope="function")

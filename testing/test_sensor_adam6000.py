@@ -5,8 +5,8 @@ from unittest.mock import call
 
 import pytest
 
+from secpi.util.common import load_class
 from tools.sensor import Sensor
-from tools.utils import load_class
 
 
 @pytest.fixture(scope="function")
@@ -61,7 +61,7 @@ def test_sensor_adam6000_alarm(adam6000_sensor, caplog):
 
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ("tools.utils", 20, "Loading class successful: worker.adam6000.AdvantechAdamSensor"),
+        ("secpi.util.common", 20, "Loading class successful: worker.adam6000.AdvantechAdamSensor"),
         ("worker.adam6000", 20, "Initializing sensor id=99 with parameters {'name': 'Ferrata', 'channel': 'di4'}"),
     ]
 

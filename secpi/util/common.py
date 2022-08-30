@@ -1,7 +1,6 @@
 import datetime
 import functools
 import importlib
-import json
 import logging
 import logging.config
 import pathlib
@@ -11,26 +10,10 @@ import threading
 import time
 from collections import OrderedDict
 
-import cherrypy
 import dateutil.parser
 import netifaces
-import pytz
 
-LEVEL_DEBUG = 0
-LEVEL_INFO = 50
-LEVEL_WARN = 75
-LEVEL_ERR = 100
-
-
-EXCHANGE = "secpi"
-QUEUE_LOG = "secpi-log"
-QUEUE_DATA = "secpi-data"
-QUEUE_ALARM = "secpi-alarm"
-QUEUE_ON_OFF = "secpi-on_off"
-QUEUE_ACTION = "secpi-action-"
-QUEUE_CONFIG = "secpi-config-"
-QUEUE_INIT_CONFIG = "secpi-init_config"
-QUEUE_OPERATIONAL = "secpi-op-"
+# import pytz
 
 
 logger = logging.getLogger(__name__)
@@ -78,22 +61,6 @@ def check_late_arrival(date_message):
         return False
     else:
         return True
-
-
-class SpecialJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.date):
-            return obj.isoformat()
-        return json.JSONEncoder.default(obj)
-
-
-json_encoder = SpecialJSONEncoder()
-
-
-def json_handler(*args, **kwargs):
-    # Adapted from cherrypy/lib/jsontools.py
-    value = cherrypy.serving.request._json_inner_handler(*args, **kwargs)
-    return json_encoder.iterencode(value)
 
 
 def setup_logging(level=logging.INFO, config_file=None, log_file=None):

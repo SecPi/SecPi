@@ -1,6 +1,6 @@
 import cherrypy
 
-from tools import utils
+from secpi.util.web import json_handler
 
 
 class BaseRelationshipPage(object):
@@ -20,7 +20,7 @@ class BaseRelationshipPage(object):
 
     @cherrypy.expose()
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def add(self):
         if hasattr(cherrypy.request, "json"):
             left_id = cherrypy.request.json[self.lclname + "_id"]
@@ -38,7 +38,7 @@ class BaseRelationshipPage(object):
 
     @cherrypy.expose()
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def delete(self):
         if hasattr(cherrypy.request, "json"):
             left_id = cherrypy.request.json[self.lclname + "_id"]
@@ -56,7 +56,7 @@ class BaseRelationshipPage(object):
 
     @cherrypy.expose()
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def list(self):
         lefts = self.db.query(self.lclass).all()
 

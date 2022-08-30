@@ -1,16 +1,10 @@
-# web framework
-import urllib
 from collections import OrderedDict
 
 import cherrypy
-
-# templating engine
-from mako.lookup import TemplateLookup
-
-# db stuff
 from sqlalchemy import text
 
-from tools import utils
+from secpi.util.common import str_to_value
+from secpi.util.web import json_handler
 
 
 class BaseWebPage(object):
@@ -46,13 +40,13 @@ class BaseWebPage(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def fieldList(self):
         return {"status": "success", "data": self.fields}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def list(self):
         if hasattr(cherrypy.request, "json"):
             qry = self.db.query(self.baseclass)
@@ -72,7 +66,7 @@ class BaseWebPage(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def delete(self):
         if hasattr(cherrypy.request, "json"):
             id = cherrypy.request.json["id"]
@@ -87,7 +81,7 @@ class BaseWebPage(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def add(self):
         if hasattr(cherrypy.request, "json"):
             data = cherrypy.request.json
@@ -98,7 +92,7 @@ class BaseWebPage(object):
 
                 for k, v in data.items():
                     if not k == "id":
-                        setattr(newObj, k, utils.str_to_value(v))
+                        setattr(newObj, k, str_to_value(v))
 
                 self.db.add(newObj)
                 self.db.commit()
@@ -108,7 +102,7 @@ class BaseWebPage(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def update(self):
         if hasattr(cherrypy.request, "json"):
             data = cherrypy.request.json
@@ -124,7 +118,7 @@ class BaseWebPage(object):
 
                     for k, v in data.items():
                         if not k == "id":  # and v is not None --> can be null!?
-                            setattr(obj, k, utils.str_to_value(v))
+                            setattr(obj, k, str_to_value(v))
 
                     self.db.commit()
 

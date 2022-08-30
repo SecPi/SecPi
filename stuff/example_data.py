@@ -1,7 +1,5 @@
-from sqlalchemy.orm import sessionmaker
-
-from tools import utils
-from tools.config import ApplicationConfig
+from secpi.model import constants
+from secpi.util.config import ApplicationConfig
 from tools.db.database import DatabaseAdapter
 from tools.db.objects import (
     Action,
@@ -147,10 +145,10 @@ set_all.zones = [zone_gpio, zone_tcp]
 
 db.session.add_all(
     [
-        LogEntry(level=utils.LEVEL_DEBUG, sender="Test", message="Debug test log entry"),
-        LogEntry(level=utils.LEVEL_INFO, sender="Test", message="Info test log entry"),
-        LogEntry(level=utils.LEVEL_WARN, sender="Test", message="Warn test log entry"),
-        LogEntry(level=utils.LEVEL_ERR, sender="Test", message="Error test log entry"),
+        LogEntry(level=constants.LEVEL_DEBUG, sender="Test", message="Debug test log entry"),
+        LogEntry(level=constants.LEVEL_INFO, sender="Test", message="Info test log entry"),
+        LogEntry(level=constants.LEVEL_WARN, sender="Test", message="Warn test log entry"),
+        LogEntry(level=constants.LEVEL_ERR, sender="Test", message="Error test log entry"),
     ]
 )
 

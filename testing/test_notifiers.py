@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from tools.utils import load_class
+from secpi.util.common import load_class
 
 NOTIFICATION_INFO = {
     "worker": "worker-testing",

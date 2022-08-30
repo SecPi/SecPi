@@ -6,7 +6,7 @@ from os import listdir, path, walk
 import cherrypy
 from cherrypy.lib.static import serve_file
 
-from tools import utils
+from secpi.util.web import json_handler
 
 
 class AlarmDataPage:
@@ -42,7 +42,7 @@ class AlarmDataPage:
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def list(self):
         dirs = []
         # TODO: error management
@@ -65,7 +65,7 @@ class AlarmDataPage:
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def listFiles(self):
         if hasattr(cherrypy.request, "json"):
             if "folder" in cherrypy.request.json and cherrypy.request.json["folder"] != "":
@@ -103,7 +103,7 @@ class AlarmDataPage:
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.json_out(handler=utils.json_handler)
+    @cherrypy.tools.json_out(handler=json_handler)
     def extract(self):
         if hasattr(cherrypy.request, "json"):
             if (

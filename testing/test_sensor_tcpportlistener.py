@@ -2,8 +2,8 @@ from unittest.mock import call
 
 import pytest
 
+from secpi.util.common import load_class
 from tools.sensor import Sensor
-from tools.utils import load_class
 
 
 @pytest.fixture(scope="function")
@@ -45,7 +45,7 @@ def test_sensor_tcpportlistener_alarm(tcpportlistener_sensor, caplog):
     # Verify log output matches the expectations.
     setup_tuples = [(r.name, r.levelno, r.getMessage()) for r in caplog.get_records(when="setup")]
     assert setup_tuples == [
-        ("tools.utils", 20, "Loading class successful: worker.tcpportlistener.TCPPortListener"),
+        ("secpi.util.common", 20, "Loading class successful: worker.tcpportlistener.TCPPortListener"),
         (
             "worker.tcpportlistener",
             20,
