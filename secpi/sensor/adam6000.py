@@ -564,7 +564,7 @@ if __name__ == "__main__":
 
     # Initialize a worker context.
     sys.argv = ["worker.py", "."]
-    from worker.worker import Worker
+    from secpi.worker import Worker
 
     Worker.CONVERSATION_DELAY = 0
     worker = Worker()

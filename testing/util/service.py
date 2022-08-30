@@ -9,9 +9,9 @@ from pathlib import Path
 
 import requests
 
-import manager.manager
-import webinterface.main
-import worker.worker
+import secpi.manager
+import secpi.webinterface
+import secpi.worker
 from secpi.util.database import DatabaseAdapter
 
 
@@ -101,7 +101,7 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
         self.start_process(
             name="secpi-manager",
             app_config="etc/testing/config-manager.json",
-            target=manager.manager.main,
+            target=secpi.manager.main,
         )
         # Manager needs a bit longer to start?
         time.sleep(0.25)
@@ -112,7 +112,7 @@ class WorkerServiceWrapper(AmqpServiceWrapper):
         self.start_process(
             name="secpi-worker",
             app_config="etc/testing/config-worker.json",
-            target=worker.worker.main,
+            target=secpi.worker.main,
         )
 
 
@@ -121,7 +121,7 @@ class WebinterfaceServiceWrapper(BaseServiceWrapper):
         self.start_process(
             name="secpi-web",
             app_config="etc/testing/config-web.json",
-            target=webinterface.main.main,
+            target=secpi.webinterface.main,
         )
 
         # Web server needs a bit longer to start than AMQP-based service.

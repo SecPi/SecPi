@@ -115,15 +115,14 @@ develop = [
 ]
 
 [tool.setuptools]
-# Because the layout is not in shape yet, list the packages manually.
+# List the packages manually.
 # https://setuptools.pypa.io/en/latest/userguide/package_discovery.html
-# TODO: Use `secpi` as single namespace root.
-packages = ["secpi", "manager", "worker", "webinterface"]
+packages = ["secpi"]
 
 [project.scripts]
-secpi-manager = "manager.manager:main"
-secpi-worker = "worker.worker:main"
-secpi-web = "webinterface.main:main"
+secpi-manager = "secpi.manager:main"
+secpi-worker = "secpi.worker:main"
+secpi-web = "secpi.webinterface:main"
 
 
 [project.urls]
@@ -159,8 +158,7 @@ markers = [
 [tool.coverage.run]
 branch = false
 parallel = true
-# TODO: Use `secpi` as single namespace root.
-source = ["secpi", "manager", "worker", "webinterface"]
+source = ["secpi"]
 
 [tool.coverage.report]
 fail_under = 0

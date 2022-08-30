@@ -5,12 +5,12 @@ import pytest
 
 from secpi.util.common import setup_logging
 from secpi.util.config import ApplicationConfig
+from secpi.worker import Worker
 from testing.util.service import (
     ManagerServiceWrapper,
     WebinterfaceServiceWrapper,
     WorkerServiceWrapper,
 )
-from worker.worker import Worker
 
 setup_logging()
 
@@ -92,7 +92,7 @@ def worker_mock(mocker) -> Worker:
     """
     Provide the test cases with a mocked SecPi Worker, but using a real `ApplicationConfig` instance.
     """
-    worker = mocker.patch("worker.worker.Worker", autospec=True)
+    worker = mocker.patch("secpi.worker.Worker", autospec=True)
     worker_instance = worker.return_value
 
     app_config = ApplicationConfig()

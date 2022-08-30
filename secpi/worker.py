@@ -438,10 +438,6 @@ def run_worker(options: StartupOptions):
             w.cleanup_actions()
             w.cleanup_sensors()
 
-        # Help a bit to completely terminate the AMQP connection.
-        # TODO: Probably the root cause for this is elsewhere. Investigate.
-        sys.exit(130)
-
 
 def main():
     options = parse_cmd_args()
