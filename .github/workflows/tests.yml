@@ -72,8 +72,12 @@ jobs:
         pip install "setuptools>=64" --upgrade
         
         # Install package in editable mode.
-        pip install --editable=.[test]
+        pip install --editable=.[test,develop]
         
+    - name: Check code style
+      run: |
+        poe check-style
+
     - name: Run tests
       run: |
         pytest

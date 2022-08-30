@@ -111,14 +111,10 @@ changelog = "https://github.com/isarengineering/SecPi/blob/next/CHANGES.rst"
 
 [tool.black]
 line-length = 120
-# include = ["manager", "worker", "webinterface", "tools", "testing"]
-#src = ["testing"]
-include = 'pytest\/.*\.pyi?$|testing\/.*\.pyi?$'
 
 [tool.isort]
 profile = "black"
-# src_paths = ["manager", "worker", "webinterface", "tools", "testing"]
-src_paths = ["testing"]
+skip_glob = "**/site-packages/**"
 
 [tool.pytest.ini_options]
 minversion = "2.0"
@@ -151,5 +147,9 @@ omit = [
 format = [
   {cmd="black ."},
   {cmd="isort ."},
+]
+check-style = [
+  {cmd="black --check ."},
+  {cmd="isort --check ."},
 ]
 build = {cmd="python -m build"}
