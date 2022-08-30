@@ -65,7 +65,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400
         pip install "pip>=22" "setuptools>=64" --upgrade
 
-        pip install --editable=${SOURCE}[test,develop]
+        pip install --editable=${SOURCE}[test,develop] --upgrade
         ln -sf ${TARGET}/bin/secpi-* /usr/local/bin/
     SHELL
 
