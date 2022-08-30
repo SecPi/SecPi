@@ -60,14 +60,16 @@ class Manager(Service):
 		)
 		self.connect()
 
-		# Debug output about setups and state.
+		# Check if any setup is active.
 		setups = self.db.session.query(Setup).all()
 		activate_notifiers = False
 		for setup in setups:
-			logger.debug("name: %s active:%s" % (setup.name, setup.active_state))
 			if setup.active_state:
 				activate_notifiers = True
+			logger.info(f"Found active setup: {setup.name}")
+			break
 
+		# When a setup is active, also activate the notifiers.
 		if activate_notifiers:
 			self.setup_notifiers()
 			self.num_of_workers = self.db.session.query(Worker).join((Action, Worker.actions)).filter(Worker.active_state == True).filter(Action.active_state == True).count()
