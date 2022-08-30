@@ -145,10 +145,7 @@ def load_class(module_names, class_names, errors: str = "raise"):
             logger.info(f"Loading class successful: {module}.{class_name}")
             return c
 
-        except ImportError as ex:
-            recorded_exceptions.append(ex)
-
-        except AttributeError as ex:
+        except Exception as ex:
             recorded_exceptions.append(ex)
 
     # Forward all exceptions to log output.
@@ -156,6 +153,10 @@ def load_class(module_names, class_names, errors: str = "raise"):
         logger.exception(ex)
 
     # Re-raise first exception.
+    # TODO: When there is more than one exception, prefer non-ImportError's to re-raise.
+    #       Rationale: When, for example, importing an action like ``buzzer.Buzzer``, the first
+    #       exception would be like ``ImportError: Unable to import secpi.sensor.buzzer.Buzzer``,
+    #       because the ``secpi.sensor`` namespace is tried first.
     if errors == "raise":
         exception = recorded_exceptions[0]
         exception.all_exceptions = recorded_exceptions

@@ -35,6 +35,8 @@ Project and code
 - [x] Remove dead code
 - [x] Remove some features
 - [x] Format code
+- [x] Separate configuration directories into {production,development,testing}
+- [o] Configuration: s/rabbitmq/amqp/
 - [o] Refactor to ``secpi`` namespace and rework directory layout
 - [o] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
 - [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
@@ -46,6 +48,8 @@ Bugs
 ====
 - [o] Remove hard-coding of ``/var/tmp/secpi/alarms`` from all plugins
 - [o] Webinterface: Croaks right away when navigating to "Alarm Data": ``FileNotFoundError: [Errno 2] No such file or directory: '/var/tmp/secpi/alarms'``
+- [o] When using GarageMQ, AMQP service does not subscribe properly again after a restart.
+  With RabbitMQ, everything works well.
 
 Documentation
 =============
@@ -63,6 +67,8 @@ Features
   instantly, and the second one after shoveling all the camera images together.
   Alternatively, think about uploading them to S3 or Nextcloud.
 - [o] DO schalten: Als Action.
+- [o] Fritzbox instead of Asterisk?
+- [o] Dropdown boxes providing lists of built-in sensors, notifiers, and actions
 
 
 ***********

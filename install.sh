@@ -24,13 +24,13 @@ RMQ_CONFIG="/etc/rabbitmq/rabbitmq.config"
 function create_folder(){
 	if [ -d $1 ];
 	then
-		echo "$1 exists!"
+		echo "$1 already exists"
 		return 0
 	fi
 	mkdir $1
 	if [ $? -ne 0 ];
 	then
-		echo "Couldn't create $1"
+		echo "Unable to create $1"
 		exit 3
 	else
 		echo "Created $1"
@@ -39,7 +39,7 @@ function create_folder(){
 	chown $2:$3 $1
 	if [ $? -ne 0 ];
 	then
-		echo "Couldn't change user and group of $1 to the specified user and group ($2, $3)!"
+		echo "Unable to change user and group of $1 to the specified user and group ($2, $3)"
 		exit 4
 	else
 		echo "Changed user and group of $1 to $2 and $3"
@@ -357,12 +357,12 @@ then
 	rabbitmqctl add_user $MQ_USER $MQ_PWD
 	if [ $? -ne 0 ];
 	then
-		echo "Error adding RabbitMQ user!"
+		echo "Error adding RabbitMQ user"
 	fi
 	rabbitmqctl set_permissions $MQ_USER "secpi.*|amq\.gen.*" "secpi.*|amq\.gen.*" "secpi.*|amq\.gen.*"
 	if [ $? -ne 0 ];
 	then
-		echo "Error setting RabbitMQ permissions!"
+		echo "Error setting RabbitMQ permissions"
 	fi
 fi
 

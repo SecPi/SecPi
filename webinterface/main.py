@@ -39,9 +39,6 @@ from secpi.web.sites import (
 logger = logging.getLogger(__name__)
 
 
-sqlalchemy_plugin = None
-
-
 @dataclasses.dataclass
 class ActivationRequest:
     """
@@ -457,10 +454,10 @@ def run_webinterface(options: StartupOptions):
     if database_uri is None:
         raise ConnectionError(f"Unable to connect to database. Database URI is: {database_uri}")
     logger.info(f"Connecting to database {database_uri}")
-    global sqlalchemy_plugin
     sqlalchemy_plugin = SQLAlchemyPlugin(cherrypy.engine, Base, database_uri, echo=False)
     sqlalchemy_plugin.subscribe()
     sqlalchemy_plugin.create()
+
     # Create web application object.
     app = Webinterface(config=app_config)
 

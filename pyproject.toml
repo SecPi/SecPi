@@ -10,7 +10,7 @@ version = "2.0.0-dev1"
 description = "SecPi is a software framework for building alarm systems with Linux"
 readme = "README.md"
 requires-python = ">=3.7"
-license = {file = "LICENSE.txt"}
+license = {text = "GPLv3+"}
 keywords = ["alarm", "monitoring", "observation", "security", "alerting", "notification", "amqp", "mqtt", "modbus"]
 authors = [
   {name = "Philip Wölfel", email = "is141524@fhstp.ac.at"},
@@ -22,11 +22,41 @@ maintainers = [
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Environment :: Web Environment",
+  "Framework :: CherryPy",
+  "Intended Audience :: Customer Service",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: End Users/Desktop",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Legal Industry",
+  "Intended Audience :: Manufacturing",
+  "Intended Audience :: System Administrators",
+  "Intended Audience :: Telecommunications Industry",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: Unix",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
+  "Topic :: Communications",
+  "Topic :: Education",
+  "Topic :: Home Automation",
+  "Topic :: Office/Business",
+  "Topic :: Security",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Object Brokering",
+  "Topic :: System :: Hardware",
+  "Topic :: System :: Logging",
+  "Topic :: System :: Monitoring",
+  "Topic :: System :: Networking",
+  "Topic :: System :: Networking :: Monitoring",
+  "Topic :: System :: Systems Administration",
+  "Topic :: Utilities",
 ]
 
 dependencies = [
