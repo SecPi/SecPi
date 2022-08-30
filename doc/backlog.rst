@@ -35,7 +35,12 @@ Project and code
 - [o] Refactor to ``secpi`` namespace and rework directory layout
 - [o] Remove dead code
 - [o] Remove some features
+- [o] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
 - [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
+
+Bugs
+====
+- [o] Webinterface: Croaks right away when navigating to "Alarm Data": ``FileNotFoundError: [Errno 2] No such file or directory: '/var/tmp/secpi/alarms'``
 
 Documentation
 =============
