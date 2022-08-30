@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 import typing as t
+from pathlib import Path
 
 import requests
 
@@ -29,7 +30,7 @@ class BaseServiceWrapper:
 
     def __del__(self):
         self.logfile.close()
-        os.unlink(self.logfile.name)
+        Path(self.logfile.name).unlink(missing_ok=True)
 
     @abc.abstractmethod
     def shutdown(self, identifier: str):
