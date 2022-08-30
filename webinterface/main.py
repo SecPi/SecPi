@@ -18,22 +18,23 @@ from secpi.util.cli import parse_cmd_args
 from secpi.util.common import setup_logging
 from secpi.util.config import ApplicationConfig
 from secpi.util.web import json_handler
-
-from .mako_template_tool import MakoTemplateTool
-from .sites.actionparams import ActionParamsPage
-from .sites.actions import ActionsPage
-from .sites.alarmdata import AlarmDataPage
-from .sites.alarms import AlarmsPage
-from .sites.logs import LogEntriesPage
-from .sites.notifierparams import NotifierParamsPage
-from .sites.notifiers import NotifiersPage
-from .sites.sensorparams import SensorParamsPage
-from .sites.sensors import SensorsPage
-from .sites.setups import SetupsPage
-from .sites.setupszones import SetupsZonesPage
-from .sites.workers import WorkersPage
-from .sites.workersactions import WorkersActionsPage
-from .sites.zones import ZonesPage
+from secpi.web.mako_template_tool import MakoTemplateTool
+from secpi.web.sites import (
+    ActionParamsPage,
+    ActionsPage,
+    AlarmDataPage,
+    AlarmsPage,
+    LogEntriesPage,
+    NotifierParamsPage,
+    NotifiersPage,
+    SensorParamsPage,
+    SensorsPage,
+    SetupsPage,
+    SetupsZonesPage,
+    WorkersActionsPage,
+    WorkersPage,
+    ZonesPage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -405,17 +406,20 @@ def run_webinterface(options: StartupOptions):
     cherrypy.tools.db = SQLAlchemyTool()
 
     # TODO: Review those locations.
-    root_path = pkg_resources.resource_filename(__name__, "")
-    favicon_path = pkg_resources.resource_filename(__name__, "favicon.ico")
-    template_path = pkg_resources.resource_filename(__name__, "templates")
+    static_path = pkg_resources.resource_filename("secpi.web", "static")
+    templates_path = pkg_resources.resource_filename("secpi.web", "templates")
+    favicon_path = pkg_resources.resource_filename("secpi.web", "favicon.ico")
 
-    cherrypy.tools.lookup = MakoTemplateTool(template_path)
-    logger.info(f"Using template path {template_path}")
+    cherrypy.tools.lookup = MakoTemplateTool(templates_path)
+    logger.info(f"Using template path {templates_path}")
 
     cherrypy.config.update(
         {
+            # TODO: Make configurable.
             "server.socket_host": "0.0.0.0",
+            # TODO: Make configurable. Use other non-standard port as default.
             "server.socket_port": 8000,
+            # TODO: Make configurable. Would logging to stderr be actually enough?
             # 'log.error_file': "/var/log/secpi/webinterface.log",
             # 'log.access_file': "/var/log/secpi/webinterface_access.log",
             "log.screen": False,
@@ -429,9 +433,11 @@ def run_webinterface(options: StartupOptions):
         "/": {
             "tools.db.on": True,
             "tools.lookup.on": True,
-            "tools.staticdir.root": root_path,
         },
-        "/static": {"tools.staticdir.on": True, "tools.staticdir.dir": "static"},
+        "/static": {
+            "tools.staticdir.on": True,
+            "tools.staticdir.dir": static_path,
+        },
         "/favicon.ico": {
             "tools.staticfile.on": True,
             "tools.staticfile.filename": favicon_path,
