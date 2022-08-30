@@ -37,7 +37,7 @@ dependencies = [
   "requests<3",
   "pika<1",
   "python-dateutil<3",
-  "SQLAlchemy>=1.0.4,<1.1",
+  "SQLAlchemy<1.5",
   "netifaces<1",
   "dataclasses; python_version<'3.7'",
   "importlib-metadata; python_version<'3.8'",
