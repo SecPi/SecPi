@@ -197,7 +197,7 @@ fi
 
 if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 then
-	echo "Enter certificate authority domain (for rabbitmq and webserver, default: secpi.local)"
+	echo "Enter certificate authority domain (for rabbitmq, default: secpi.local)"
 	read CA_DOMAIN
 
 	#if [ "$CA_DOMAIN" = ""]
@@ -210,12 +210,6 @@ fi
 
 if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 2 ]
 then
-	if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
-	then
-		echo "Enter name for webserver certificate (excluding $CA_DOMAIN; The names 'manager', 'webui', 'mq-server' and 'worker1' are already reserved for RabbitMQ certificates)"
-		read WEB_CERT_NAME
-	fi
-		
 	echo "Enter user for webinterface: (default: admin)"
 	read WEB_USER
 
@@ -348,15 +342,10 @@ then
 		
 		sed -i "s/<certfile>/webui.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
 		sed -i "s/<keyfile>/webui.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
-		sed -i "s/<server_cert>/$WEB_CERT_NAME.$CA_DOMAIN.cert.pem/" $SECPI_PATH/webinterface/config.json
-		sed -i "s/<server_key>/$WEB_CERT_NAME.$CA_DOMAIN.key.pem/" $SECPI_PATH/webinterface/config.json
-	
+
 		echo "Generating rabbitmq certificates..."
 		gen_and_sign_cert manager.$CA_DOMAIN client
 		gen_and_sign_cert webui.$CA_DOMAIN client
-		
-		echo "Generating webserver certificate..."
-		gen_and_sign_cert $WEB_CERT_NAME.$CA_DOMAIN server
 	fi
 
 	echo "Creating htdigest file..."

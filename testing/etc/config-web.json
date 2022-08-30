@@ -7,5 +7,7 @@
 	},
 	"database": {
 		"uri": "sqlite:///secpi-database-testing.sqlite"
+	},
+	"webserver": {
 	}
 }

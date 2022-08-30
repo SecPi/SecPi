@@ -435,10 +435,6 @@ def run_webinterface(options: StartupOptions):
 	cherrypy.config.update({
 		'server.socket_host': '0.0.0.0',
 		'server.socket_port': 8000,
-		# 'server.ssl_module':'pyopenssl',
-		# 'server.ssl_certificate':'%s/certs/%s'%(PROJECT_PATH, config.get("webserver", {}).get("server_cert")),
-		# 'server.ssl_private_key':'%s/certs/%s'%(PROJECT_PATH, config.get("webserver", {}).get("server_key")),
-		# 'server.ssl_certificate_chain':'%s/certs/%s'%(PROJECT_PATH, config.get("webserver", {}).get("server_ca_chain")),
 		# 'log.error_file': "/var/log/secpi/webinterface.log",
 		# 'log.access_file': "/var/log/secpi/webinterface_access.log",
 		'log.screen': False,

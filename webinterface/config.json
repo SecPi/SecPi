@@ -12,8 +12,5 @@
 		"uri": "sqlite:///secpi-database.sqlite"
 	},
 	"webserver": {
-		"server_cert": "<server_cert>",
-		"server_key": "<server_key>",
-		"server_ca_chain": "ca/cacert.pem"
 	}
 }
