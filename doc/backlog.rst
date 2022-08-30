@@ -29,17 +29,22 @@ Project and code
 - [x] Get rid of ``PROJECT_PATH``
 - [x] Add ``pyproject.toml`` and command line entrypoints.
 - [x] Tests: Add software tests and CI configuration
-- [o] Webinterface: Rip out SSL and ``.htdigest`` authentication completely
-- [o] Update to SQLAlchemy 1.4 and Pika 1.3
-- [o] Pika 0.x & Python 3.10: ``AttributeError: module 'collections' has no attribute 'Callable'``
+- [x] Webinterface: Rip out SSL and ``.htdigest`` authentication completely
+- [x] Update to SQLAlchemy 1.4 and Pika 1.3
+- [x] Pika 0.x & Python 3.10: ``AttributeError: module 'collections' has no attribute 'Callable'``
+- [x] Remove dead code
+- [x] Remove some features
+- [x] Format code
 - [o] Refactor to ``secpi`` namespace and rework directory layout
-- [o] Remove dead code
-- [o] Remove some features
 - [o] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
 - [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
+- [o] Dependencies: Make installing ``pygame`` optional
+- [o] Remove ``sys.exit(130)`` on ``KeyboardInterrupt``.
+- [o] Check RabbitMQ 3.10.7
 
 Bugs
 ====
+- [o] Remove hard-coding of ``/var/tmp/secpi/alarms`` from all plugins
 - [o] Webinterface: Croaks right away when navigating to "Alarm Data": ``FileNotFoundError: [Errno 2] No such file or directory: '/var/tmp/secpi/alarms'``
 
 Documentation
@@ -51,6 +56,13 @@ Documentation
 - [o] Database setup. How to run ``DatabaseAdapter.setup()`` once?
 - [o] Turn Wiki into dedicated repository. -- https://github.com/SecPi/SecPi/wiki/
 - [o] Download Wiki images from imgur
+
+Features
+========
+- [o] Alarm notifications: We need to have two mails per alarm. One should be emitted
+  instantly, and the second one after shoveling all the camera images together.
+  Alternatively, think about uploading them to S3 or Nextcloud.
+- [o] DO schalten: Als Action.
 
 
 ***********
@@ -66,7 +78,14 @@ Project and code
 - [o] Improve UI
   https://github.com/SecPi/SecPi/issues/101
 - [o] Tests: Improve efficiency by implementing ``socat``, ``amqp-publish``, and ``amqp-get`` in pure Python
-- [o] Tests: More test scenarios, e.g. uninitialized Worker, Manager+Mailer, Web+Activate
+- [o] More test scenarios and validations, e.g.
+
+  - uninitialized Worker
+  - Manager+Mailer
+  - Web+Activate
+  - AMQP messaging (check receive)
+  - Database interaction
+
 - [o] ADAM: Resolve ambiguation with ``mqtt_broker_ip`` vs. "port"
 - [o] Webinterface: Bump JavaScript dependencies and rebundle using Yarn and webpack
 
@@ -74,6 +93,7 @@ Deployment and production
 =========================
 - [o] Improve ``install.sh``.
 - [o] Add new systemd unit files, with logging to journald.
+- [o] Run CherryPy web server in "production" mode.
 - [o] Mount ``/var/tmp`` as tmpfs
 
 
