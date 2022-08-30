@@ -26,7 +26,6 @@ def test_worker_start_stop():
     assert "Loading configuration from testing/etc/config-worker.json" in app_log
     assert "Connecting to AMQP broker at localhost:5672" in app_log
     assert "Setting up sensors and actions" in app_log
-    assert "Loading class successful: worker.tcpportlistener.TCPPortListener" in app_log
     assert "Start consuming AMQP queue" in app_log
     assert """Got message on operational channel: b\'{"action": "shutdown"}""" in app_log
     assert "Stop consuming AMQP queue" in app_log
@@ -36,9 +35,6 @@ def test_worker_with_tcplistener(worker_service):
     """
     Start Worker and submit a sensor trigger using TCP. Verify that the log output matches the expectations.
     """
-
-    # Give system some time for processing.
-    time.sleep(0.25)
 
     # Submit a sensor signal.
     command = "echo hello | socat - tcp:localhost:1234"
@@ -51,6 +47,7 @@ def test_worker_with_tcplistener(worker_service):
     app_log = worker_service.read_log()
 
     # Verify everything is in place.
+    assert "Loading class successful: worker.tcpportlistener.TCPPortListener" in app_log
     assert "Sensor with id 1 detected something" in app_log
     assert \
         "Publishing message:" in app_log and \
