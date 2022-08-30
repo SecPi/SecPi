@@ -27,7 +27,12 @@ from secpi.model.service import Service
 from secpi.model.settings import StartupOptions
 from secpi.util.amqp import AMQPAdapter
 from secpi.util.cli import parse_cmd_args
-from secpi.util.common import check_late_arrival, load_class, setup_logging
+from secpi.util.common import (
+    check_late_arrival,
+    load_class,
+    setup_logging,
+    str_to_value,
+)
 from secpi.util.config import ApplicationConfig
 from secpi.util.database import DatabaseAdapter
 
@@ -241,7 +246,7 @@ class Manager(Service):
             level=log["level"],
             message=str(log["msg"]),
             sender=log["sender"],
-            logtime=constants.str_to_value(log["datetime"]),
+            logtime=str_to_value(log["datetime"]),
         )
         self.db.session.add(log_entry)
         self.db.session.commit()
