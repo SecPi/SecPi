@@ -293,7 +293,7 @@ class Webinterface:
             self.publish(queue=constants.QUEUE_ON_OFF, message=message)
             response = SuccessfulResponse(f"{verb.title()} setup '{setup.name}' succeeded")
 
-        except pika.exceptions.ConnectionClosed:
+        except (pika.exceptions.ConnectionClosed, pika.exceptions.StreamLostError):
             logger.info("Reconnecting to RabbitMQ Server")
             reconnected = self.connect()
             if reconnected:
