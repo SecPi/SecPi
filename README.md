@@ -25,8 +25,8 @@ Please visit the [wiki pages](https://github.com/SecPi/SecPi/wiki) for more info
 
 The major features are:
 
-- Built-in elements for sensors, actions and notifiers
-- Modular and extensible architecture for adding more elements
+- Built-in modules for sensors, actions and notifiers
+- Modular and extensible architecture for adding more components
 - Support for multiple systems on the network
 - Web interface for desktop and mobile devices
 - Support for SBC Linux platforms like the Raspberry Pi and Banana Pi
@@ -36,13 +36,20 @@ The major features are:
 
 We recommend to make yourself accustomed to the jargon of SecPi. You should know a bit
 about the Manager, Worker, and Webinterface/WebUI software components, and how they work
-together. A corresponding summary can be found at 
-https://github.com/SecPi/SecPi/wiki/Introduction.
+together. In a nutshell, it is:
+
+- Manager: There is only one manager instance, other members will connect to it.
+  The Manager is also responsible for sending out alarm messages and for dispatching
+  configuration snippets to the workers.
+- Worker: Multiple worker instances check sensors, trigger alarms, and execute actions.
+- Webinterface: A web-based GUI for configuring the SecPi system.
+
+A more comprehensive guide can be found at https://github.com/SecPi/SecPi/wiki/Introduction.
 
 
 ### Technologies
 
-The system is based on Python, AMQP/Pika, RabbitMQ, SQLAlchemy, and CherryPy/Mako.
+The system is based on Python, AMQP/Pika, RabbitMQ, SQLAlchemy, CherryPy/Mako, and Angular.
 
 
 ## Project information
