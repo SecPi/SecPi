@@ -76,59 +76,6 @@ function check_requirements(){
 	fi
 }
 
-# got at least two arguments
-# --update <worker|manager|webinterface|all>
-# -u <worker|manager|webinterface|all>
-if [ $# -ge 2 ]
-then
-	if [ $1 = "-u" ] || [ $1 = "--update" ]
-	then
-		# copy other stuff
-		cp logging.conf $SECPI_PATH/
-		
-		if [ $2 = "worker" ] || [ $2 = "all" ]
-		then
-			/etc/init.d/secpi-worker stop
-			find worker/ -name '*.py' | cpio -updm $SECPI_PATH
-			chmod 755 $SECPI_PATH/worker/worker.py
-			/etc/init.d/secpi-worker start
-			echo "Updated worker files..."
-		fi
-		
-		if [ $2 = "manager" ] || [ $2 = "all" ]
-		then
-			/etc/init.d/secpi-manager stop
-			find manager/ -name '*.py' | cpio -updm $SECPI_PATH
-			chmod 755 $SECPI_PATH/manager/manager.py
-			/etc/init.d/secpi-manager start
-			echo "Updated manager files..."
-		fi
-		
-		if [ $2 = "webinterface" ] || [ $2 = "all" ]
-		then
-			/etc/init.d/secpi-webinterface stop
-			find webinterface/ -name '*.py' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.sh' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.css' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.js' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.mako' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.html' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.png' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.jpg' | cpio -updm $SECPI_PATH
-			find webinterface/ -name '*.gif' | cpio -updm $SECPI_PATH
-			chmod 755 $SECPI_PATH/webinterface/main.py
-			/etc/init.d/secpi-webinterface start
-			echo "Updated webinterface files..."
-		fi
-		
-		echo "Installing python requirements..."
-		pip install -r requirements.txt
-
-		echo "Finished update process!"
-		# only copy files in update mode
-		exit 0
-	fi
-fi
 
 echo "Select installation type: (default: [1] Complete installation)"
 echo "[1] Complete installation (manager, webinterface, worker)"
@@ -145,34 +92,34 @@ fi
 
 check_requirements $INSTALL_TYPE
 
-echo "Please input the user which SecPi should use: (default: root)"
+echo "Please input the user which SecPi should use: (default: secpi)"
 read SECPI_USER
 
 if [ -z "$SECPI_USER" ]
 then
-	SECPI_USER="root"
+	SECPI_USER="secpi"
 	echo "Setting user to default value"
 fi
 
-echo "Please input the group which SecPi should use: (default: root)"
+echo "Please input the group which SecPi should use: (default: secpi)"
 read SECPI_GROUP
 
 if [ -z "$SECPI_GROUP" ]
 then
-	SECPI_GROUP="root"
+	SECPI_GROUP="secpi"
 	echo "Setting group to default value"
 fi
 
 echo "Enter RabbitMQ Server IP"
 read MQ_IP
 
-echo "Enter RabbitMQ Server Port (default: 5671)"
+echo "Enter RabbitMQ Server Port (default: 5672)"
 read MQ_PORT
 
 #if [ "$MQ_PORT" = ""]
 if [ -z "$MQ_PORT" ]
 then
-	MQ_PORT="5671"
+	MQ_PORT="5672"
 	echo "Setting port to default value"
 fi
 
@@ -196,13 +143,13 @@ fi
 
 if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
 then
-	echo "Enter certificate authority domain (for rabbitmq, default: secpi.local)"
-	read CA_DOMAIN
+	echo "Enter certificate common name for rabbitmq (default: secpi.local)"
+	read COMMON_NAME
 
-	#if [ "$CA_DOMAIN" = ""]
-	if [ -z "$CA_DOMAIN" ]
+	#if [ "$COMMON_NAME" = ""]
+	if [ -z "$COMMON_NAME" ]
 	then
-		CA_DOMAIN="secpi.local"
+		COMMON_NAME="secpi.local"
 		echo "Setting CA domain to default value"
 	fi
 fi
@@ -242,26 +189,18 @@ fi
 
 
 
-################################################################################################
 # create log folder
 create_folder $LOG_PATH $SECPI_USER $SECPI_GROUP
 
-################################################################################################
 # create secpi folder
 create_folder $SECPI_PATH $SECPI_USER $SECPI_GROUP
-
-################################################################################################
-# create run folder
-# create_folder $SECPI_PATH/run $SECPI_USER $SECPI_GROUP
 
 # create tmp folder
 create_folder $TMP_PATH $SECPI_USER $SECPI_GROUP
 create_folder $TMP_PATH/worker_data $SECPI_USER $SECPI_GROUP
 create_folder $TMP_PATH/alarms $SECPI_USER $SECPI_GROUP
 
-
-
-
+# create tls certificate folder
 create_folder $CERT_PATH $SECPI_USER $SECPI_GROUP
 
 
@@ -294,17 +233,10 @@ fi
 
 
 echo "Current SecPi folder: $PWD"
-echo "Copying to $SECPI_PATH..."
-
-cp logging.conf $SECPI_PATH/
 
 # manager or complete install
 if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 2 ]
 then
-	echo "Copying manager..."
-	cp -R manager/ $SECPI_PATH/
-	echo "Copying webinterface..."
-	cp -R webinterface/ $SECPI_PATH/
 	
 	echo "Creating config..."
 	
@@ -351,10 +283,6 @@ then
 	update-rc.d secpi-webinterface defaults
 	update-rc.d secpi-webinterface enable
 	
-	# set permissions
-	chmod 755 $SECPI_PATH/webinterface/main.py
-	chmod 755 $SECPI_PATH/manager/manager.py
-	
 	# add rabbitmq user and set permissions
 	rabbitmqctl add_user $MQ_USER $MQ_PWD
 	if [ $? -ne 0 ];
@@ -372,8 +300,6 @@ fi
 # worker or complete install
 if [ $INSTALL_TYPE -eq 1 ] || [ $INSTALL_TYPE -eq 3 ]
 then
-	echo "Copying worker..."
-	cp -R worker/ $SECPI_PATH/
 	
 	sed -i "s/<ip>/$MQ_IP/" $CONFIG_PATH/config-worker.json
 	sed -i "s/<port>/$MQ_PORT/" $CONFIG_PATH/config-worker.json
@@ -398,9 +324,6 @@ then
 	update-rc.d secpi-worker defaults
 	update-rc.d secpi-worker enable
 	
-	
-	# set permissions
-	chmod 755 $SECPI_PATH/worker/worker.py
 fi
 
 chown -R $SECPI_USER:$SECPI_GROUP $SECPI_PATH
@@ -409,21 +332,8 @@ chown -R $SECPI_USER:$SECPI_GROUP $SECPI_PATH
 systemctl daemon-reload > /dev/null 2>&1
 
 
-################################################################################################
-
-echo "Installing python requirements..."
-pip install -r requirements.txt
-if [ $? -ne 0 ];
-then
-	echo "Error installing requirements!"
-	exit 1
-fi
 
 
-echo "#####################################################"
-echo "SecPi sucessfully installed!"
-echo "#####################################################"
-################
-exit 0
-################
-
+echo "############################"
+echo "SecPi successfully installed"
+echo "############################"
