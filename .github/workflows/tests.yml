@@ -39,7 +39,7 @@ jobs:
       with:
         version: "2.0.15"
         ports: '1883:1883 8883:8883'
-        config: ${{ github.workspace }}/.ci/mosquitto.conf
+        config: ${{ github.workspace }}/.github/etc/mosquitto.conf
 
     - name: Install dependencies (Linux)
       if: runner.os == 'Linux'
