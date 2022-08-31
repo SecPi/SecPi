@@ -54,7 +54,7 @@ class FFMPEGVideo(Action):
         ff = ffmpy.FFmpeg(
             global_options=global_options, inputs={url: input_options}, outputs={filename: output_options}
         )
-        ff.run()
+        return ff.run()
 
     # Take a series of pictures within a given interval
     def take_adv_picture(self, num_of_pic, seconds_between):
