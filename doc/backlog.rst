@@ -24,8 +24,8 @@ Iteration 2
 
 Many modernizations across the board.
 
-Project and code
-================
+Project and code I
+==================
 - [x] Get rid of ``PROJECT_PATH``
 - [x] Add ``pyproject.toml`` and command line entrypoints.
 - [x] Tests: Add software tests and CI configuration
@@ -38,14 +38,18 @@ Project and code
 - [x] Separate configuration directories into {production,development,testing}
 - [x] Refactor to ``secpi`` namespace and rework directory layout
 - [x] Remove ``sys.exit(130)`` on ``KeyboardInterrupt``.
-- [o] Configuration: s/rabbitmq/amqp/
+- [x] Configuration: s/rabbitmq/amqp/
+- [x] ``mv .ci .github``
+- [x] ``mv scripts stuff contrib``
+- [x] Check packaging. -- ``poe build``
+
+Project and code II
+===================
 - [o] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
 - [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
 - [o] Dependencies: Make installing ``pygame`` optional
 - [o] Check RabbitMQ 3.10.7
-- [o] Check packaging. -- ``poe build``
-- [o] ``mv .ci .github``
-- [o] ``mv scripts stuff contrib``
+- [o] Revisit all ``FIXME`` items
 
 Bugs
 ====
@@ -130,3 +134,4 @@ Ideas for the future.
 - [o] Improve notifications: Discriminate between subject and message.
   Maybe map from subsystem to subject.
 - [o] Notifications using Apprise or mqttwarn
+- [o] Command for configuring SecPi, like ``secpictl add sensor foo ...``

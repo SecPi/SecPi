@@ -49,7 +49,8 @@ A more comprehensive guide can be found at https://github.com/SecPi/SecPi/wiki/I
 
 ### Technologies
 
-The system is based on Python, AMQP/Pika, RabbitMQ, SQLAlchemy, CherryPy/Mako, and Angular.
+The system is based on Python, AMQP (RabbitMQ/GarageMQ, Pika), MQTT (Mosquitto, Paho),
+SQLAlchemy (SQLite), HTTP/HTML (CherryPy, Mako), and JavaScript (Angular).
 
 
 ## Project information

@@ -25,7 +25,7 @@ Start an AMQP broker using Docker::
 
 Optionally start the Mosquitto MQTT broker, e.g. when using the ADAM 6000 plugin::
 
-    docker run --name=rabbitmq --rm -it --publish=1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
+    docker run --name=mosquitto --rm -it --publish=1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
 
 *****
 Setup
