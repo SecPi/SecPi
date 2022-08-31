@@ -56,7 +56,8 @@ def test_sensor_temperature_alarm(system_temperature_sensor, caplog):
         (
             "secpi.sensor.system",
             20,
-            "Initializing sensor id=99 with parameters {'device_id': 'foobar', 'bouncetime': '3', 'min': '3', 'max': '60'}",
+            "Initializing sensor id=99 with parameters "
+            "{'device_id': 'foobar', 'bouncetime': '3', 'min': '3', 'max': '60'}",
         ),
         ("secpi.sensor.system", 20, "SystemTemperature: Sensor initialized"),
     ]

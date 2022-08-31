@@ -317,7 +317,7 @@ class Worker(Service):
                 self.config.update(new_config)
                 self.config.save()
             except Exception:
-                logger.exception(f"Writing configuration file failed")
+                logger.exception("Writing configuration file failed")
 
             if self.config.get("active"):
                 logger.info("Activating actions and sensors")

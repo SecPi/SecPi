@@ -1,6 +1,7 @@
 import logging
 
 import gsmmodem
+import gsmmodem.exceptions
 import serial.serialutil
 
 from secpi.model.notifier import Notifier
@@ -60,7 +61,7 @@ class Sms(Notifier):
                 logger.exception("Sms: Timeout, wasn't able to get network connection")
                 return
             except Exception as e:  # e.g. when unplugging the modem from the usb port
-                logger.exception("Sms: An unknown error occured while trying to get network coverage: %s" % e)
+                logger.exception("Sms: An unknown error occurred while trying to get network coverage: %s" % e)
                 return
 
             # now we can try to send the message
@@ -69,12 +70,19 @@ class Sms(Notifier):
                 try:
                     logger.debug("Sms: Sending message to %s" % recipient)
                     success = self.modem.sendSms(recipient, info_str, waitForDeliveryReport=False)
-                except gsmmodem.exceptions.TimeoutException:  # timeout when sending the sms
+
+                # Timeout when sending the SMS.
+                except gsmmodem.exceptions.TimeoutException:
                     logger.exception("Sms: Timeout, failed to send message to %s" % recipient)
-                except gsmmodem.exceptions.CmsError:  # e.g. when the specified number is invalid (containing a letter, ...)
+
+                # When the specified number is invalid, e.g. containing a letter.
+                except gsmmodem.exceptions.CmsError:
                     logger.exception("Sms: Wasn't able to send message to %s, please check the number" % recipient)
+
                 except Exception as e:
-                    logger.exception("Sms: An unknown error occured while sending a message to %s: %s" % (recipient, e))
+                    logger.exception(
+                        "Sms: An unknown error occurred while sending a message to %s: %s" % (recipient, e)
+                    )
                 else:
                     logger.info("Sms: Message to %s was sent successfully" % recipient)
         else:

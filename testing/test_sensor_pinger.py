@@ -51,7 +51,8 @@ def test_sensor_pinger_alarm(pinger_sensor, caplog):
         (
             "secpi.sensor.pinger",
             20,
-            "Initializing sensor id=99 with parameters {'destination_ip': 'localhost', 'interval': '0.05', 'max_losses': '0', 'bounce_time': '0'}",
+            "Initializing sensor id=99 with parameters "
+            "{'destination_ip': 'localhost', 'interval': '0.05', 'max_losses': '0', 'bounce_time': '0'}",
         ),
         ("secpi.sensor.pinger", 10, "Pinger: Sensor initialized"),
     ]

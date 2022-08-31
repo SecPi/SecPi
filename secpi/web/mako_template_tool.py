@@ -1,6 +1,5 @@
 import cherrypy
 from mako.lookup import TemplateLookup
-from mako.template import Template
 
 
 class MakoTemplateTool(cherrypy.Tool):

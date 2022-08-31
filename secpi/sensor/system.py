@@ -26,7 +26,7 @@ class SystemTemperature(Sensor):  # DS18B20 digital temperature sensor
             return
         except KeyError as ke:  # if config parameters are missing
             self.post_err(
-                "SystemTemperature: Wasn't able to initialize the sensor, it seems there is a config parameter missing: %s"
+                "SystemTemperature: Initializing the sensor failed, it seems there is a config parameter missing: %s"
                 % ke
             )
             self.corrupted = True

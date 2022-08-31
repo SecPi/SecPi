@@ -118,7 +118,8 @@ def test_sensor_adam6000_with_mqtt(adam6000_sensor, caplog):
         call.post_log("ADAM: Sensor activated successfully, id=99", 50),
         call.alarm(
             sensor_id=None,
-            message='Erste Erfassung. Offene Kontakte: Ferrata\n\nSummary message\n\nAlle Kontakte:\n- Kontakt "Ferrata" ist offen\n',
+            message="Erste Erfassung. Offene Kontakte: Ferrata\n\n"
+            'Summary message\n\nAlle Kontakte:\n- Kontakt "Ferrata" ist offen\n',
         ),
         call.alarm(99, 'Kontakt Ferrata wurde geschlossen\n\nAlle Kontakte:\n- Kontakt "Ferrata" ist geschlossen\n'),
         call.post_log("ADAM: Sensor deactivated successfully, id=99", 50),

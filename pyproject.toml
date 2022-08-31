@@ -112,6 +112,7 @@ develop = [
   "poethepoet<1",
   "pika-stubs<1; python_version>='3.8'",
   "pip-review<2",  # Use `pip-review --local --interactive` to upgrade outdated packages.
+  "ruff",
 ]
 
 [tool.setuptools]
@@ -139,7 +140,7 @@ changelog = "https://github.com/isarengineering/SecPi/blob/next/CHANGES.rst"
 # Tool configuration
 # ==================
 
-# Configuration snippets for Black, isort, pytest, and coverage.
+# Configuration snippets for Black, isort, pytest, coverage, and ruff.
 
 [tool.black]
 line-length = 120
@@ -169,6 +170,12 @@ show_missing = true
 omit = [
 ]
 
+[tool.ruff]
+line-length = 120
+exclude = [
+  "tmp",
+  "secpi/web/page/__init__.py",
+]
 
 
 # ===================
@@ -181,6 +188,7 @@ format = [
   {cmd="isort ."},
 ]
 check-style = [
+  {cmd="ruff ."},
   {cmd="black --check ."},
   {cmd="isort --check ."},
 ]

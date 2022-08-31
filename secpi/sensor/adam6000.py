@@ -4,7 +4,7 @@ About
 
 SecPi sensor adapter for digital input ports of Advantech ADAM-605x devices.
 
-- https://www.advantech.com/products/a67f7853-013a-4b50-9b20-01798c56b090/adam-6050/mod_b009c4b4-4b7c-4736-b16f-241978245e6a
+- https://www.advantech.com/products/a67f7853-013a-4b50-9b20-01798c56b090/adam-6050/mod_b009c4b4-4b7c-4736-b16f-241978245e6a  # noqa:E501
 - https://advdownload.advantech.com/productfile/Downloadfile5/1-24AIR0Z/ADAM-6000_User_Manaul_Ed.11_FINAL.pdf
 - https://advdownload.advantech.com/productfile/Downloadfile4/1-1EGDNCJ/ADAM%20MQTT%20manual%20V1.pdf
 - http://support.elmark.com.pl/advantech/pdf/iag/ADAM_MQTT-manual.pdf
@@ -27,7 +27,8 @@ Setup
     docker run --name=garagemq --rm -it --publish=5672:5672 amplitudo/garagemq
 
     # Start Mosquitto MQTT broker.
-    docker run --name=rabbitmq --rm -it --publish=1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
+    docker run --name=rabbitmq --rm -it --publish=1883:1883 eclipse-mosquitto:2.0.15 \
+        mosquitto -c /mosquitto-no-auth.conf
 
 
 Configuration
@@ -51,8 +52,8 @@ Usage
     python -m worker.adam6000
 
     # Submit example MQTT message.
-    export PAYLOAD1='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
-    export PAYLOAD2='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":false,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'
+    export PAYLOAD1='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":true,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'  # noqa:E501
+    export PAYLOAD2='{"s":1,"t":0,"q":192,"c":1,"di1":true,"di2":true,"di3":true,"di4":false,"di5":false,"di6":false,"di7":false,"di8":true,"di9":true,"di10":true,"di11":true,"di12":true,"do1":true,"do2":true,"do3":false,"do4":false,"do5":false,"do6":false}'  # noqa:E501
     echo $PAYLOAD1 | mosquitto_pub -h localhost -t "Advantech/11E1DAF0ECCE/data" -l
     echo $PAYLOAD2 | mosquitto_pub -h localhost -t "Advantech/11E1DAF0ECCE/data" -l
 
@@ -62,7 +63,7 @@ HTTP interface
 ::
 
     curl "http://192.168.178.10/digitalinput/all/value" --user "root:00000000"
-    <?xml version="1.0" ?><ADAM-6050 status="OK"><DI><ID>0</ID><VALUE>1</VALUE></DI><DI><ID>1</ID><VALUE>1</VALUE></DI><DI><ID>2</ID><VALUE>0</VALUE></DI><DI><ID>3</ID><VALUE>1</VALUE></DI><DI><ID>4</ID><VALUE>0</VALUE></DI><DI><ID>5</ID><VALUE>0</VALUE></DI><DI><ID>6</ID><VALUE>0</VALUE></DI><DI><ID>7</ID><VALUE>1</VALUE></DI><DI><ID>8</ID><VALUE>0</VALUE></DI><DI><ID>9</ID><VALUE>0</VALUE></DI><DI><ID>10</ID><VALUE>0</VALUE></DI><DI><ID>11</ID><VALUE>0</VALUE></DI></ADAM-6050>
+    <?xml version="1.0" ?><ADAM-6050 status="OK"><DI><ID>0</ID><VALUE>1</VALUE></DI><DI><ID>1</ID><VALUE>1</VALUE></DI><DI><ID>2</ID><VALUE>0</VALUE></DI><DI><ID>3</ID><VALUE>1</VALUE></DI><DI><ID>4</ID><VALUE>0</VALUE></DI><DI><ID>5</ID><VALUE>0</VALUE></DI><DI><ID>6</ID><VALUE>0</VALUE></DI><DI><ID>7</ID><VALUE>1</VALUE></DI><DI><ID>8</ID><VALUE>0</VALUE></DI><DI><ID>9</ID><VALUE>0</VALUE></DI><DI><ID>10</ID><VALUE>0</VALUE></DI><DI><ID>11</ID><VALUE>0</VALUE></DI></ADAM-6050>  # noqa:E501
 
 Modbus interface
 ================
@@ -164,7 +165,7 @@ class AdvantechAdamModbusConnector:
                 logger.info(f"Resolving hostname per MQTT failed, timed out after {timeout} seconds")
 
         if self.device_hostname is None:
-            raise ValueError(f"Unable to discover hostname of Advantech ADAM device")
+            raise ValueError("Unable to discover hostname of Advantech ADAM device")
 
     def resolve_hostname(self):
         """
@@ -264,7 +265,7 @@ class AdvantechAdamMqttConnector:
 
         # 2. Start the MQTT subscriber thread singleton.
         if AdvantechAdamMqttConnector.thread is None:
-            logger.info(f"Starting MQTT subscriber thread")
+            logger.info("Starting MQTT subscriber thread")
             AdvantechAdamMqttConnector.thread = threading.Thread(
                 name="thr-adam-mqtt-%s" % self.mqtt_broker, target=self.mqtt_subscribe
             )
@@ -274,7 +275,7 @@ class AdvantechAdamMqttConnector:
         """
         Stop the AdvantechAdamMqttConnector subscriber thread.
         """
-        logger.info(f"Stopping MQTT subscriber thread")
+        logger.info("Stopping MQTT subscriber thread")
 
         # In order to avoid deadlocking when start vs. stop are called in quick succession,
         # let's delay the `disconnect` a bit. C'est la vie.
@@ -458,7 +459,8 @@ class AdvantechAdamSensor(Sensor):
 
             def event_handler(response: ResponseItem, all_responses: t.List["ResponseItem"]):
                 logger.debug(
-                    f"Sensor state changed. id={self.id}, params={self.params}, channel={response.registration.channel}, value={response.value}"
+                    f"Sensor state changed. id={self.id}, params={self.params}, "
+                    f"channel={response.registration.channel}, value={response.value}"
                 )
                 message_title = response.circuit_transition_humanized()
                 message = ResponseItem.summary_humanized(message_title, all_responses, response.alldata)

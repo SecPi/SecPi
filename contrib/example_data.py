@@ -68,7 +68,8 @@ def main():
         Param(
             key="smtp_security",
             value="STARTTLS",
-            description="Security setting for SMTP Server (can be STARTTLS, SSL, NOSSL, NOAUTH_NOSSL, NOAUTH_STARTTLS, NOAUTH_SSL).",
+            description="Security setting for SMTP Server "
+            "(one of STARTTLS, SSL, NOSSL, NOAUTH_NOSSL, NOAUTH_STARTTLS, NOAUTH_SSL).",
             object_type="notifier",
         ),
     ]
