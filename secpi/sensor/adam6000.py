@@ -192,7 +192,7 @@ class AdvantechAdamModbusConnector:
         except pymodbus.exceptions.ConnectionException:
             logger.exception(f"Unable to connect to device at {hostname} using Modbus")
             return
-        
+
         try:
             client = ModbusClient(hostname)
             output_data = self.modbus_read_outputs(client)
@@ -231,6 +231,7 @@ class AdvantechAdamModbusConnector:
         rr = client.read_discrete_inputs(address=address, count=count, slave=0x01)
         assert not rr.isError()
         return rr.bits[:count]
+
 
 class AdvantechAdamMqttConnector:
     """
