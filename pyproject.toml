@@ -115,9 +115,12 @@ develop = [
 ]
 
 [tool.setuptools]
-# List the packages manually.
+# https://setuptools.pypa.io/en/latest/userguide/datafiles.html
+include-package-data = true
+
+[tool.setuptools.packages.find]
 # https://setuptools.pypa.io/en/latest/userguide/package_discovery.html
-packages = ["secpi"]
+include = ["secpi*"]
 
 [project.scripts]
 secpi-manager = "secpi.manager:main"
