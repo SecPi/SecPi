@@ -19,7 +19,7 @@ from secpi.util.common import setup_logging
 from secpi.util.config import ApplicationConfig
 from secpi.util.web import json_handler
 from secpi.web.mako_template_tool import MakoTemplateTool
-from secpi.web.sites import (
+from secpi.web.page import (
     ActionParamsPage,
     ActionsPage,
     AlarmDataPage,
