@@ -1,7 +1,7 @@
 {
   "amqp": {
     "host": "localhost",
-    "port": 5672,
+    "port": 5671,
     "user": "guest",
     "password": "guest",
     "cacert": "/etc/secpi/certs/ca/cacert.pem",
