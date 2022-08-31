@@ -120,12 +120,85 @@ class Webinterface:
 
         self.alarmdata = AlarmDataPage()
 
+        # Set up SQLAlchemy and CherryPy.
+        self.setup()
+
         # Connect to messaging bus.
         self.channel: pika.channel.Channel = None
         self.bus = AMQPAdapter.from_config(config)
         self.connect()
 
         logger.info("Finished initialization")
+
+    def setup(self):
+        logger.info("Configuring Webinterface")
+
+        cherrypy.tools.db = SQLAlchemyTool()
+
+        # TODO: Review those locations.
+        static_path = pkg_resources.resource_filename("secpi.web", "static")
+        templates_path = pkg_resources.resource_filename("secpi.web", "templates")
+        favicon_path = pkg_resources.resource_filename("secpi.web", "favicon.ico")
+
+        cherrypy.tools.lookup = MakoTemplateTool(templates_path)
+        logger.info(f"Using template path {templates_path}")
+
+        cherrypy.config.update(
+            {
+                # TODO: Make configurable.
+                "server.socket_host": "0.0.0.0",
+                # TODO: Make configurable. Use other non-standard port as default.
+                "server.socket_port": 8000,
+                # TODO: Make configurable. Would logging to stderr be actually enough?
+                # 'log.error_file': "/var/log/secpi/webinterface.log",
+                # 'log.access_file': "/var/log/secpi/webinterface_access.log",
+                "log.screen": False,
+                "tools.encode.on": True,
+                "tools.encode.encoding": "utf-8",
+                "tools.encode.text_only": False,
+            }
+        )
+
+        cherrypy_app_config = {
+            "/": {
+                "tools.db.on": True,
+                "tools.lookup.on": True,
+            },
+            "/static": {
+                "tools.staticdir.on": True,
+                "tools.staticdir.dir": static_path,
+            },
+            "/favicon.ico": {
+                "tools.staticfile.on": True,
+                "tools.staticfile.filename": favicon_path,
+            },
+        }
+
+        # Connect to database.
+        database_uri = self.config.get("database", {}).get("uri")
+        if database_uri is None:
+            raise ConnectionError(f"Unable to connect to database. Database URI is: {database_uri}")
+        logger.info(f"Connecting to database {database_uri}")
+        sqlalchemy_plugin = SQLAlchemyPlugin(cherrypy.engine, Base, database_uri, echo=False)
+        sqlalchemy_plugin.subscribe()
+        sqlalchemy_plugin.create()
+
+        # TODO: Configure development vs. production.
+        cherrypy.config.update(
+            {
+                "global": {
+                    "environment": "production",
+                }
+            }
+        )
+        cherrypy.tree.mount(self, "/", config=cherrypy_app_config)
+
+    def start(self):
+        """
+        Start CherryPy.
+        """
+        cherrypy.engine.start()
+        cherrypy.engine.block()
 
     def connect(self):
         self.bus.connect()
@@ -374,67 +447,8 @@ class Webinterface:
         self.is_shutting_down = True
         sys.exit(1)
 
-    '''
-	def jsonify_error(self, status, message, traceback, version):
-		"""
-		Make CherryPy return errors in JSON format.
-
-		https://stackoverflow.com/a/58099906
-		"""
-		response = cherrypy.response
-		response.headers['Content-Type'] = 'application/json'
-		return json.dumps(dict(
-			status="error",
-			message=status,
-			description=message,
-		), indent=2)
-	'''
-
 
 def run_webinterface(options: StartupOptions):
-
-    logger.info("Configuring Webinterface")
-
-    cherrypy.tools.db = SQLAlchemyTool()
-
-    # TODO: Review those locations.
-    static_path = pkg_resources.resource_filename("secpi.web", "static")
-    templates_path = pkg_resources.resource_filename("secpi.web", "templates")
-    favicon_path = pkg_resources.resource_filename("secpi.web", "favicon.ico")
-
-    cherrypy.tools.lookup = MakoTemplateTool(templates_path)
-    logger.info(f"Using template path {templates_path}")
-
-    cherrypy.config.update(
-        {
-            # TODO: Make configurable.
-            "server.socket_host": "0.0.0.0",
-            # TODO: Make configurable. Use other non-standard port as default.
-            "server.socket_port": 8000,
-            # TODO: Make configurable. Would logging to stderr be actually enough?
-            # 'log.error_file': "/var/log/secpi/webinterface.log",
-            # 'log.access_file': "/var/log/secpi/webinterface_access.log",
-            "log.screen": False,
-            "tools.encode.on": True,
-            "tools.encode.encoding": "utf-8",
-            "tools.encode.text_only": False,
-        }
-    )
-
-    cherrypy_app_config = {
-        "/": {
-            "tools.db.on": True,
-            "tools.lookup.on": True,
-        },
-        "/static": {
-            "tools.staticdir.on": True,
-            "tools.staticdir.dir": static_path,
-        },
-        "/favicon.ico": {
-            "tools.staticfile.on": True,
-            "tools.staticfile.filename": favicon_path,
-        },
-    }
 
     # Read configuration from file.
     try:
@@ -444,31 +458,9 @@ def run_webinterface(options: StartupOptions):
         logger.exception("Loading configuration failed")
         sys.exit(1)
 
-    # Connect to database.
-    database_uri = app_config.get("database", {}).get("uri")
-    if database_uri is None:
-        raise ConnectionError(f"Unable to connect to database. Database URI is: {database_uri}")
-    logger.info(f"Connecting to database {database_uri}")
-    sqlalchemy_plugin = SQLAlchemyPlugin(cherrypy.engine, Base, database_uri, echo=False)
-    sqlalchemy_plugin.subscribe()
-    sqlalchemy_plugin.create()
-
     # Create web application object.
     app = Webinterface(config=app_config)
-
-    # TODO: Configure development vs. production.
-    cherrypy.config.update(
-        {
-            "global": {
-                # "environment": "production",
-            }
-        }
-    )
-    cherrypy.tree.mount(app, "/", config=cherrypy_app_config)
-
-    # Start CherryPy.
-    cherrypy.engine.start()
-    cherrypy.engine.block()
+    app.start()
 
 
 def main():
