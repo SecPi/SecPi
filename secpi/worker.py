@@ -326,7 +326,7 @@ class Worker(Service):
             return
 
         # we don't get the rabbitmq config sent to us, so add the current one
-        new_conf["rabbitmq"] = self.config.get("rabbitmq")
+        new_conf["amqp"] = self.config.get("amqp")
 
         self.apply_config(new_conf)
 
