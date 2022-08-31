@@ -261,10 +261,10 @@ then
 
 	echo "Copying startup scripts..."
 	
-	cp scripts/secpi-manager /etc/init.d/
+	cp packaging/init/secpi-manager /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-manager
 	
-	cp scripts/secpi-manager.service /etc/systemd/system/
+	cp packaging/init/secpi-manager.service /etc/systemd/system/
 	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-manager.service
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-manager.service
 	
@@ -273,10 +273,10 @@ then
 	
 	
 	
-	cp scripts/secpi-webinterface /etc/init.d/
+	cp packaging/init/secpi-webinterface /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-webinterface
 	
-	cp scripts/secpi-webinterface.service /etc/systemd/system/
+	cp packaging/init/secpi-webinterface.service /etc/systemd/system/
 	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-webinterface.service
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-webinterface.service
 	
@@ -314,10 +314,10 @@ then
 	fi
 	
 	echo "Copying startup scripts..."
-	cp scripts/secpi-worker /etc/init.d/
+	cp packaging/init/secpi-worker /etc/init.d/
 	sed -i "s/{{DEAMONUSER}}/$SECPI_USER:$SECPI_GROUP/" /etc/init.d/secpi-worker
 	
-	cp scripts/secpi-worker.service /etc/systemd/system/
+	cp packaging/init/secpi-worker.service /etc/systemd/system/
 	sed -i "s/User=/User=$SECPI_USER/" /etc/systemd/system/secpi-worker.service
 	sed -i "s/Group=/Group=$SECPI_GROUP/" /etc/systemd/system/secpi-worker.service
 	
