@@ -1,20 +1,20 @@
 {
-	"rabbitmq":{
-		"master_ip": "localhost",
-		"master_port": 5672,
-		"user": "guest",
-		"password": "guest"
-	},
-	"database": {
-		"uri": "sqlite:///secpi-database-development.sqlite"
-	},
-	"directories": {
-		"alarms": "./var/spool/alarms"
-	},
-	"global": {
-		"adam6000": {
-			"mqtt_broker_ip": "localhost",
-			"mqtt_topic": "Advantech/11E1DAF0ECCE"
-		}
-	}
+  "amqp": {
+    "host": "localhost",
+    "port": 5672,
+    "user": "guest",
+    "password": "guest"
+  },
+  "database": {
+    "uri": "sqlite:///secpi-database-development.sqlite"
+  },
+  "directories": {
+    "alarms": "./var/spool/alarms"
+  },
+  "global": {
+    "adam6000": {
+      "mqtt_broker_ip": "localhost",
+      "mqtt_topic": "Advantech/11E1DAF0ECCE"
+    }
+  }
 }

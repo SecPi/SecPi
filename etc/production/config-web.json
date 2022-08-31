@@ -1,16 +1,16 @@
 {
-	"rabbitmq":{
-		"master_ip": "localhost",
-		"master_port": 5672,
-		"user": "guest",
-		"password": "guest",
-		"cacert": "/etc/secpi/certs/ca/cacert.pem",
-		"certfile": "/etc/secpi/certs/webui.cert.pem",
-		"keyfile": "/etc/secpi/certs/webui.key.pem"
-	},
-	"database": {
-		"uri": "sqlite:///var/lib/secpi/secpi-database.sqlite"
-	},
-	"webserver": {
-	}
+  "amqp": {
+    "host": "localhost",
+    "port": 5672,
+    "user": "guest",
+    "password": "guest",
+    "cacert": "/etc/secpi/certs/ca/cacert.pem",
+    "certfile": "/etc/secpi/certs/webui.cert.pem",
+    "keyfile": "/etc/secpi/certs/webui.key.pem"
+  },
+  "database": {
+    "uri": "sqlite:///var/lib/secpi/secpi-database.sqlite"
+  },
+  "webserver": {
+  }
 }

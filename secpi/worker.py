@@ -36,6 +36,7 @@ class Worker(Service):
         self.active = False
 
         # TODO: Make paths configurable.
+        # FIXME: This is hardcoded.
         self.data_directory = "/var/tmp/secpi/worker_data"
         self.zip_directory = "/var/tmp/secpi"
 
@@ -44,13 +45,7 @@ class Worker(Service):
         self.prepare_data_directory()
 
         # Connect to messaging bus.
-        self.bus = AMQPAdapter(
-            hostname=config.get("rabbitmq", {}).get("master_ip", "localhost"),
-            port=int(config.get("rabbitmq", {}).get("master_port", 5672)),
-            username=config.get("rabbitmq", {}).get("user"),
-            password=config.get("rabbitmq", {}).get("password"),
-            buffer_undelivered=True,
-        )
+        self.bus = AMQPAdapter.from_config(config)
         self.connect()
 
         # if we don't have a pi id we need to request the initial config, afterwards we have to reconnect

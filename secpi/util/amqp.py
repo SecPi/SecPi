@@ -33,6 +33,16 @@ class AMQPAdapter:
         self.do_shutdown = False
         self.do_reconnect = True
 
+    @classmethod
+    def from_config(cls, config, buffer_undelivered=False):
+        return cls(
+            hostname=config.get("amqp", {}).get("host", "localhost"),
+            port=int(config.get("amqp", {}).get("port", 5672)),
+            username=config.get("amqp", {}).get("user"),
+            password=config.get("amqp", {}).get("password"),
+            buffer_undelivered=buffer_undelivered,
+        )
+
     def connect(self, retries=None):
         credentials = pika.PlainCredentials(self.username, self.password)
         parameters = pika.ConnectionParameters(
@@ -45,9 +55,9 @@ class AMQPAdapter:
             # ssl=True,
             # TODO: Bring back SSL feature.
             # ssl_options = {
-            # 	"ca_certs":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['cacert'],
-            # 	"certfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['certfile'],
-            # 	"keyfile":PROJECT_PATH+"/certs/"+config.get('rabbitmq')['keyfile']
+            # 	"ca_certs":PROJECT_PATH+"/certs/"+config.get('amqp')['cacert'],
+            # 	"certfile":PROJECT_PATH+"/certs/"+config.get('amqp')['certfile'],
+            # 	"keyfile":PROJECT_PATH+"/certs/"+config.get('amqp')['keyfile']
             # }
         )
 
@@ -151,7 +161,7 @@ class AMQPAdapter:
                 else:
                     established = False
 
-            # Connection is lost, e.g. RabbitMQ not running.
+            # Connection is lost, e.g. AMQP broker not running.
             except Exception:
                 if not self.do_reconnect:
                     return

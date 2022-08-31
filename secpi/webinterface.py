@@ -122,12 +122,7 @@ class Webinterface:
 
         # Connect to messaging bus.
         self.channel: pika.channel.Channel = None
-        self.bus = AMQPAdapter(
-            hostname=config.get("rabbitmq", {}).get("master_ip", "localhost"),
-            port=int(config.get("rabbitmq", {}).get("master_port", 5672)),
-            username=config.get("rabbitmq")["user"],
-            password=config.get("rabbitmq")["password"],
-        )
+        self.bus = AMQPAdapter.from_config(config)
         self.connect()
 
         logger.info("Finished initialization")
@@ -291,7 +286,7 @@ class Webinterface:
             response = SuccessfulResponse(f"{verb.title()} setup '{setup.name}' succeeded")
 
         except (pika.exceptions.ConnectionClosed, pika.exceptions.StreamLostError):
-            logger.info("Reconnecting to RabbitMQ Server")
+            logger.info("Reconnecting to AMQP broker")
             reconnected = self.connect()
             if reconnected:
                 logger.info("Reconnect finished")

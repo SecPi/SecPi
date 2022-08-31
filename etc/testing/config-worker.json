@@ -1,9 +1,9 @@
 {
   "pi_id": 1,
   "active": true,
-  "rabbitmq": {
-    "master_ip": "localhost",
-    "master_port": 5672,
+  "amqp": {
+    "host": "localhost",
+    "port": 5672,
     "user": "guest",
     "password": "guest"
   },

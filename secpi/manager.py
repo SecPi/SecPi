@@ -67,12 +67,7 @@ class Manager(Service):
             sys.exit(1)
 
         # Connect to messaging bus.
-        self.bus = AMQPAdapter(
-            hostname=config.get("rabbitmq", {}).get("master_ip", "localhost"),
-            port=int(config.get("rabbitmq", {}).get("master_port", 5672)),
-            username=config.get("rabbitmq")["user"],
-            password=config.get("rabbitmq")["password"],
-        )
+        self.bus = AMQPAdapter.from_config(config)
         self.connect()
 
         # Check if any setup is active.
