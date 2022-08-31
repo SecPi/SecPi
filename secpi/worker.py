@@ -199,7 +199,7 @@ class Worker(Service):
         if self.corr_id == properties.correlation_id:  # we got the right config
             try:
                 new_conf = json.loads(body)
-                new_conf["rabbitmq"] = self.config.get("rabbitmq")
+                new_conf["amqp"] = self.config.get("amqp")
             except Exception as e:
                 logger.exception("Wasn't able to read JSON config from manager:\n%s" % e)
 
@@ -325,7 +325,7 @@ class Worker(Service):
             logger.exception("Reading JSON config from manager failed")
             return
 
-        # we don't get the rabbitmq config sent to us, so add the current one
+        # We don't get the `amqp` config snippet sent to us, so add the current one.
         new_conf["amqp"] = self.config.get("amqp")
 
         self.apply_config(new_conf)
