@@ -2,7 +2,9 @@ import datetime
 import json
 import logging
 import os
+import random
 import shutil
+import string
 import sys
 import threading
 import uuid
@@ -44,6 +46,14 @@ class Worker(Service):
 
         self.prepare_data_directory()
 
+        # Queue for initial configuration request.
+        # The name of the exclusive callback queue used for requesting the initial configuration.
+        self.callback_queue: str = None
+
+        # Random correlation identifier for initial configuration request.
+        # Used to make sure to only process the actually requested configuration.
+        self.corr_id: str = None
+
         # Connect to messaging bus.
         self.bus = AMQPAdapter.from_config(config)
         self.connect()
@@ -72,8 +82,9 @@ class Worker(Service):
         # When the worker does not have an identifier, only define a basic
         # setup to receive an initial configuration from the manager.
         if not self.config.get("pi_id"):
-            result = channel.queue_declare(queue="init-callback", exclusive=True)
-            self.callback_queue = result.method.queue
+            callback_queue_id = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            self.callback_queue = f"init-callback-{callback_queue_id}"
+            channel.queue_declare(queue=self.callback_queue)
             channel.queue_bind(queue=self.callback_queue, exchange=constants.EXCHANGE)
             channel.queue_declare(queue=constants.QUEUE_INIT_CONFIG)
             channel.basic_consume(queue=self.callback_queue, on_message_callback=self.got_init_config, auto_ack=True)
@@ -172,8 +183,11 @@ class Worker(Service):
         """
         ip_addresses = get_ip_addresses()
         if ip_addresses:
+            if self.callback_queue is None:
+                logger.warning("Unable to send initial configuration request, because there is no callback queue")
+
             self.corr_id = str(uuid.uuid4())
-            logger.info("Sending initial configuration request to manager")
+            logger.info(f"Sending initial configuration request to manager with id={self.corr_id}")
             properties = pika.BasicProperties(
                 reply_to=self.callback_queue, correlation_id=self.corr_id, content_type="application/json"
             )
@@ -215,7 +229,7 @@ class Worker(Service):
             logger.info("Initial config activated")
             self.start()
         else:
-            logger.info("This config isn't meant for us")
+            logger.warning(f"The configuration request response with id={self.corr_id} isn't meant for us")
 
     # Create a zip of all the files which were collected while actions were executed
     def prepare_data(self):
