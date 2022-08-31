@@ -61,7 +61,9 @@ def main():
             object_type="notifier",
         ),
         Param(key="smtp_port", value="587", description="Port of the SMTP Server.", object_type="notifier"),
-        Param(key="smtp_user", value="alarm@secpi.local", description="User for the SMTP Server.", object_type="notifier"),
+        Param(
+            key="smtp_user", value="alarm@secpi.local", description="User for the SMTP Server.", object_type="notifier"
+        ),
         Param(key="smtp_pass", value="TOBESET", description="Password for the SMTP Server.", object_type="notifier"),
         Param(
             key="smtp_security",
