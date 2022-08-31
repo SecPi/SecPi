@@ -33,6 +33,9 @@ class ApplicationConfig:
     def get(self, key, default=None):
         return self.config.get(key, default)
 
+    def set(self, key, value):
+        self.config[key] = value
+
     def update(self, new_config):
         self.config = new_config
 
