@@ -61,7 +61,6 @@ class Worker(Service):
         # if we don't have a pi id we need to request the initial config, afterwards we have to reconnect
         # to the queues which are specific to the pi id -> hence, call connect again
         if not config.get("pi_id"):
-            logger.info("No Pi ID found, will request initial configuration from manager")
             self.fetch_init_config()
         else:
             logger.info("Setting up sensors and actions")
@@ -181,6 +180,7 @@ class Worker(Service):
         """
         AMQP: Request initial configuration from Manager.
         """
+        logger.info("Requesting initial configuration from Manager")
         ip_addresses = get_ip_addresses()
         if ip_addresses:
             if self.callback_queue is None:

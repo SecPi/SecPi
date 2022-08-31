@@ -47,17 +47,19 @@ Setup Python virtualenv and install dependencies::
 Operate
 *******
 
-Start all services::
+Activate virtualenv::
 
-    # Activate virtualenv.
     source .venv/bin/activate
 
-    # Run software tests.
+Run software tests::
+
     pytest
 
+Start all services::
+
     # Start Manager, Worker, and Webinterface, in different terminals.
-    secpi-manager --app-config=manager/config.json
-    secpi-worker --app-config=worker/config.json
+    ./startup.sh manager
+    ./startup.sh worker
     ./startup.sh webinterface
 
 

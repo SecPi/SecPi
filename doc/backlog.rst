@@ -14,8 +14,6 @@ Make it work on Python 3. Add adapters for Advantech ADAM 6050 and SIPCall/Aster
 - [/] AMQP: Upgrade to Pika 1.3. -- https://github.com/isarengineering/SecPi/commit/c21eb4f59f2.
   Cancelled - patch is not ready yet.
 - [x] AMQP: Resolve flaws with concurrent access. -- https://github.com/isarengineering/SecPi/issues/5
-- [o] ADAM: Summary message should also be submitted on "ACTIVATE".
-- [o] ADAM: Summary message should only be a message, not an alarm.
 
 
 ***********
@@ -42,6 +40,8 @@ Project and code I
 - [x] ``mv .ci .github``
 - [x] ``mv scripts stuff contrib``
 - [x] Check packaging. -- ``poe build``
+- [x] ``mv secpi.web.sites secpi.web.page``
+- [x] Add linter
 
 Project and code II
 ===================
@@ -76,6 +76,8 @@ Documentation
 
 Features
 ========
+- [o] ADAM: Summary message should also be submitted on "ACTIVATE".
+- [o] ADAM: Summary message should only be a message, not an alarm.
 - [o] Alarm notifications: We need to have two mails per alarm. One should be emitted
   instantly, and the second one after shoveling all the camera images together.
   Alternatively, think about uploading them to S3 or Nextcloud.
