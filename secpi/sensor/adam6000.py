@@ -192,11 +192,24 @@ class AdvantechAdamModbusConnector:
         except pymodbus.exceptions.ConnectionException:
             logger.exception(f"Unable to connect to device at {hostname} using Modbus")
             return
+        
+        try:
+            client = ModbusClient(hostname)
+            output_data = self.modbus_read_outputs(client)
+            client.close()
+        except pymodbus.exceptions.ConnectionException:
+            logger.exception(f"Unable to connect to device for outputs at {hostname} using Modbus")
+            return
 
         data = collections.OrderedDict()
         for i in range(12):
             channel = "di" + str(i + 1)
             state = input_data[i]
+            data[channel] = bool(state)
+
+        for i in range(6):
+            channel = "do" + str(i + 1)
+            state = output_data[i]
             data[channel] = bool(state)
 
         return data
@@ -210,6 +223,14 @@ class AdvantechAdamModbusConnector:
         assert not rr.isError()
         return rr.bits[:count]
 
+    @staticmethod
+    def modbus_read_outputs(client, address=1, count=6):
+        """
+        Read state about digital input ports via Modbus.
+        """
+        rr = client.read_discrete_inputs(address=address, count=count, slave=0x01)
+        assert not rr.isError()
+        return rr.bits[:count]
 
 class AdvantechAdamMqttConnector:
     """
