@@ -174,7 +174,7 @@ then
 			exit 1
 		fi
 		echo "Copying rabbitmq.config file..."
-		cp scripts/rabbitmq.config $RMQ_CONFIG
+		cp etc/production/rabbitmq.config $RMQ_CONFIG
 
 		sed -i "s/<port>/$MQ_PORT/" $RMQ_CONFIG
 		
@@ -189,19 +189,20 @@ fi
 
 
 
+# create secpi folder
+create_folder $SECPI_PATH root root
+
+# create tls certificate folder
+create_folder $CERT_PATH root root
+
+
 # create log folder
 create_folder $LOG_PATH $SECPI_USER $SECPI_GROUP
-
-# create secpi folder
-create_folder $SECPI_PATH $SECPI_USER $SECPI_GROUP
 
 # create tmp folder
 create_folder $TMP_PATH $SECPI_USER $SECPI_GROUP
 create_folder $TMP_PATH/worker_data $SECPI_USER $SECPI_GROUP
 create_folder $TMP_PATH/alarms $SECPI_USER $SECPI_GROUP
-
-# create tls certificate folder
-create_folder $CERT_PATH $SECPI_USER $SECPI_GROUP
 
 
 if [ "$CREATE_CA" = "yes" ] || [ "$CREATE_CA" = "y" ];
@@ -216,9 +217,9 @@ then
 	echo 1000 > $CERT_PATH/ca/serial
 	echo 1000 > $CERT_PATH/ca/crlnumber
 
-	cp scripts/openssl.cnf $CERT_PATH/ca/
-	cp scripts/gen_cert.sh $SECPI_PATH
-	cp scripts/renew_cert.sh $SECPI_PATH
+	cp packaging/scripts/openssl.cnf $CERT_PATH/ca/
+	cp packaging/scripts/gen_cert.sh $SECPI_PATH/
+	cp packaging/scripts/renew_cert.sh $SECPI_PATH/
 
 	# generate ca cert
 	openssl req -config $CERT_PATH/ca/openssl.cnf -x509 -newkey rsa:4096 -days 3650 -out $CERT_PATH/ca/cacert.pem -keyout $CERT_PATH/ca/private/cakey.pem -outform PEM -subj /CN=$COMMON_NAME/ -nodes
@@ -325,8 +326,6 @@ then
 	update-rc.d secpi-worker enable
 	
 fi
-
-chown -R $SECPI_USER:$SECPI_GROUP $SECPI_PATH
 
 # reload systemd, but don't write anything if systemctl doesn't exist
 systemctl daemon-reload > /dev/null 2>&1
