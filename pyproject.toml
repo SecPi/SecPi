@@ -63,6 +63,7 @@ dependencies = [
 
   # Baseline modules.
   "appdirs<2",
+  "dataclass-wizard<1",
   "requests<3",
   "pika<2",
   "python-dateutil<3",

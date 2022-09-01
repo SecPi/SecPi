@@ -78,8 +78,8 @@ def test_manager_process_alarm(webinterface_service, manager_service):
         and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
     )
     assert "Created directory for alarm:" in app_log
-    assert "Late alarm from sensor 1 (worker 1): Got TCP connection, raising alarm" in app_log
-    assert "Received all data from workers, cancelling the timeout" in app_log
+    assert "[LATE] Alarm from sensor id=1, worker id=1: Got TCP connection, raising alarm" in app_log
+    # assert "Received all data from workers, cancelling the timeout" in app_log
 
     # Notification.
     assert "Notifying via SMTP email" in app_log

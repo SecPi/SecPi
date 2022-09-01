@@ -54,5 +54,6 @@ def test_worker_with_tcplistener(worker_service):
     assert "Loading class successful: secpi.sensor.network.TCPPortListener" in app_log
     assert "Sensor with id 1 detected something" in app_log
     assert (
-        "Publishing message:" in app_log and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
+        "Publishing message:" in app_log
+        and '"sensor_id": 1, "worker_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
     )

@@ -14,6 +14,7 @@ from collections import OrderedDict
 
 import dateutil.parser
 import netifaces
+from dataclass_wizard import DumpMeta, JSONSerializable
 
 # import pytz
 
@@ -170,3 +171,18 @@ def get_random_identifier(length):
     Create random identifiers like `GSKHJ` or `AMB3C`.
     """
     return "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+
+class DataContainer(JSONSerializable):
+    """
+    Helper for JSONWizard that ensures dumping to JSON puts keys in snake_case.
+
+    https://github.com/rnag/dataclass-wizard/issues/63
+    """
+
+    def __init_subclass__(cls, str=True):
+        """
+        Method for binding child class to DumpMeta.
+        """
+        super().__init_subclass__(str)
+        DumpMeta(key_transform="SNAKE").bind_to(cls)

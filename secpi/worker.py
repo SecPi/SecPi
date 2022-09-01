@@ -5,11 +5,13 @@ import os
 import shutil
 import sys
 import threading
+import typing as t
 import uuid
 
 import pika
 
 from secpi.model import constants
+from secpi.model.message import ActionRequestMessage, AlarmMessage
 from secpi.model.service import Service
 from secpi.model.settings import StartupOptions
 from secpi.util.amqp import AMQPAdapter
@@ -263,28 +265,30 @@ class Worker(Service):
             self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (self.config.get("pi_id"), oe))
             logger.error("Wasn't able to clean up data directory: %s" % oe)
 
-    # callback method which processes the actions which originate from the manager
     def got_action(self, ch, method, properties, body):
+        """
+        When the worker receives a signal to run an action.
+        """
         if self.active:
-            msg = json.loads(body)
-            late_arrival = check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
 
+            logger.debug(f"Received action: {body}")
+
+            action_message = ActionRequestMessage.from_json(body)
+            late_arrival = check_late_arrival(action_message.datetime)
+
+            # Do not execute late actions.
             if late_arrival:
-                logger.info("Received late action from manager:%s" % body)
-                return  # we don't have to send a message to the data queue since the timeout will be over anyway
+                logger.info("Received late action, not executing: %s" % body)
+                return
 
-            # http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
-            logger.info("Received action from manager:%s" % body)
+            # Run all actions and wait for them to finish.
             threads = []
-
-            for act in self.actions:
-                t = threading.Thread(name="thread-%s" % (act.id), target=act.execute)
-                threads.append(t)
-                t.start()
-
-            # wait for threads to finish
-            for t in threads:
-                t.join()
+            for action in self.actions:
+                thread = threading.Thread(name=f"thread-{action.id}", target=action.execute)
+                threads.append(thread)
+                thread.start()
+            for thread in threads:
+                thread.join()
 
             # Collect all data crafted by the action.
             action_data = self.prepare_data()
@@ -408,15 +412,14 @@ class Worker(Service):
         if self.active:
             logger.info("Sensor with id %s detected something" % sensor_id)
 
-            msg = {
-                "pi_id": self.config.get("pi_id"),
-                "sensor_id": sensor_id,
-                "message": message,
-                "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-
-            # send a message to the alarmQ and tell which sensor signaled
-            self.send_json_msg(constants.QUEUE_ALARM, msg)
+            # Send message to the alarm queue.
+            msg = AlarmMessage(
+                worker_id=self.config.get("pi_id"),
+                sensor_id=sensor_id,
+                message=message,
+                datetime=datetime.datetime.now(),
+            )
+            self.send_json_msg(constants.QUEUE_ALARM, msg.to_dict())
 
         else:
             logger.warning("Not submitting alarm because worker is not active")
