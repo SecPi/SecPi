@@ -8,7 +8,7 @@ LEVEL_ERR = 100
 # TODO: Refactor as Enum.
 EXCHANGE = "secpi"
 QUEUE_LOG = "secpi-log"
-QUEUE_DATA = "secpi-data"
+QUEUE_ACTION_RESPONSE = "secpi-action-response"
 QUEUE_ALARM = "secpi-alarm"
 QUEUE_ON_OFF = "secpi-on_off"
 QUEUE_ACTION = "secpi-action-"

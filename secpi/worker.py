@@ -2,9 +2,7 @@ import datetime
 import json
 import logging
 import os
-import random
 import shutil
-import string
 import sys
 import threading
 import uuid
@@ -19,6 +17,7 @@ from secpi.util.cli import parse_cmd_args
 from secpi.util.common import (
     check_late_arrival,
     get_ip_addresses,
+    get_random_identifier,
     load_class,
     setup_logging,
 )
@@ -81,7 +80,7 @@ class Worker(Service):
         # When the worker does not have an identifier, only define a basic
         # setup to receive an initial configuration from the manager.
         if not self.config.get("pi_id"):
-            callback_queue_id = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            callback_queue_id = get_random_identifier(length=6)
             self.callback_queue = f"init-callback-{callback_queue_id}"
             channel.queue_declare(queue=self.callback_queue)
             channel.queue_bind(queue=self.callback_queue, exchange=constants.EXCHANGE)
@@ -100,7 +99,7 @@ class Worker(Service):
             channel.queue_declare(queue=constants.QUEUE_OPERATIONAL + worker_identifier)
             channel.queue_declare(queue=constants.QUEUE_ACTION + worker_identifier)
             channel.queue_declare(queue=constants.QUEUE_CONFIG + worker_identifier)
-            channel.queue_declare(queue=constants.QUEUE_DATA)
+            channel.queue_declare(queue=constants.QUEUE_ACTION_RESPONSE)
             channel.queue_declare(queue=constants.QUEUE_ALARM)
             channel.queue_declare(queue=constants.QUEUE_LOG)
 
@@ -271,7 +270,7 @@ class Worker(Service):
             late_arrival = check_late_arrival(datetime.datetime.strptime(msg["datetime"], "%Y-%m-%d %H:%M:%S"))
 
             if late_arrival:
-                logger.info("Received old action from manager:%s" % body)
+                logger.info("Received late action from manager:%s" % body)
                 return  # we don't have to send a message to the data queue since the timeout will be over anyway
 
             # http://stackoverflow.com/questions/15085348/what-is-the-use-of-join-in-python-threading
@@ -287,16 +286,21 @@ class Worker(Service):
             for t in threads:
                 t.join()
 
-            if self.prepare_data():  # check if there is any data to send
+            # Collect all data crafted by the action.
+            action_data = self.prepare_data()
+
+            if action_data:  # check if there is any data to send
                 with open("%s/%s.zip" % (self.zip_directory, self.config.get("pi_id")), "rb") as zip_file:
                     byte_stream = zip_file.read()
-                self.send_msg(constants.QUEUE_DATA, byte_stream)
+                self.send_msg(constants.QUEUE_ACTION_RESPONSE, byte_stream)
+
+
                 logger.info("Sent data to manager")
                 self.cleanup_data()
             else:
                 logger.info("No data to send")
                 # Send empty message which acts like a finished
-                self.send_msg(constants.QUEUE_DATA, "")
+                self.send_msg(constants.QUEUE_ACTION_RESPONSE, "")
         else:
             logger.debug("Received action but wasn't active")
 

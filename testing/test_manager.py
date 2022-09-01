@@ -59,8 +59,9 @@ def test_manager_receive_alarm(manager_service):
 
     # Verify everything is in place.
     assert (
-        "Received old alarm:" in app_log and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
+        "Received late alarm:" in app_log
+        and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
     )
     assert "Created directory for alarm:" in app_log
-    assert "Old alarm from 1 on sensor 1: Got TCP connection, raising alarm" in app_log
+    assert "Late alarm from sensor 1 (worker 1): Got TCP connection, raising alarm" in app_log
     assert "Received all data from workers, cancelling the timeout" in app_log

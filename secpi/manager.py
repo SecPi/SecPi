@@ -53,6 +53,7 @@ class Manager(Service):
         logger.info(f"Storing alarms to {self.alarm_dir}")
 
         logger.info("Initializing manager")
+        self.standalone_mode = False
 
         self.holddown_state = False
         self.num_of_workers = 0
@@ -102,13 +103,13 @@ class Manager(Service):
 
         # Define queues: data, alarm and action & config for every pi.
         channel.queue_declare(queue=constants.QUEUE_OPERATIONAL + "m")
-        channel.queue_declare(queue=constants.QUEUE_DATA)
+        channel.queue_declare(queue=constants.QUEUE_ACTION_RESPONSE)
         channel.queue_declare(queue=constants.QUEUE_ALARM)
         channel.queue_declare(queue=constants.QUEUE_ON_OFF)
         channel.queue_declare(queue=constants.QUEUE_LOG)
         channel.queue_declare(queue=constants.QUEUE_INIT_CONFIG)
         channel.queue_bind(queue=constants.QUEUE_ON_OFF, exchange=constants.EXCHANGE)
-        channel.queue_bind(queue=constants.QUEUE_DATA, exchange=constants.EXCHANGE)
+        channel.queue_bind(queue=constants.QUEUE_ACTION_RESPONSE, exchange=constants.EXCHANGE)
         channel.queue_bind(queue=constants.QUEUE_ALARM, exchange=constants.EXCHANGE)
         channel.queue_bind(queue=constants.QUEUE_LOG, exchange=constants.EXCHANGE)
         channel.queue_bind(queue=constants.QUEUE_INIT_CONFIG, exchange=constants.EXCHANGE)
@@ -127,7 +128,9 @@ class Manager(Service):
         )
         channel.basic_consume(queue=constants.QUEUE_ALARM, on_message_callback=self.got_alarm, auto_ack=True)
         channel.basic_consume(queue=constants.QUEUE_ON_OFF, on_message_callback=self.got_on_off, auto_ack=True)
-        channel.basic_consume(queue=constants.QUEUE_DATA, on_message_callback=self.got_data, auto_ack=True)
+        channel.basic_consume(
+            queue=constants.QUEUE_ACTION_RESPONSE, on_message_callback=self.got_action_response, auto_ack=True
+        )
         channel.basic_consume(queue=constants.QUEUE_LOG, on_message_callback=self.got_log, auto_ack=True)
         channel.basic_consume(
             queue=constants.QUEUE_INIT_CONFIG, on_message_callback=self.got_config_request, auto_ack=True
@@ -218,9 +221,11 @@ class Manager(Service):
             body=json.dumps(config),
         )
 
-    # callback method for when the manager recieves data after a worker executed its actions
-    def got_data(self, ch, method, properties, body):
-        logger.info("Got data")
+    def got_action_response(self, ch, method, properties, body):
+        """
+        When the manager receives data from a worker after executing an action.
+        """
+        logger.info("Got action response")
         newFile_bytes = bytearray(body)
         if newFile_bytes:  # only write data when body is not empty
             filename = hashlib.md5(newFile_bytes).hexdigest() + ".zip"
@@ -275,7 +280,7 @@ class Manager(Service):
         if not late_arrival:
             logger.info("Received alarm: %s" % body)
         else:
-            logger.info("Received old alarm: %s" % body)
+            logger.info("Received late alarm: %s" % body)
 
         if not self.holddown_state:
             # put into holddown
@@ -307,48 +312,16 @@ class Manager(Service):
             for pi in workers:
                 self.send_json_message(constants.QUEUE_ACTION + str(pi.id), action_message)
 
+            # Enrich alarm message by human-readable worker- and sensor-names, retrieved from the database.
+            msg = msg.copy()
             worker = self.db.session.query(Worker).filter(Worker.id == msg["pi_id"]).first()
             sensor = self.db.session.query(Sensor).filter(Sensor.id == msg["sensor_id"]).first()
+            msg["worker_name"] = worker.name if worker else msg["pi_id"]
+            msg["sensor_name"] = sensor.name if sensor else msg["sensor_id"]
 
-            # create log entry for db
-            if not late_arrival:
-                al = Alarm(sensor_id=msg["sensor_id"], message=msg["message"])
-                self.log_msg(
-                    "New alarm from %s on sensor %s: %s"
-                    % (
-                        (worker.name if worker else msg["pi_id"]),
-                        (sensor.name if sensor else msg["sensor_id"]),
-                        msg["message"],
-                    ),
-                    constants.LEVEL_WARN,
-                )
-            else:
-                al = Alarm(sensor_id=msg["sensor_id"], message="Late Alarm: %s" % msg["message"])
-                self.log_msg(
-                    "Old alarm from %s on sensor %s: %s"
-                    % (
-                        (worker.name if worker else msg["pi_id"]),
-                        (sensor.name if sensor else msg["sensor_id"]),
-                        msg["message"],
-                    ),
-                    constants.LEVEL_WARN,
-                )
+            self.log_and_store_alarm(msg, late_arrival=late_arrival)
+            self.send_notification(msg)
 
-            self.db.session.add(al)
-            self.db.session.commit()
-
-            # TODO: add information about late arrival of alarm
-            notif_info = {
-                "message": msg["message"],
-                "sensor": (sensor.name if sensor else msg["sensor_id"]),
-                "sensor_id": msg["sensor_id"],
-                "worker": (worker.name if worker else msg["pi_id"]),
-                "worker_id": msg["pi_id"],
-            }
-
-            # start timeout thread for workers to reply
-            timeout_thread = threading.Thread(name="thread-timeout", target=self.notify, args=[notif_info])
-            timeout_thread.start()
         else:  # --> holddown state
             self.log_msg(
                 "Alarm during holddown state from %s on sensor %s: %s"
@@ -358,6 +331,42 @@ class Manager(Service):
             al = Alarm(sensor_id=msg["sensor_id"], message="Alarm during holddown state: %s" % msg["message"])
             self.db.session.add(al)
             self.db.session.commit()
+
+    def log_and_store_alarm(self, msg, late_arrival=False):
+        """
+        Submit alarm item to both log and database.
+        """
+
+        # Create log message and amend alarm message, based on `late_arrival` flag.
+        log_message = f'alarm from sensor {msg["sensor_name"]} (worker {msg["worker_name"]}): {msg["message"]}'
+        if late_arrival:
+            log_message = "Late " + log_message
+            msg["message"] = "Late alarm: " + msg["message"]
+
+        # Submit alarm item to log output.
+        self.log_msg(log_message, constants.LEVEL_WARN)
+
+        # Store alarm item into database.
+        alarm = Alarm(sensor_id=msg["sensor_id"], message=msg["message"])
+        self.db.session.add(alarm)
+        self.db.session.commit()
+
+    def send_notification(self, msg):
+        """
+        Invoke all configured notifiers.
+        """
+        # TODO: Add information about late arrival of alarm.
+        notif_info = {
+            "message": msg["message"],
+            "sensor": msg["sensor_name"],
+            "sensor_id": msg["sensor_id"],
+            "worker": msg["worker_name"],
+            "worker_id": msg["pi_id"],
+        }
+
+        # start timeout thread for workers to reply
+        timeout_thread = threading.Thread(name="thread-timeout", target=self.notify, args=[notif_info])
+        timeout_thread.start()
 
     # initialize the notifiers
     def setup_notifiers(self):

@@ -4,6 +4,8 @@ import importlib
 import logging
 import logging.config
 import pathlib
+import random
+import string
 import sys
 import tempfile
 import threading
@@ -161,3 +163,10 @@ def load_class(module_names, class_names, errors: str = "raise"):
         exception = recorded_exceptions[0]
         exception.all_exceptions = recorded_exceptions
         raise exception
+
+
+def get_random_identifier(length):
+    """
+    Create random identifiers like `GSKHJ` or `AMB3C`.
+    """
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
