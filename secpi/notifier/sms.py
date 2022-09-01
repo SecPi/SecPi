@@ -65,7 +65,7 @@ class Sms(Notifier):
                 return
 
             # now we can try to send the message
-            info_str = "SecPi: Recieved alarm on sensor %s from worker %s." % (info["sensor"], info["worker"])
+            info_str = "SecPi: Received alarm on sensor %s from worker %s." % (info["sensor"], info["worker"])
             for recipient in self.recipients:
                 try:
                     logger.debug("Sms: Sending message to %s" % recipient)

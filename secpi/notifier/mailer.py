@@ -55,7 +55,7 @@ class Mailer(Notifier):
                     "utf-8",
                 )
             )
-            info_str = "Recieved alarm on sensor %s from worker %s: %s" % (
+            info_str = "Received alarm on sensor %s from worker %s: %s" % (
                 info["sensor"],
                 info["worker"],
                 info["message"],

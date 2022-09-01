@@ -40,7 +40,7 @@ class SlackNotifier(Notifier):
 
                 if channel_id != None:
                     logger.debug("Found channel: %s" % channel_id)
-                    info_str = "Recieved alarm on sensor %s from worker %s: %s" % (
+                    info_str = "Received alarm on sensor %s from worker %s: %s" % (
                         info["sensor"],
                         info["worker"],
                         info["message"],

@@ -98,7 +98,7 @@ class BaseWebPage(object):
                 self.db.commit()
                 return {"status": "success", "message": "Added new object with id %i" % newObj.id}
 
-        return {"status": "error", "message": "No data recieved"}
+        return {"status": "error", "message": "No data received"}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

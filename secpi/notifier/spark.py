@@ -46,7 +46,7 @@ class SparkNotifier(Notifier):
 
                 if room_id != None:
                     logger.debug("Found room: %s" % room_id)
-                    info_str = "Recieved alarm on sensor %s from worker %s: %s" % (
+                    info_str = "Received alarm on sensor %s from worker %s: %s" % (
                         info["sensor"],
                         info["worker"],
                         info["message"],

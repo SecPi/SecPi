@@ -34,7 +34,7 @@ class DropboxFileUpload(Notifier):
     def notify(self, info):
         if not self.corrupted:
 
-            # info_str = "Recieved alarm on sensor %s from worker %s: %s" % (
+            # info_str = "Received alarm on sensor %s from worker %s: %s" % (
             #    info["sensor"],
             #    info["worker"],
             #    info["message"],
