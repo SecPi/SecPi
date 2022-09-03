@@ -104,6 +104,9 @@ class Worker(Service):
             # Get worker identifier from configuration.
             worker_identifier = str(self.config.get("pi_id"))
 
+            # Declare exchanges and queues.
+            channel.exchange_declare(exchange=constants.EXCHANGE, exchange_type="direct")
+
             # Declare all the queues.
             channel.queue_declare(queue=constants.QUEUE_OPERATIONAL + worker_identifier)
             channel.queue_declare(queue=constants.QUEUE_ACTION + worker_identifier)
@@ -111,6 +114,13 @@ class Worker(Service):
             channel.queue_declare(queue=constants.QUEUE_ACTION_RESPONSE)
             channel.queue_declare(queue=constants.QUEUE_ALARM)
             channel.queue_declare(queue=constants.QUEUE_LOG)
+
+            channel.queue_bind(queue=constants.QUEUE_OPERATIONAL + worker_identifier, exchange=constants.EXCHANGE)
+            channel.queue_bind(queue=constants.QUEUE_ACTION + worker_identifier, exchange=constants.EXCHANGE)
+            channel.queue_bind(queue=constants.QUEUE_CONFIG + worker_identifier, exchange=constants.EXCHANGE)
+            channel.queue_bind(queue=constants.QUEUE_ACTION_RESPONSE, exchange=constants.EXCHANGE)
+            channel.queue_bind(queue=constants.QUEUE_ALARM, exchange=constants.EXCHANGE)
+            channel.queue_bind(queue=constants.QUEUE_LOG, exchange=constants.EXCHANGE)
 
             # Specify the queues we want to listen to, including the callback.
             channel.basic_consume(
