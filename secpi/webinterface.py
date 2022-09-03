@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import traceback
+import typing as t
 
 import cherrypy
 import pika
@@ -350,6 +351,7 @@ class Webinterface:
         if not self.bus.available:
             return FailedResponse(f"Error {verb} setup '{setup.name}', not connected to bus")
 
+        # TODO: Are we sure that we want/have to use the database here?
         setup.active_state = active
         self.db.commit()
 
@@ -374,9 +376,9 @@ class Webinterface:
             response = FailedResponse(f"{message}: {ex}")
 
         if isinstance(response, SuccessfulResponse):
-            logger.info(f"Action successful: {response}")
+            logger.info(f"Activate/deactivate successful: {response}")
         else:
-            logger.error(f"Action failed: {response}")
+            logger.error(f"Activate/deactivate failed: {response}")
         return response
 
     def publish(self, queue, message):

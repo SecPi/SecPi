@@ -5,9 +5,14 @@ logger = logging.getLogger(__name__)
 
 
 class Service:
+    def __init__(self):
+        self.shutting_down = False
+
     def stop(self):
+        if self.shutting_down:
+            return
         logger.info("Stopping service")
-        self.do_shutdown = True
+        self.shutting_down = True
         self.bus.shutdown()
 
     def __del__(self):

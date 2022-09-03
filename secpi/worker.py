@@ -11,7 +11,9 @@ import uuid
 import pika
 
 from secpi.model import constants
+from secpi.model.action import Action
 from secpi.model.message import ActionRequestMessage, AlarmMessage
+from secpi.model.sensor import Sensor
 from secpi.model.service import Service
 from secpi.model.settings import StartupOptions
 from secpi.util.amqp import AMQPAdapter
@@ -33,9 +35,10 @@ class Worker(Service):
     CONVERSATION_DELAY = 4.2
 
     def __init__(self, config: ApplicationConfig):
+        super().__init__()
         self.config = config
-        self.actions = []
-        self.sensors = []
+        self.actions: t.List[Action] = []
+        self.sensors: t.List[Sensor] = []
         self.active = False
 
         # TODO: Make paths configurable.
@@ -70,6 +73,8 @@ class Worker(Service):
             self.setup_actions()
             logger.info("Setup of sensors and actions completed")
 
+        logger.info("Worker is ready")
+
     def connect(self):
 
         self.bus.connect()
@@ -82,6 +87,7 @@ class Worker(Service):
         # When the worker does not have an identifier, only define a basic
         # setup to receive an initial configuration from the manager.
         if not self.config.get("pi_id"):
+            logger.info("Worker is in INIT CONFIG mode")
             callback_queue_id = get_random_identifier(length=6)
             self.callback_queue = f"init-callback-{callback_queue_id}"
             channel.queue_declare(queue=self.callback_queue)
@@ -94,6 +100,7 @@ class Worker(Service):
         # received a valid configuration. In this case, connect all the queues and
         # callbacks.
         else:
+            logger.info("Worker is in OPERATIVE mode")
             # Get worker identifier from configuration.
             worker_identifier = str(self.config.get("pi_id"))
 
@@ -120,6 +127,11 @@ class Worker(Service):
 
     def start(self):
         self.bus.subscribe_forever(on_error=self.on_bus_error)
+
+    def stop(self):
+        self.cleanup_actions()
+        self.cleanup_sensors()
+        super().stop()
 
     def on_bus_error(self):
         logger.info("Trying to reconnect to AMQP broker")
@@ -324,6 +336,7 @@ class Worker(Service):
             try:
                 self.config.update(new_config)
                 self.config.save()
+                logger.info("Config saved successfully")
             except Exception:
                 logger.exception("Writing configuration file failed")
 
@@ -334,7 +347,6 @@ class Worker(Service):
                 # TODO: activate queues
                 self.active = True
 
-            logger.info("Config saved successfully")
         else:
             logger.info("Config didn't change")
 
@@ -389,7 +401,7 @@ class Worker(Service):
             return
         for action in self.config.get("actions"):
             try:
-                logger.info("Trying to register action: %s" % action["id"])
+                logger.info("Registering action: %s" % action["id"])
                 a = self.load_plugin(action["module"], action["class"])
                 act = a(action["id"], action["params"], self)
             except Exception as e:  # AttributeError, KeyError
@@ -399,11 +411,12 @@ class Worker(Service):
                 )
             else:
                 self.actions.append(act)
-                logger.info(f"Registered action {action}")
+                logger.info(f"Registered action: {action}")
 
     def cleanup_actions(self):
-        for a in self.actions:
-            a.cleanup()
+        for action in self.actions:
+            action.cleanup()
+            logger.debug("Removed action: %d" % int(action.id))
 
         self.actions = []
 

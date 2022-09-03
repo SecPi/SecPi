@@ -34,7 +34,7 @@ class TCPPortListener(Sensor):
     def activate(self):
         self.active = True
         t = threading.Thread(target=self.server.serve_forever)
-        t.setDaemon(True)
+        t.daemon = True
         t.start()
         self.post_log(f"TCPPortListener: Sensor activated successfully, id={self.id}")
 

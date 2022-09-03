@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 class Manager(Service):
     def __init__(self, config: ApplicationConfig):
+        super().__init__()
         self.config = config
         self.notifiers = []
 
@@ -156,23 +157,23 @@ class Manager(Service):
     def send_message(self, rk, body, **kwargs):
         try:
             self.bus.publish(exchange=constants.EXCHANGE, routing_key=rk, body=body, **kwargs)
-            logger.info("Sending data to %s" % rk)
+            logger.info("Sending data to queue %s" % rk)
             return True
         except Exception as e:
-            logger.exception("Error while sending data to queue:\n%s" % e)
+            logger.exception("Error while sending data to queue: %s" % e)
             return False
 
     # this method is used to send json messages to a queue
     def send_json_message(self, rk, body, **kwargs):
         try:
             properties = pika.BasicProperties(content_type="application/json")
+            logger.info("Sending json data to queue %s" % rk)
             self.bus.publish(
                 exchange=constants.EXCHANGE, routing_key=rk, body=json.dumps(body), properties=properties, **kwargs
             )
-            logger.info("Sending json data to %s" % rk)
             return True
         except Exception as e:
-            logger.exception("Error while sending json data to queue")
+            logger.exception("Error while sending json data to queue: %s" % e)
             return False
 
     # helper method to create error log entry
@@ -184,7 +185,14 @@ class Manager(Service):
 
     # helper method to create error log entry
     def log_msg(self, msg, level):
-        logger.info(msg)
+        if level == constants.LEVEL_DEBUG:
+            logger.debug(msg)
+        elif level == constants.LEVEL_INFO:
+            logger.info(msg)
+        elif level == constants.LEVEL_WARN:
+            logger.warning(msg)
+        elif level == constants.LEVEL_ERR:
+            logger.error(msg)
         log_entry = LogEntry(level=level, message=str(msg), sender="Manager")
         self.db.session.add(log_entry)
         self.db.session.commit()
@@ -222,17 +230,19 @@ class Manager(Service):
         """
         When the manager receives data from a worker after executing an action.
         """
-        logger.info("Got action response")
+        logger.info("Received response from action invocation")
         newFile_bytes = bytearray(body)
         if newFile_bytes:  # only write data when body is not empty
             filename = hashlib.md5(newFile_bytes).hexdigest() + ".zip"
+            # TODO: Revisit and review.
+            # AttributeError: 'Manager' object has no attribute 'current_alarm_dir'
             filepath = os.path.join(self.current_alarm_dir, filename)
             try:
+                logger.info(f"Writing data to current alarm dir: {filepath}")
                 with open(filepath, "wb") as newFile:
                     newFile.write(newFile_bytes)
-                    logger.info("Data written")
-            except IOError as ie:  # File can't be written, e.g. permissions wrong, directory doesn't exist
-                logger.exception("Wasn't able to write received data: %s" % ie)
+            except Exception:
+                logger.exception("Failed to write data to current alarm dir")
         self.received_data_counter += 1
 
     # callback for log messages
@@ -316,6 +326,7 @@ class Manager(Service):
 
             # Create alarm directory.
             # TODO: Revisit and review.
+            # AttributeError: 'Manager' object has no attribute 'current_alarm_dir'
             self.current_alarm_dir = os.path.join(self.alarm_dir, time.strftime("%Y%m%d_%H%M%S"))
             try:
                 os.makedirs(self.current_alarm_dir)
@@ -334,6 +345,8 @@ class Manager(Service):
         """
         Invoke actions on all Workers.
         """
+        logger.info("Executing actions")
+
         # iterate over workers and send "execute"
         workers = (
             self.db.session.query(Worker)
@@ -507,7 +520,7 @@ class Manager(Service):
 
         conf["actions"] = conf_actions
 
-        logger.info("Generated config: %s" % conf)
+        logger.info(f"Generated config: {conf}")
         return conf
 
     @property

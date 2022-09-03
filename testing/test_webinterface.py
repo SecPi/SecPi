@@ -74,7 +74,10 @@ def test_webinterface_with_activate(webinterface_service):
         """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': True}"""
         in app_log
     )
-    assert """Action successful: SuccessfulResponse(message="Activating setup 'secpi-testing' succeeded")""" in app_log
+    assert (
+        """Activate/deactivate successful: SuccessfulResponse(message="Activating setup 'secpi-testing' succeeded")"""
+        in app_log
+    )
 
     assert "Deactivating setup id=1" in app_log
     assert (
@@ -82,7 +85,8 @@ def test_webinterface_with_activate(webinterface_service):
         in app_log
     )
     assert (
-        """Action successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")""" in app_log
+        """Activate/deactivate successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")"""
+        in app_log
     )
 
 
