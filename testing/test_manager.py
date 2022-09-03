@@ -3,17 +3,10 @@ import logging
 import subprocess
 import time
 
+from testing.util.events import OLD_ALARM_EVENT
 from testing.util.service import ManagerServiceWrapper
 
 logger = logging.getLogger(__name__)
-
-
-ALARM_EVENT = {
-    "worker_id": 1,
-    "sensor_id": 1,
-    "message": "Got TCP connection, raising alarm",
-    "datetime": "2022-08-27 02:33:33",
-}
 
 
 def test_manager_start_stop():
@@ -48,7 +41,7 @@ def test_manager_receive_alarm(manager_service):
     """
 
     # Submit an alarm signal.
-    command = f"""echo '{json.dumps(ALARM_EVENT)}' | amqp-publish --routing-key=secpi-alarm"""
+    command = f"""echo '{json.dumps(OLD_ALARM_EVENT)}' | amqp-publish --routing-key=secpi-alarm"""
     subprocess.check_output(command, shell=True)
 
     # Give system some time for processing.

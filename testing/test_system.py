@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from testing.test_manager import ALARM_EVENT
+from testing.util.events import OLD_ALARM_EVENT
 
 NOTIFIER_ENTITY = {"name": "mailer-testing", "module": "mailer", "cl": "Mailer", "active_state": True}
 NOTIFIER_PARAMS = [
@@ -45,7 +45,7 @@ def test_manager_process_alarm(webinterface_service, manager_service):
     requests.post(url="http://localhost:8000/activate", json={"id": setup_identifier})
 
     # Emulate an alarm signal using AMQP.
-    command = f"""echo '{json.dumps(ALARM_EVENT)}' | amqp-publish --routing-key=secpi-alarm"""
+    command = f"""echo '{json.dumps(OLD_ALARM_EVENT)}' | amqp-publish --routing-key=secpi-alarm"""
     subprocess.check_output(command, shell=True)
 
     # Give system some time for processing.
