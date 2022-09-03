@@ -164,6 +164,7 @@ markers = [
 branch = false
 parallel = true
 source = ["secpi"]
+data_file = ".coverage-reports/.coverage"
 
 [tool.coverage.report]
 fail_under = 0
