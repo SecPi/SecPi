@@ -38,9 +38,19 @@ def drain_amqp():
 
     # Remove all messages from AMQP queues.
     # TODO: Implement more efficiently in pure Python.
-    queues = ["secpi-op-1", "secpi-op-m", "secpi-init_config", "secpi-config-1", "secpi-alarm", "secpi-log"]
+    queues = [
+        "secpi-op-1",
+        "secpi-op-m",
+        "secpi-init_config",
+        "secpi-config-1",
+        "secpi-alarm",
+        "secpi-action-1",
+        "secpi-action-response",
+        "secpi-log",
+    ]
     for queue in queues:
         command = f"amqp-get --queue={queue} > /dev/null 2>&1"
+        # command = f"amqp-get --queue={queue}"
         process = subprocess.run(command, shell=True)
         if process.returncode not in [1, 2]:
             process.check_returncode()
