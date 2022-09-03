@@ -1,4 +1,5 @@
 import pathlib
+import shutil
 import subprocess
 
 import pytest
@@ -43,6 +44,14 @@ def drain_amqp():
         process = subprocess.run(command, shell=True)
         if process.returncode not in [1, 2]:
             process.check_returncode()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def provide_temporary_directory():
+    path = pathlib.Path("/tmp/secpi-testing")
+    path.mkdir(parents=True, exist_ok=True)
+    yield path
+    shutil.rmtree(path)
 
 
 @pytest.fixture(scope="function")
