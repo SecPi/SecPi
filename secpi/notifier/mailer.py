@@ -122,10 +122,10 @@ class Mailer(Notifier):
         # Create proper MIME part by maintype
         if maintype == "application" and subtype in ["xml", "json"]:
             mimepart = MIMENonMultipart(maintype, subtype, charset="utf-8")
-            mimepart.set_payload(payload.encode("utf-8"), "utf-8")
+            mimepart.set_payload(payload, "utf-8")
 
         elif maintype == "text":
-            mimepart = MIMEText(payload.encode("utf-8"), _subtype=subtype, _charset="utf-8")
+            mimepart = MIMEText(payload, _subtype=subtype, _charset="utf-8")
 
         elif maintype == "image":
             mimepart = MIMEImage(payload, _subtype=subtype)
