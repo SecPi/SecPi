@@ -468,8 +468,9 @@ def run_worker(options: StartupOptions):
             w.cleanup_sensors()
 
 
-def main():
-    options = parse_cmd_args()
+def main(options: t.Optional[StartupOptions] = None):
+    if not options:
+        options = parse_cmd_args()
     setup_logging(level=logging.DEBUG, config_file=options.logging_config, log_file=options.log_file)
     run_worker(options)
     logging.shutdown()

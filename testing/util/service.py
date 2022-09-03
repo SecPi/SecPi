@@ -1,7 +1,6 @@
 import abc
 import multiprocessing
 import subprocess
-import sys
 import tempfile
 import time
 import typing as t
@@ -12,6 +11,7 @@ import requests
 import secpi.manager
 import secpi.webinterface
 import secpi.worker
+from secpi.model.settings import StartupOptions
 from secpi.util.database import DatabaseAdapter
 
 
@@ -37,14 +37,11 @@ class BaseServiceWrapper:
 
     def start_process(self, name: str, app_config: str, target: t.Callable):
 
-        sys.argv = [
-            name,
-            f"--app-config={app_config}",
-            "--logging-conf=etc/testing/logging.conf",
-            f"--log-file={self.logfile.name}",
-        ]
+        options = StartupOptions(
+            app_config=app_config, logging_config="etc/testing/logging.conf", log_file=self.logfile.name
+        )
 
-        self.process = multiprocessing.Process(target=target, args=())
+        self.process = multiprocessing.Process(target=target, kwargs={"options": options})
         self.process.start()
 
         # Make sure the service is ready.

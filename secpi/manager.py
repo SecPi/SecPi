@@ -552,8 +552,9 @@ def run_manager(options: StartupOptions):
             mg.cleanup_notifiers()
 
 
-def main():
-    options = parse_cmd_args()
+def main(options: t.Optional[StartupOptions] = None):
+    if not options:
+        options = parse_cmd_args()
     setup_logging(level=logging.DEBUG, config_file=options.logging_config, log_file=options.log_file)
     run_manager(options)
     logging.shutdown()
