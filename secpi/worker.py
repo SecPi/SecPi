@@ -236,7 +236,6 @@ class Worker(Service):
         if self.corr_id == properties.correlation_id:  # we got the right config
             try:
                 new_conf = json.loads(body)
-                new_conf["amqp"] = self.config.get("amqp")
             except Exception as e:
                 logger.exception("Wasn't able to read JSON config from manager:\n%s" % e)
 
@@ -331,6 +330,11 @@ class Worker(Service):
             logger.debug("Received action but wasn't active")
 
     def apply_config(self, new_config):
+
+        # We don't get the `amqp` config snippet sent to us, so add the current one.
+        new_config["amqp"] = self.config.get("amqp")
+        new_config["directories"] = self.config.get("directories", {})
+
         # check if new config changed
         if new_config != self.config.asdict():
             # disable while loading config
@@ -372,9 +376,6 @@ class Worker(Service):
         except Exception:
             logger.exception("Reading JSON config from manager failed")
             return
-
-        # We don't get the `amqp` config snippet sent to us, so add the current one.
-        new_conf["amqp"] = self.config.get("amqp")
 
         self.apply_config(new_conf)
 
