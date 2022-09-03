@@ -14,7 +14,29 @@
       "mqtt_topic": "Advantech/11E1DAF0ECCE"
     }
   },
-  "actions": [],
+  "actions": [
+    {
+      "id": 1,
+      "name": "test-action-1",
+      "module": "test",
+      "class": "TestAction",
+      "params": {
+        "msg": "foobar",
+        "data_path": "/tmp/secpi-testing/data"
+      },
+      "active_state": true
+    },
+    {
+      "id": 2,
+      "name": "test-action-2",
+      "module": "test",
+      "class": "TestAction",
+      "params": {
+        "msg": "bazqux"
+      },
+      "active_state": false
+    }
+  ],
   "sensors": [
     {
       "id": 1,

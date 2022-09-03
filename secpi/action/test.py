@@ -1,4 +1,6 @@
 import logging
+import time
+from pathlib import Path
 
 from secpi.model import constants
 from secpi.model.action import Action
@@ -13,11 +15,69 @@ class TestAction(Action):
         logger.debug("Test Action initialized")
 
     def execute(self):
-        logger.info("Executing Test Action")
-        self.post_log("Executing Test Action", constants.LEVEL_INFO)
-        if "msg" in self.params:
-            logger.info("Test Action Message: %s" % self.params["msg"])
-            self.post_log("Test Action Message: %s" % self.params["msg"], constants.LEVEL_INFO)
+        """
+        Execute the action. This is just an example implementation.
+        """
+
+        # Decode parameters.
+        message_in = self.params.get("msg")
+        data_path = self.params.get("data_path")
+
+        # Run the main body of the action.
+        self.info("Executing Test Action")
+        if message_in:
+            message_out = f"Test Action message: {message_in}"
+            self.info(message_out)
+        else:
+            self.error("Test Action: No message given")
+
+        # Optionally, add more data in the form of file artefacts.
+        if data_path:
+            try:
+                self.create_file_artefacts(data_path)
+            except:
+                logger.exception(f"Failed creating file artefacts at {data_path}")
+        else:
+            logger.warning("No `data_path` configured, skipping file artefacts")
+
+    def create_file_artefacts(self, path):
+        """
+        Create two files which will be shipped to the worker and finally the notifiers.
+        """
+        logger.info(f"Creating file artefacts at {path}")
+
+        with open(Path(path).joinpath("index.txt"), "w") as f:
+            f.write("Alarm report index file")
+
+        with open(Path(path).joinpath("index.json"), "w") as f:
+            f.write('{"description": "Alarm report index file"}')
+
+        with open(Path(path).joinpath("index.xml"), "w") as f:
+            f.write("<description>Alarm report index file</description>")
+
+        for index in range(1, 3):
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{index}.txt"
+            target_file = Path(path).joinpath(filename)
+            with open(target_file, "w") as f:
+                f.write(f"File content: {index}")
+
+    def info(self, message):
+        """
+        Submit an INFO log message both to the worker and the log output.
+        """
+        self.post_log(message, constants.LEVEL_INFO)
+        # logger.info(message)
+
+    def error(self, message):
+        """
+        Submit an ERROR log message both to the worker and the log output.
+        """
+        self.post_err(message)
+        # logger.error(message)
 
     def cleanup(self):
-        logger.debug("Test Action Cleanup")
+        """
+        Run any procedure needed to tear down the action.
+        """
+        logger.debug("Test Action cleanup")
