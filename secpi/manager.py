@@ -29,7 +29,7 @@ from secpi.model.service import Service
 from secpi.model.settings import StartupOptions
 from secpi.util.amqp import AMQPAdapter
 from secpi.util.cli import parse_cmd_args
-from secpi.util.common import load_class, setup_logging, str_to_value
+from secpi.util.common import load_class, sa_record_to_dict, setup_logging, str_to_value
 from secpi.util.config import ApplicationConfig
 from secpi.util.database import DatabaseAdapter
 
@@ -507,18 +507,13 @@ class Manager(Service):
         if len(actions) > 0:
             conf["active"] = True
 
-        conf_actions = []
-        # iterate over all actions
-        for act in actions:
-            para = {}
-            # create params array
-            for p in act.params:
-                para[p.key] = p.value
-
-            conf_act = {"id": act.id, "module": act.module, "class": act.cl, "params": para}
-            conf_actions.append(conf_act)
-
-        conf["actions"] = conf_actions
+        # Convert `Action` database model instances to plain dictionary, and propagate to configuration.
+        config_actions = []
+        for action in actions:
+            config_action = sa_record_to_dict(action, with_class_tweak=True)
+            config_action["params"] = {param.key: param.value for param in action.params}
+            config_actions.append(config_action)
+        conf["actions"] = config_actions
 
         logger.info(f"Generated config: {conf}")
         return conf

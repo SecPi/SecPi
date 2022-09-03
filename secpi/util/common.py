@@ -11,6 +11,7 @@ import tempfile
 import threading
 import time
 from collections import OrderedDict
+from copy import copy
 
 import dateutil.parser
 import netifaces
@@ -186,3 +187,19 @@ class DataContainer(JSONSerializable):
         """
         super().__init_subclass__(str)
         DumpMeta(key_transform="SNAKE").bind_to(cls)
+
+
+def sa_record_to_dict(row, with_class_tweak=False):
+    """
+    Convert SQLAlchemy object to dictionary.
+
+    https://stackoverflow.com/a/68775487
+    """
+    record = copy(row.__dict__)
+    del record["_sa_instance_state"]
+
+    if with_class_tweak:
+        record["class"] = record["cl"]
+        del record["cl"]
+
+    return record

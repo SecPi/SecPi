@@ -415,6 +415,8 @@ class Worker(Service):
             logger.info("No actions configured")
             return
         for action in self.config.get("actions"):
+            if not action.get("active_state"):
+                continue
             try:
                 logger.info("Registering action: %s" % action["id"])
                 a = self.load_plugin(action["module"], action["class"])
