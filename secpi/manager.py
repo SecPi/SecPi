@@ -413,7 +413,7 @@ class Manager(Service):
                     "Waiting for data from workers: data counter: %d, #workers: %d"
                     % (self.received_data_counter, self.num_of_workers)
                 )
-                time.sleep(1)
+                threading.Event().wait(0.25)
             else:
                 logger.debug("Received all data from workers, cancelling the timeout")
                 break

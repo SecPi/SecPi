@@ -46,7 +46,7 @@ class BaseServiceWrapper:
 
         # Make sure the service is ready.
         # TODO: How to improve this? Look for a specific marking in the log output?
-        time.sleep(0.85)
+        time.sleep(0.75)
 
     def read_log(self):
         self.logfile.seek(0)
@@ -101,7 +101,7 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
             target=secpi.manager.main,
         )
         # Manager needs a bit longer to start?
-        time.sleep(0.25)
+        # time.sleep(0.25)
 
 
 class WorkerServiceWrapper(AmqpServiceWrapper):
@@ -111,6 +111,7 @@ class WorkerServiceWrapper(AmqpServiceWrapper):
             app_config="etc/testing/config-worker.json",
             target=secpi.worker.main,
         )
+        # time.sleep(0.25)
 
 
 class WebinterfaceServiceWrapper(BaseServiceWrapper):
@@ -122,7 +123,7 @@ class WebinterfaceServiceWrapper(BaseServiceWrapper):
         )
 
         # Web server needs a bit longer to start than AMQP-based service.
-        time.sleep(0.55)
+        time.sleep(0.50)
 
     def shutdown(self, identifier: t.Optional[str] = None):
         """

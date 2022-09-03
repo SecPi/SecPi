@@ -145,6 +145,7 @@ class AMQPAdapter:
 
         - https://brandthill.com/blog/pika.html
         - https://github.com/pika/pika/blob/0.13.1/examples/basic_consumer_threaded.py
+        - https://github.com/pika/pika/pull/1384
         """
         func = functools.partial(self.channel.basic_publish, **kwargs)
         self.connection.add_callback_threadsafe(func)
@@ -229,7 +230,12 @@ class AMQPAdapter:
 
         https://pika.readthedocs.io/en/stable/modules/adapters/blocking.html#pika.adapters.blocking_connection.BlockingConnection.sleep
         """
-        if self.connection is not None and self.connection.is_open:
-            self.connection.sleep(duration)
-        else:
-            time.sleep(duration)
+
+        try:
+            if self.connection is not None and self.connection.is_open:
+                self.connection.sleep(duration)
+                return
+        except:
+            logger.exception("Sleeping failed")
+
+        time.sleep(duration)
