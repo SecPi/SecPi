@@ -1,6 +1,7 @@
 {
   "pi_id": 1,
   "active": true,
+  "no_update": true,
   "amqp": {
     "host": "localhost",
     "port": 5672,

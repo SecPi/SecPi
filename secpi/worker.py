@@ -353,6 +353,10 @@ class Worker(Service):
     def got_config(self, ch, method, properties, body):
         logger.info("Received config %r" % (body))
 
+        if self.config.get("no_update"):
+            logger.info("Configuration is tagged with `no_update`, skip updating")
+            return
+
         try:
             new_conf = json.loads(body)
         except Exception:

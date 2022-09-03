@@ -26,6 +26,9 @@ class ApplicationConfig:
     def save(self):
         if self.filepath is None:
             raise FileNotFoundError(self.ERROR_FILE_MISSING)
+        if self.config.get("write_protected"):
+            logger.info("Configuration is write protected, skip saving")
+            return
         logger.info(f"Saving configuration to {self.filepath}")
         with open(self.filepath, "w") as config_file:
             json.dump(self.config, fp=config_file, indent=2)
