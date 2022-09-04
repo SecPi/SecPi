@@ -3,6 +3,7 @@ import logging
 import requests
 import requests.exceptions
 
+from secpi.model.message import NotificationMessage
 from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
@@ -16,10 +17,13 @@ class SparkNotifier(Notifier):
             logger.error("Token or room name missing")
             return
 
-    def notify(self, info):
+    def notify(self, info: NotificationMessage):
         if not self.corrupted:
             try:
                 logger.debug("Sending Cisco Spark notification")
+
+                # Render the notification message.
+                info_str = info.render_message()
 
                 room_name = self.params["room"]
                 auth_header = {"Authorization": "Bearer %s" % self.params["personal_token"]}
@@ -46,11 +50,6 @@ class SparkNotifier(Notifier):
 
                 if room_id != None:
                     logger.debug("Found room: %s" % room_id)
-                    info_str = "Received alarm on sensor %s from worker %s: %s" % (
-                        info["sensor"],
-                        info["worker"],
-                        info["message"],
-                    )
                     noti_req = requests.post(
                         "https://api.ciscospark.com/v1/messages",
                         headers=auth_header,

@@ -1,26 +1,29 @@
+import datetime
 import pathlib
+import re
 import tempfile
 
 import pytest
 
+from secpi.model.message import AlarmMessage, NotificationMessage
 from secpi.util.common import load_class
 
-NOTIFICATION_INFO = {
-    "worker": "worker-testing",
-    "worker_id": 1,
-    "sensor": "sensor-testing",
-    "sensor_id": 1,
-    "message": "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
-}
+NOTIFICATION_MESSAGE = NotificationMessage(
+    sensor_name="sensor-testing",
+    worker_name="worker-testing",
+    alarm=AlarmMessage(
+        sensor_id=1,
+        worker_id=1,
+        message="Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
+        datetime=datetime.datetime.now(),
+    ),
+)
 
 
-def test_notifier_dropbox(fs, caplog):
+def test_notifier_dropbox(caplog):
     """
     Test the Dropbox file drop notifier.
     """
-
-    fs.create_dir("/var/tmp/secpi/alarms/20220828_181818")
-    fs.create_file("/var/tmp/secpi/alarms/20220828_181818/hello.txt", contents="Hello, world.")
 
     # Configure notifier.
     component = load_class("secpi.notifier.dropbox", "DropboxFileUpload")
@@ -30,12 +33,14 @@ def test_notifier_dropbox(fs, caplog):
 
     # Invoke notifier.
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_INFO)
+    notifier.notify(NOTIFICATION_MESSAGE)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.dropbox.DropboxFileUpload" in caplog.messages
     assert "DropboxFileUpload initialized" in caplog.messages
-    assert "DropboxFileUpload: Trying to upload file hello.txt to /20220828_181818" in caplog.messages
+    assert re.match(
+        r".*DropboxFileUpload: Uploading file secpi-\d+-\d+.zip to /", caplog.text, re.DOTALL | re.MULTILINE
+    )
     assert "Request to files/upload" in caplog.messages
 
     # It is expected to fail, because we do not have a valid access token.
@@ -43,15 +48,13 @@ def test_notifier_dropbox(fs, caplog):
     #
     #   Could not find a suitable TLS CA certificate bundle, invalid path:
     #   /path/to/.venv/lib/python3.9/site-packages/certifi/cacert.pem
-    assert "DropboxFileUpload: Wasn't able to upload file" in caplog.text
+    assert "DropboxFileUpload: Uploading file failed" in caplog.text
 
 
-def test_notifier_mailer(fs, caplog):
+def test_notifier_mailer(caplog):
     """
     Test the SMTP email notifier.
     """
-
-    fs.create_dir("/var/tmp/secpi/alarms")
 
     # Configure notifier.
     component = load_class("secpi.notifier.mailer", "Mailer")
@@ -70,7 +73,7 @@ def test_notifier_mailer(fs, caplog):
 
     # Invoke notifier.
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_INFO)
+    notifier.notify(NOTIFICATION_MESSAGE)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.mailer.Mailer" in caplog.messages
@@ -119,7 +122,7 @@ def test_notifier_sipcall(mocker, caplog):
 
         # Invoke notifier.
         notifier = component(1, parameters)
-        notifier.notify(NOTIFICATION_INFO)
+        notifier.notify(NOTIFICATION_MESSAGE)
 
         # Verify the produced call file matches the expectations.
         firstfile = list(pathlib.Path(tmpdir).iterdir())[0]
@@ -150,7 +153,7 @@ def test_notifier_slack(caplog):
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
     with pytest.raises(slacker.Error) as ex:
-        notifier.notify(NOTIFICATION_INFO)
+        notifier.notify(NOTIFICATION_MESSAGE)
     assert ex.match("unknown_method")
 
     # Verify log output matches the expectations.
@@ -163,10 +166,12 @@ def test_notifier_slack(caplog):
     )
 
 
-def test_notifier_sms(caplog):
+def test_notifier_sms(mocker, caplog):
     """
     Verify the SMS notifier behaves as expected.
     """
+
+    mocker.patch("gsmmodem.GsmModem", create=True)
 
     # Configure notifier.
     component = load_class("secpi.notifier.sms", "Sms")
@@ -178,16 +183,15 @@ def test_notifier_sms(caplog):
     # Invoke notifier.
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_INFO)
+    notifier.notify(NOTIFICATION_MESSAGE)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.sms.Sms" in caplog.messages
-    assert "Connecting to modem on port /dev/ttyUSB-testing at 115200bps" in caplog.messages
-
-    # It is expected to fail, because no GSM hardware.
-    assert "Sms: Wasn't able to open specified port" in caplog.messages
-    assert "FileNotFoundError: [Errno 2] No such file or directory: '/dev/ttyUSB-testing'" in caplog.text
-    assert "serial.serialutil.SerialException: [Errno 2] could not open port /dev/ttyUSB-testing:" in caplog.text
+    assert "Sms: Notifier initialized" in caplog.messages
+    assert "Sms: Sending message to alice" in caplog.messages
+    assert "Sms: Message to alice was sent successfully" in caplog.messages
+    assert "Sms: Sending message to bob" in caplog.messages
+    assert "Sms: Message to bob was sent successfully" in caplog.messages
 
 
 def test_notifier_spark(caplog):
@@ -205,7 +209,7 @@ def test_notifier_spark(caplog):
     # Invoke notifier.
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_INFO)
+    notifier.notify(NOTIFICATION_MESSAGE)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.spark.SparkNotifier" in caplog.messages
@@ -238,7 +242,7 @@ def test_notifier_twitter(caplog):
     # Invoke notifier.
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_INFO)
+    notifier.notify(NOTIFICATION_MESSAGE)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.twitter.Twitter" in caplog.messages

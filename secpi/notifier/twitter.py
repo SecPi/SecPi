@@ -2,6 +2,7 @@ import logging
 
 import tweepy
 
+from secpi.model.message import NotificationMessage
 from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
@@ -37,20 +38,18 @@ class Twitter(Notifier):
 
         logger.info("Twitter: Notifier initialized")
 
-    def notify(self, info):
+    def notify(self, info: NotificationMessage):
         if not self.corrupted:
-            info_str = "Received alarm on sensor %s from worker %s: %s" % (
-                info["sensor"],
-                info["worker"],
-                info["message"],
-            )
 
-            try:
-                for recipient in self.recipients:
+            # Render the notification message.
+            info_str = info.render_message()
+
+            for recipient in self.recipients:
+                try:
                     self.api.send_direct_message(recipient, text=info_str)
                     logger.info(f"Twitter: Message to {recipient} was sent successfully")
-            except tweepy.TweepyException:
-                logger.exception(f"Twitter: Sending message to {recipient} failed")
+                except tweepy.TweepyException:
+                    logger.exception(f"Twitter: Sending message to {recipient} failed")
         else:
             logger.error("Twitter: Wasn't able to notify because there was an initialization error")
 

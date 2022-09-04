@@ -63,6 +63,18 @@ class NotificationMessage(DataContainer):
     alarm: AlarmMessage
     payload: t.Optional[bytearray] = None
 
+    @property
+    def attachment_name(self):
+        prefix = "secpi"
+        timestamp = self.alarm.datetime.strftime("%Y%m%d-%H%M%S")
+        return f"{prefix}-{timestamp}"
+
+    def render_message(self):
+        return (
+            f"[SecPi] Alarm on sensor {self.sensor_name} from worker {self.worker_name}: "
+            f"{self.alarm.render_message()}"
+        )
+
 
 @dataclasses.dataclass
 class ActionRequestMessage(DataContainer):

@@ -2,6 +2,7 @@ import logging
 
 from slacker import Slacker
 
+from secpi.model.message import NotificationMessage
 from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
@@ -15,10 +16,13 @@ class SlackNotifier(Notifier):
             logger.error("Slack: Token or channel name missing")
             return
 
-    def notify(self, info):
+    def notify(self, info: NotificationMessage):
         if not self.corrupted:
             try:
                 logger.debug("Sending Slack notification")
+
+                # Render the notification message.
+                info_str = info.render_message()
 
                 channel_name = self.params["channel"]
                 slack = Slacker(self.params["bot_token"])
@@ -40,11 +44,6 @@ class SlackNotifier(Notifier):
 
                 if channel_id != None:
                     logger.debug("Found channel: %s" % channel_id)
-                    info_str = "Received alarm on sensor %s from worker %s: %s" % (
-                        info["sensor"],
-                        info["worker"],
-                        info["message"],
-                    )
                     slack.chat.post_message(channel_name, info_str)
 
                 else:

@@ -407,17 +407,10 @@ class Manager(Service):
         # Transfer data from action response to notification message.
         notification.payload = self.wait_for_action_response()
 
-        # let the notifiers do their work
-        notification_message = notification.to_dict()
-
-        # Translate dictionary to satisfy notifiers.
-        # TODO: Pass notification object directly, without needing to serialize as dictionary.
-        notification_message["sensor"] = notification_message["sensor_name"]
-        notification_message["worker"] = notification_message["worker_name"]
-        notification_message["message"] = notification.alarm.render_message()
+        # Run all the notifiers.
         for notifier in self.notifiers:
             try:
-                notifier.notify(notification_message)
+                notifier.notify(notification)
             except Exception as e:
                 logger.exception("Notification failed")
                 self.log_err("Error notifying %u: %s" % (notifier.id, e))

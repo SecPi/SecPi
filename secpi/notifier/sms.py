@@ -4,6 +4,7 @@ import gsmmodem
 import gsmmodem.exceptions
 import serial.serialutil
 
+from secpi.model.message import NotificationMessage
 from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
@@ -52,8 +53,12 @@ class Sms(Notifier):
         else:
             logger.info("Sms: Notifier initialized")
 
-    def notify(self, info):
+    def notify(self, info: NotificationMessage):
         if not self.corrupted:
+
+            # Render the notification message.
+            info_str = info.render_message()
+
             # first we have to get a signal/network coverage
             try:
                 self.modem.waitForNetworkCoverage(self.network_timeout)
@@ -65,7 +70,6 @@ class Sms(Notifier):
                 return
 
             # now we can try to send the message
-            info_str = "SecPi: Received alarm on sensor %s from worker %s." % (info["sensor"], info["worker"])
             for recipient in self.recipients:
                 try:
                     logger.debug("Sms: Sending message to %s" % recipient)

@@ -20,6 +20,7 @@ import logging
 
 from pycall import Call, CallFile, Context
 
+from secpi.model.message import NotificationMessage
 from secpi.model.notifier import Notifier
 
 logger = logging.getLogger(__name__)
@@ -45,11 +46,10 @@ class SipCall(Notifier):
 
         logger.info("SipCall: Notifier initialized")
 
-    def notify(self, info):
+    def notify(self, info: NotificationMessage):
         if not self.corrupted:
-            sensor_name = str(info["sensor"])
-            logger.info(f"SipCall: Starting call to {self.sip_number}, triggered by sensor {sensor_name}")
-            context = f"alarm_{sensor_name}"
+            logger.info(f"SipCall: Starting call to {self.sip_number}, triggered by sensor {info.sensor_name}")
+            context = f"alarm_{info.sensor_name}"
             try:
                 self.sip_submit_call(self.sip_route, self.sip_number, context)
                 logger.info(f"SipCall: Call to {self.sip_number} submitted successfully")

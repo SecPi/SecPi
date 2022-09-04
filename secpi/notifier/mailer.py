@@ -1,7 +1,8 @@
+import io
 import logging
 import mimetypes
-import os
 import smtplib
+import zipfile
 from email.mime.application import MIMEApplication
 from email.mime.audio import MIMEAudio
 from email.mime.image import MIMEImage
@@ -9,6 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.mime.text import MIMEText
 
+from secpi.model.message import NotificationMessage
 from secpi.model.notifier import Notifier
 from secpi.util.common import str_to_value
 
@@ -21,8 +23,6 @@ class Mailer(Notifier):
 
         try:
             # SMTP Server config + data dir
-            # FIXME: Directory is hard-coded here.
-            self.data_dir = params.get("data_dir", "/var/tmp/secpi/alarms")
             self.smtp_address = params["smtp_address"]
             self.smtp_port = int(params["smtp_port"])
             self.smtp_user = params["smtp_user"]
@@ -40,7 +40,7 @@ class Mailer(Notifier):
 
         logger.info("Mailer: Notifier initialized")
 
-    def notify(self, info):
+    def notify(self, info: NotificationMessage):
         logger.info("Notifying via SMTP email")
         if not self.corrupted:
             # Mail setup
@@ -56,14 +56,14 @@ class Mailer(Notifier):
                 )
             )
             info_str = "Received alarm on sensor %s from worker %s: %s" % (
-                info["sensor"],
-                info["worker"],
-                info["message"],
+                info.sensor_name,
+                info.worker_name,
+                info.alarm.render_message(),
             )
             self.message.attach(MIMEText(info_str, "plain"))
 
             try:
-                self.prepare_mail_attachments()
+                self.prepare_mail_attachments(info)
             except:
                 logger.exception("Failed to prepare email attachments")
 
@@ -82,35 +82,28 @@ class Mailer(Notifier):
         else:
             logger.error("Mailer: Wasn't able to notify because there was an initialization error")
 
-    # Search for the latest alarm folder and attach all files within it to the mail
-    def prepare_mail_attachments(self):
-        # first find the latest alarm folder
-        subdirs = []
-        for directory in os.listdir(self.data_dir):
-            full_path = os.path.join(self.data_dir, directory)
-            if os.path.isdir(full_path):
-                subdirs.append(full_path)
-        # TODO: check if subdirs is empty
-        latest_subdir = max(subdirs, key=os.path.getmtime)
-        logger.debug("Mailer: Will look into %s for data" % latest_subdir)
-        # then iterate through it and attach all the files to the mail
-        for file in os.listdir(latest_subdir):
-            filepath = "%s/%s" % (latest_subdir, file)
-            # check if it really is a file
-            if os.path.isfile(filepath):
+    def prepare_mail_attachments(self, info: NotificationMessage):
+        """
+        Add file artefacts as attachments to the email.
+        """
+        if not self.unzip_attachments:
+            filename = f"{info.attachment_name}.zip"
+            self.prepare_add_attachment(filename, info.payload)
+        else:
+            self.prepare_expand_zip_attachment(info.payload)
 
-                # Add each file in zipfile as separate attachment
-                if self.unzip_attachments and file.endswith(".zip"):
-                    self.prepare_expand_zip_attachment(filepath)
+    def prepare_expand_zip_attachment(self, payload: bytearray):
+        """
+        Decode zip file and add each containing file as attachment to current mail message
+        """
+        logger.debug("Mailer: Decoding zip file as requested")
+        zip_buffer = io.BytesIO(payload)
+        with zipfile.ZipFile(zip_buffer) as zip_file:
+            filenames = zip_file.namelist()
 
-                # Add file as a whole (default)
-                else:
-                    with open(filepath, "rb") as f:
-                        self.prepare_add_attachment(file, f.read())
-
-            else:
-                logger.debug("Mailer: %s is not a file" % file)
-        # TODO: maybe log something if there are no files?
+            for filename in filenames:
+                payload = zip_file.read(filename)
+                self.prepare_add_attachment(filename, payload)
 
     def prepare_add_attachment(self, filename, payload):
         """Add single attachment to current mail message"""
@@ -142,18 +135,6 @@ class Mailer(Notifier):
         self.message.attach(mimepart)
 
         logger.debug("Mailer: Attached file '%s' to message" % filename)
-
-    def prepare_expand_zip_attachment(self, filepath):
-        """Decode zip file and add each containing file as attachment to current mail message"""
-        logger.debug("Mailer: Decoding zip file '%s' as requested" % filepath)
-        import zipfile
-
-        with zipfile.ZipFile(filepath) as zip:
-            filenames = zip.namelist()
-
-            for filename in filenames:
-                payload = zip.read(filename)
-                self.prepare_add_attachment(filename, payload)
 
     def send_mail_starttls(self):
         logger.debug("Mailer: Trying to send mail with STARTTLS")
