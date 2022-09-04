@@ -1,17 +1,14 @@
 import datetime
 import json
 import logging
-import os
-import shutil
 import sys
-import threading
 import typing as t
 import uuid
 
 import pika
 
 from secpi.model import constants
-from secpi.model.action import Action
+from secpi.model.action import Action, ActionResponse
 from secpi.model.message import ActionRequestMessage, AlarmMessage
 from secpi.model.sensor import Sensor
 from secpi.model.service import Service
@@ -23,6 +20,7 @@ from secpi.util.common import (
     get_ip_addresses,
     get_random_identifier,
     load_class,
+    run_tasks,
     setup_logging,
 )
 from secpi.util.config import ApplicationConfig
@@ -32,7 +30,9 @@ logger = logging.getLogger(__name__)
 
 class Worker(Service):
 
+    # TODO: Make those values configurable.
     CONVERSATION_DELAY = 4.2
+    ACTION_TIMEOUT = 60.0
 
     def __init__(self, config: ApplicationConfig):
         super().__init__()
@@ -41,14 +41,7 @@ class Worker(Service):
         self.sensors: t.List[Sensor] = []
         self.active = False
 
-        # TODO: Make paths configurable.
-        # FIXME: This is hardcoded.
-        self.data_directory = "/var/tmp/secpi/worker_data"
-        self.zip_directory = "/var/tmp/secpi"
-
         logger.info("Initializing worker")
-
-        self.prepare_data_directory()
 
         # Queue for initial configuration request.
         # The name of the exclusive callback queue used for requesting the initial configuration.
@@ -253,39 +246,6 @@ class Worker(Service):
         else:
             logger.warning(f"The configuration request response with id={self.corr_id} isn't meant for us")
 
-    # Create a zip of all the files which were collected while actions were executed
-    def prepare_data(self):
-        try:
-            if os.listdir(self.data_directory):  # check if there are any files available
-                shutil.make_archive(
-                    "%s/%s" % (self.zip_directory, self.config.get("pi_id")), "zip", self.data_directory
-                )
-                logger.info("Created ZIP file")
-                return True
-            else:
-                logger.info("No data to zip")
-                return False
-        except OSError as oe:
-            self.post_err(
-                "Pi with id '%s' wasn't able to prepare data for manager:\n%s" % (self.config.get("pi_id"), oe)
-            )
-            logger.error("Wasn't able to prepare data for manager: %s" % oe)
-
-    # Remove all the data that was created during the alarm, unlink == remove
-    def cleanup_data(self):
-        try:
-            os.unlink("%s/%s.zip" % (self.zip_directory, self.config.get("pi_id")))
-            for the_file in os.listdir(self.data_directory):
-                file_path = os.path.join(self.data_directory, the_file)
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            logger.info("Cleaned up files")
-        except OSError as oe:
-            self.post_err("Pi with id '%s' wasn't able to execute cleanup:\n%s" % (self.config.get("pi_id"), oe))
-            logger.error("Wasn't able to clean up data directory: %s" % oe)
-
     def got_action(self, ch, method, properties, body):
         """
         When the worker receives a signal to run an action.
@@ -302,30 +262,25 @@ class Worker(Service):
                 logger.info("Received late action, not executing: %s" % body)
                 return
 
-            # Run all actions and wait for them to finish.
-            threads = []
-            for action in self.actions:
-                thread = threading.Thread(name=f"thread-{action.id}", target=action.execute)
-                threads.append(thread)
-                thread.start()
-            for thread in threads:
-                thread.join()
+            # Run all actions and ...
+            tasks = [action.execute for action in self.actions]
+            futures = run_tasks(tasks)
 
-            # Collect all data crafted by the action.
-            action_data = self.prepare_data()
+            # ... wait for them to finish within `action_timeout` seconds.
+            results: t.List[ActionResponse] = [future.result(timeout=self.ACTION_TIMEOUT) for future in futures]
 
-            if action_data:  # check if there is any data to send
-                with open("%s/%s.zip" % (self.zip_directory, self.config.get("pi_id")), "rb") as zip_file:
-                    byte_stream = zip_file.read()
-                self.send_msg(constants.QUEUE_ACTION_RESPONSE, byte_stream)
+            # Create Zip archive from action task results.
+            zip_filelist, zip_payload = ActionResponse.make_zip(results)
 
-
+            if zip_filelist:
+                logger.info(f"Created ZIP file with {len(zip_filelist)} items")
+                self.send_msg(constants.QUEUE_ACTION_RESPONSE, zip_payload)
                 logger.info("Sent data to manager")
-                self.cleanup_data()
             else:
                 logger.info("No data to send")
                 # Send empty message which acts like a finished
                 self.send_msg(constants.QUEUE_ACTION_RESPONSE, "")
+
         else:
             logger.debug("Received action but wasn't active")
 
@@ -453,13 +408,6 @@ class Worker(Service):
 
         else:
             logger.warning("Not submitting alarm because worker is not active")
-
-    def prepare_data_directory(self):
-        logger.info(f"SecPi data directory is {self.data_directory}")
-        try:
-            os.makedirs(self.data_directory, exist_ok=True)
-        except OSError as ex:
-            self.post_err("Pi with id '%s' failed creating data directory: %s" % (self.config.get("pi_id"), ex))
 
     def connection_cleanup(self):
         self.bus.disconnect()

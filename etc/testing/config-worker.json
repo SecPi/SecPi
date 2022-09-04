@@ -21,8 +21,7 @@
       "module": "test",
       "class": "TestAction",
       "params": {
-        "msg": "foobar",
-        "data_path": "/tmp/secpi-testing/data"
+        "msg": "foobar"
       },
       "active_state": true
     },

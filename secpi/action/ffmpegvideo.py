@@ -1,10 +1,11 @@
 import logging
-import os
+import tempfile
 import time
+from pathlib import Path
 
 import ffmpy
 
-from secpi.model.action import Action
+from secpi.model.action import Action, ActionResponse, FileResponse
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +20,17 @@ class FFMPEGVideo(Action):
             - pip install ffmpy
     """
 
+    DEBUG_FFMPEG_OUTPUT = True
+
     def __init__(self, id, params, worker):
         super(FFMPEGVideo, self).__init__(id, params, worker)
 
-        logger.info("FFMPEGVideo: Starting")
+        logger.info("FFMPEGVideo: Initializing")
 
         # Set parameter defaults
         self.params.setdefault("name", "default")
         self.params.setdefault("count", 3)
         self.params.setdefault("interval", 5)
-        # FIXME: This is hardcoded.
-        self.params.setdefault("data_path", "/var/tmp/secpi/worker_data")
         self.params.setdefault("ffmpeg_global_options", "-v quiet -stats")
         self.params.setdefault("ffmpeg_input_options", None)
         self.params.setdefault("ffmpeg_output_options", "-pix_fmt yuvj420p -vsync 2 -vframes 1")
@@ -40,57 +41,69 @@ class FFMPEGVideo(Action):
         # Configuration parameter checks
         for required_param in required_params:
             if required_param not in self.params:
-                self.post_err("FFMPEGVideo: Configuration parameter '{}' is missing".format(required_param))
+                self.post_err(f"FFMPEGVideo: Configuration parameter '{required_param}' is missing")
                 self.corrupted = True
                 return
 
-        # Sanity checks
-        if not os.path.exists(self.params["data_path"]):
-            self.post_err("FFMPEGVideo: Path does not exist. data_path={}".format(self.params["data_path"]))
-            self.corrupted = True
-            return
-
     def exffmpeg(self, url, filename, global_options=None, input_options=None, output_options=None):
+        """
+        Run capturing with `ffmpeg`.
+        """
         ff = ffmpy.FFmpeg(
             global_options=global_options, inputs={url: input_options}, outputs={filename: output_options}
         )
         return ff.run()
 
-    # Take a series of pictures within a given interval
     def take_adv_picture(self, num_of_pic, seconds_between):
-        logger.debug("FFMPEGVideo: Trying to take pictures")
+        """
+        Take a series of pictures within a given interval.
+        """
+        logger.debug("FFMPEGVideo: Starting to capture images")
 
         name = self.params["name"]
         url = self.params["url"]
-        timestamp = time.strftime("%Y%m%d%H%M%S")
 
-        for index in range(0, num_of_pic):
-            filename = "{name}-{timestamp}-{index}.jpg".format(**locals())
-            filepath = os.path.join(self.params["data_path"], filename)
-            logger.info("FFMPEGVideo: Trying to take a picture from {url} to {filepath}".format(**locals()))
-            try:
-                result = self.exffmpeg(
-                    url,
-                    filepath,
-                    global_options=self.params["ffmpeg_global_options"],
-                    input_options=self.params["ffmpeg_input_options"],
-                    output_options=self.params["ffmpeg_output_options"],
-                )
-            except Exception as ex:
-                self.post_err(
-                    "FFMPEGVideo: Wasn't able to take picture from {url} to {filepath}: %s".format(**locals()) % ex
-                )
+        response = ActionResponse()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            logger.info(f"FFMPEGVideo: Capturing images to {tmpdir}")
+            filepaths = []
+            for index in range(0, num_of_pic):
+                timestamp = time.strftime("%Y%m%dT%H%M%S")
+                filename = f"{name}-{timestamp}-{index}.jpg"
+                filepath = Path(tmpdir).joinpath(filename)
+                logger.info(f"FFMPEGVideo: Capturing picture from {url} to {filename}")
+                try:
+                    result = self.exffmpeg(
+                        url,
+                        filepath,
+                        global_options=self.params["ffmpeg_global_options"],
+                        input_options=self.params["ffmpeg_input_options"],
+                        output_options=self.params["ffmpeg_output_options"],
+                    )
+                    if self.DEBUG_FFMPEG_OUTPUT:
+                        logger.debug(f"FFMPEGVideo: output: {result}")
+                    filepaths.append(filepath)
 
-            # Wait until next interval
-            time.sleep(seconds_between)
+                except Exception as ex:
+                    message = f"FFMPEGVideo: Failed capturing image from {url} to {filename}"
+                    logger.exception(message)
+                    self.post_err(f"{message}: {ex}")
 
-        logger.debug("FFMPEGVideo: Finished taking pictures")
+                # Wait until next interval.
+                time.sleep(seconds_between)
+
+            for item in Path(tmpdir).iterdir():
+                with open(item, "rb") as f:
+                    response.add(FileResponse(name=item.name, payload=f.read()))
+
+        logger.debug("FFMPEGVideo: Finished capturing images")
+        return response
 
     def execute(self):
         if not self.corrupted:
             self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
         else:
-            self.post_err("FFMPEGVideo: Wasn't able to take pictures because of an initialization error")
+            self.post_err("FFMPEGVideo: Failed capturing because of an initialization error")
 
     def cleanup(self):
         logger.debug("FFMPEGVideo: No cleanup necessary at the moment")

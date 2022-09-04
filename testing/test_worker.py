@@ -100,13 +100,11 @@ def test_worker_with_testaction(worker_service):
     assert "Executing Test Action" in app_log
 
     assert "Test Action message: foobar" in app_log
-    assert "Creating file artefacts at /tmp/secpi-testing" in app_log
+    assert "Creating file artefacts in memory" in app_log
     assert "Created ZIP file" in app_log
     assert "Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-action-response'" in app_log
     assert "Sent data to manager" in app_log
-    assert "Cleaned up files" in app_log
 
     # assert "Test Action message: bazqux" in app_log
-    # assert "No `data_path` configured, skipping file artefacts" in app_log
     # assert "No data to zip" in app_log
     # assert "No data to send" in app_log

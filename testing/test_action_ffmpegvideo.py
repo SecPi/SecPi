@@ -5,18 +5,15 @@ from secpi.util.common import load_class
 
 
 @pytest.fixture(scope="function")
-def ffmpegvideo_action(fs, worker_mock) -> Action:
+def ffmpegvideo_action(worker_mock) -> Action:
     """
     Provide the test cases with a `FFMPEGVideo` instance, where its Worker is mocked.
     """
-
-    fs.create_dir("/path/to/ffmpeg/spool")
 
     # Configure action.
     component = load_class("secpi.action.ffmpegvideo", "FFMPEGVideo")
     parameters = {
         "url": "https://webcam.example.org/path/to/stream.mp4",
-        "data_path": "/path/to/ffmpeg/spool",
         "count": "0",
         "interval": "0",
     }
@@ -39,7 +36,8 @@ def test_action_ffmpegvideo(ffmpegvideo_action, caplog):
     # Verify log output matches the expectations.
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
     assert "Loading class successful: secpi.action.ffmpegvideo.FFMPEGVideo" in setup_messages
-    assert "FFMPEGVideo: Starting" in setup_messages
-    assert "FFMPEGVideo: Trying to take pictures" in caplog.messages
-    assert "FFMPEGVideo: Finished taking pictures" in caplog.messages
+    assert "FFMPEGVideo: Initializing" in setup_messages
+    assert "FFMPEGVideo: Starting to capture images" in caplog.messages
+    assert "FFMPEGVideo: Capturing images to" in caplog.text
+    assert "FFMPEGVideo: Finished capturing images" in caplog.messages
     assert "FFMPEGVideo: No cleanup necessary at the moment" in caplog.messages

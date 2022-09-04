@@ -28,12 +28,6 @@ def main():
         Param(key="resolution_y", value="480", description="Height of the picutre taken.", object_type="action"),
         Param(key="count", value="2", description="Number of pictures taken.", object_type="action"),
         Param(key="interval", value="1", description="Interval between pictures", object_type="action"),
-        Param(
-            key="data_path",
-            value="/var/tmp/secpi/worker_data",
-            description="Path to store the images.",
-            object_type="action",
-        ),
     ]
 
     action_pic = Action(name="Webcam", cl="Webcam", module="webcam", workers=[p_worker], params=cam_params)

@@ -4,7 +4,7 @@ import time
 import pygame.camera
 import pygame.image
 
-from secpi.model.action import Action
+from secpi.model.action import Action, ActionResponse, FileResponse
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +16,6 @@ class Webcam(Action):
         try:
             self.path = params["path"]
             self.resolution = (int(params["resolution_x"]), int(params["resolution_y"]))
-            # FIXME: The default value is hard-coded here.
-            self.data_path = params.get("data_path", "/var/tmp/secpi/worker_data")
         except ValueError as ve:  # if resolution can't be parsed as int
             self.post_err("Webcam: Wasn't able to initialize the device, please check your configuration: %s" % ve)
             self.corrupted = True
@@ -47,20 +45,32 @@ class Webcam(Action):
             self.post_err("Webcam: Couldn't take pictures because video device wasn't initialized properly")
             return
 
+        response = ActionResponse()
         try:
-            for i in range(0, num_of_pic):
-                img = self.cam.get_image()
-                pygame.image.save(img, "%s/%s_%d.jpg" % (self.data_path, time.strftime("%Y%m%d_%H%M%S"), i))
-                time.sleep(seconds_between)
-        except Exception as e:
-            self.post_err("Webcam: Wasn't able to take pictures: %s" % e)
+            for index in range(0, num_of_pic):
 
-        self.cam.stop()
+                img = self.cam.get_image()
+                timestamp = time.strftime("%Y%m%d_%H%M%S")
+                filename = f"{timestamp}_{index}.jpg"
+                response.add(FileResponse(name=filename, payload=pygame.image.tostring(img, "RGBA")))
+
+                time.sleep(seconds_between)
+
+        except Exception as ex:
+            logger.exception("Webcam: Failed taking pictures")
+            self.post_err(f"Webcam: Failed taking pictures: {ex}")
+
+        try:
+            self.cam.stop()
+        except:
+            logger.exception("Stopping Webcam failed")
+
         logger.debug("Webcam: Finished taking pictures")
+        return response
 
     def execute(self):
         if not self.corrupted:
-            self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
+            return self.take_adv_picture(int(self.params["count"]), int(self.params["interval"]))
         else:
             self.post_err("Webcam: Wasn't able to take pictures because of an initialization error")
 

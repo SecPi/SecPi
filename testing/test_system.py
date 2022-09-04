@@ -166,11 +166,10 @@ def test_full_stack(manager_service, worker_service, webinterface_service, smtpd
     assert "Executing Test Action" in worker_log
 
     assert "Test Action message: foobar" in worker_log
-    assert "Creating file artefacts at /tmp/secpi-testing" in worker_log
+    assert "Creating file artefacts in memory" in worker_log
     assert "Created ZIP file" in worker_log
     assert "Publishing message: {'exchange': 'secpi', 'routing_key': 'secpi-action-response'" in worker_log
     assert "Sent data to manager" in worker_log
-    assert "Cleaned up files" in worker_log
 
     assert "Got log message from Worker 1: Executing Test Action" in manager_log
     assert "Got log message from Worker 1: Test Action message: foobar" in manager_log

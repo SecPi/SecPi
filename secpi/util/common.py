@@ -10,7 +10,9 @@ import sys
 import tempfile
 import threading
 import time
+import typing as t
 from collections import OrderedDict
+from concurrent.futures import Future, ThreadPoolExecutor
 from copy import copy
 
 import dateutil.parser
@@ -203,3 +205,12 @@ def sa_record_to_dict(row, with_class_tweak=False):
         del record["cl"]
 
     return record
+
+
+def run_tasks(tasks: t.List[t.Callable]) -> t.List[Future]:
+    futures: t.List[Future] = []
+    with ThreadPoolExecutor() as executor:
+        for task in tasks:
+            future = executor.submit(task)
+            futures.append(future)
+    return futures

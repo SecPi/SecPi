@@ -1,9 +1,8 @@
 import logging
 import time
-from pathlib import Path
 
 from secpi.model import constants
-from secpi.model.action import Action
+from secpi.model.action import Action, ActionResponse, FileResponse
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,6 @@ class TestAction(Action):
 
         # Decode parameters.
         message_in = self.params.get("msg")
-        data_path = self.params.get("data_path")
 
         # Run the main body of the action.
         self.info("Executing Test Action")
@@ -32,35 +30,28 @@ class TestAction(Action):
             self.error("Test Action: No message given")
 
         # Optionally, add more data in the form of file artefacts.
-        if data_path:
-            try:
-                self.create_file_artefacts(data_path)
-            except:
-                logger.exception(f"Failed creating file artefacts at {data_path}")
-        else:
-            logger.warning("No `data_path` configured, skipping file artefacts")
+        try:
+            logger.info("Creating file artefacts in memory")
+            return self.create_file_artefacts()
+        except:
+            logger.exception("Failed creating file artefacts")
 
-    def create_file_artefacts(self, path):
+    def create_file_artefacts(self):
         """
-        Create two files which will be shipped to the worker and finally the notifiers.
+        Create a few files which will be shipped to the worker and finally the notifiers.
         """
-        logger.info(f"Creating file artefacts at {path}")
 
-        with open(Path(path).joinpath("index.txt"), "w") as f:
-            f.write("Alarm report index file")
-
-        with open(Path(path).joinpath("index.json"), "w") as f:
-            f.write('{"description": "Alarm report index file"}')
-
-        with open(Path(path).joinpath("index.xml"), "w") as f:
-            f.write("<description>Alarm report index file</description>")
+        response = ActionResponse()
+        response.add(FileResponse(name="index.txt", payload="Alarm report index file"))
+        response.add(FileResponse(name="index.json", payload='{"description": "Alarm report index file"}'))
+        response.add(FileResponse(name="index.xml", payload="<description>Alarm report index file</description>"))
 
         for index in range(1, 3):
             timestamp = time.strftime("%Y%m%d_%H%M%S")
             filename = f"{timestamp}_{index}.txt"
-            target_file = Path(path).joinpath(filename)
-            with open(target_file, "w") as f:
-                f.write(f"File content: {index}")
+            response.add(FileResponse(name=filename, payload=f"File content: {index}"))
+
+        return response
 
     def info(self, message):
         """

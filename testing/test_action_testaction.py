@@ -1,13 +1,9 @@
-import tempfile
 from unittest.mock import call
 
 import pytest
 
 from secpi.model.action import Action
 from secpi.util.common import load_class
-from testing.util.common import clear_directory
-
-DATA_PATH = tempfile.TemporaryDirectory()
 
 
 @pytest.fixture(scope="function")
@@ -16,13 +12,10 @@ def testaction_action(worker_mock) -> Action:
     Provide the test cases with a `TestAction` instance, where its Worker is mocked.
     """
 
-    clear_directory(DATA_PATH.name)
-
     # Configure action.
     component = load_class("secpi.action.test", "TestAction")
     parameters = {
         "msg": "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern.",
-        "data_path": DATA_PATH.name,
     }
 
     # Create action instance.
@@ -50,5 +43,5 @@ def test_action_testaction(testaction_action, caplog):
     setup_messages = [r.getMessage() for r in caplog.get_records(when="setup")]
     assert "Loading class successful: secpi.action.test.TestAction" in setup_messages
     assert "Test Action initialized" in setup_messages
-    assert "Creating file artefacts at" in caplog.text
+    assert "Creating file artefacts in memory" in caplog.messages
     assert "Test Action cleanup" in caplog.messages

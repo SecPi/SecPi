@@ -23,7 +23,6 @@ def webcam_action(mocker, worker_mock) -> Action:
 
         parameters = {
             "path": "/dev/to/webcam",
-            "data_path": "/path/to/webcam/data",
             "count": "0",
             "interval": "0",
             "resolution_x": "640",
