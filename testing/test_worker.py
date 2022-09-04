@@ -26,7 +26,8 @@ def test_worker_start_stop():
 
     # Verify everything is in place.
     assert "Loading configuration from etc/testing/config-worker.json" in app_log
-    assert "Connecting to AMQP broker at localhost:5672" in app_log
+    assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log
+    assert "Connecting to AMQP broker successful" in app_log
     assert "Setting up sensors and actions" in app_log
     assert "Start consuming AMQP queue" in app_log
     assert """Got message on operational channel: b\'{"action": "shutdown"}""" in app_log

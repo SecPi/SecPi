@@ -28,7 +28,8 @@ def test_manager_start_stop():
     assert "Loading configuration from etc/testing/config-manager.json" in app_log
     # assert "Storing alarms to" in app_log
     assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
-    assert "Connecting to AMQP broker at localhost:5672" in app_log
+    assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log
+    assert "Connecting to AMQP broker successful" in app_log
     assert "Manager is ready" in app_log
     assert "Start consuming AMQP queue" in app_log
     assert """Got message on operational channel: b\'{"action": "shutdown"}""" in app_log

@@ -52,7 +52,7 @@ class Worker(Service):
         self.corr_id: str = None
 
         # Connect to messaging bus.
-        self.bus = AMQPAdapter.from_config(config)
+        self.bus = AMQPAdapter.from_uri(config.get("amqp", {}).get("uri"))
         self.connect()
 
         # if we don't have a pi id we need to request the initial config, afterwards we have to reconnect

@@ -72,7 +72,7 @@ class Manager(Service):
             sys.exit(1)
 
         # Connect to messaging bus.
-        self.bus = AMQPAdapter.from_config(config)
+        self.bus = AMQPAdapter.from_uri(config.get("amqp", {}).get("uri"))
         self.connect()
 
         # Check if any setup is active.

@@ -16,11 +16,8 @@ class AMQPAdapter:
     # TODO: Implement exponential backoff.
     CONVERSATION_DELAY = 4.2
 
-    def __init__(self, hostname: str, port: int, username: str, password: str, buffer_undelivered=False):
-        self.hostname = hostname
-        self.port = port
-        self.username = username or ""
-        self.password = password or ""
+    def __init__(self, parameters: pika.connection.Parameters, buffer_undelivered=False):
+        self.parameters = parameters
         self.buffer_undelivered = buffer_undelivered
 
         self.connection: pika.BlockingConnection = None
@@ -35,20 +32,11 @@ class AMQPAdapter:
 
     @classmethod
     def from_config(cls, config, buffer_undelivered=False):
-        return cls(
-            hostname=config.get("amqp", {}).get("host", "localhost"),
-            port=int(config.get("amqp", {}).get("port", 5672)),
-            username=config.get("amqp", {}).get("user"),
-            password=config.get("amqp", {}).get("password"),
-            buffer_undelivered=buffer_undelivered,
-        )
-
-    def connect(self, retries=None):
-        credentials = pika.PlainCredentials(self.username, self.password)
+        credentials = pika.PlainCredentials(config.get("amqp", {}).get("user"), config.get("amqp", {}).get("password"))
         parameters = pika.ConnectionParameters(
             credentials=credentials,
-            host=self.hostname,
-            port=self.port,
+            host=config.get("amqp", {}).get("host", "localhost"),
+            port=int(config.get("amqp", {}).get("port", 5672)),
             heartbeat=360,
             socket_timeout=10,
             # blocked_connection_timeout=300,
@@ -60,12 +48,26 @@ class AMQPAdapter:
             # 	"keyfile":PROJECT_PATH+"/certs/"+config.get('amqp')['keyfile']
             # }
         )
+        return cls(
+            parameters=parameters,
+            buffer_undelivered=buffer_undelivered,
+        )
+
+    @classmethod
+    def from_uri(cls, uri, buffer_undelivered=False):
+        parameters = pika.URLParameters(uri)
+        return cls(
+            parameters=parameters,
+            buffer_undelivered=buffer_undelivered,
+        )
+
+    def connect(self, retries=None):
 
         connected = False
         while not connected:
             try:
-                logger.info(f"Connecting to AMQP broker at {self.hostname}:{self.port}")
-                self.connection = pika.BlockingConnection(parameters=parameters)
+                logger.info(f"Connecting to AMQP broker {self.parameters}")
+                self.connection = pika.BlockingConnection(parameters=self.parameters)
                 self.channel = self.connection.channel()
                 connected = True
                 logger.info("Connecting to AMQP broker successful")

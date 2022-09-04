@@ -1,9 +1,6 @@
 {
   "amqp": {
-    "host": "localhost",
-    "port": 5671,
-    "user": "guest",
-    "password": "guest",
+    "uri": "amqp://guest:guest@localhost:5672",
     "cacert": "/etc/secpi/certs/ca/cacert.pem",
     "certfile": "/etc/secpi/certs/webui.cert.pem",
     "keyfile": "/etc/secpi/certs/webui.key.pem"

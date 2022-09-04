@@ -29,7 +29,7 @@ def test_webinterface_start_stop():
     assert "Loading configuration from etc/testing/config-web.json" in app_log
     assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
     assert "Initializing Webserver" in app_log
-    assert "Connecting to AMQP broker at localhost:5672" in app_log
+    assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log
     assert "Connecting to AMQP broker successful" in app_log
     assert "AMQP: Connected to broker" in app_log
 

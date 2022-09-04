@@ -125,8 +125,7 @@ class Webinterface:
         self.setup()
 
         # Connect to messaging bus.
-        self.channel: pika.channel.Channel = None
-        self.bus = AMQPAdapter.from_config(config)
+        self.bus = AMQPAdapter.from_uri(config.get("amqp", {}).get("uri"))
         self.connect()
 
         logger.info("Finished initialization")
