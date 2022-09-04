@@ -47,7 +47,7 @@ def test_worker_with_tcplistener(worker_service):
     """
 
     # Give system some time for making sure the TCP listener has started.
-    # FIXME: Wait polling.
+    # TODO: Wait polling.
     time.sleep(0.25)
 
     # Submit a sensor signal.
@@ -73,10 +73,6 @@ def test_worker_with_testaction(worker_service):
     """
     Start Worker and submit an action signal using AMQP. Verify that the log output matches the expectations.
     """
-
-    # Give system some time for making sure it has started.
-    # FIXME: Wait polling.
-    # time.sleep(0.25)
 
     # Emulate an action signal using AMQP.
     command = f"""echo '{json.dumps(get_action_event())}' | amqp-publish --routing-key=secpi-action-1"""
