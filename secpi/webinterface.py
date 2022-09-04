@@ -202,7 +202,6 @@ class Webinterface:
 
     def connect(self):
         self.bus.connect()
-        self.channel = self.bus.channel
 
         if self.bus.available:
             logger.info("AMQP: Connected to broker")
@@ -211,11 +210,11 @@ class Webinterface:
             return False
 
         # Define exchange.
-        self.channel.exchange_declare(exchange=constants.EXCHANGE, exchange_type="direct")
+        self.bus.channel.exchange_declare(exchange=constants.EXCHANGE, exchange_type="direct")
 
         # Define queues.
-        self.channel.queue_declare(queue=constants.QUEUE_ON_OFF)
-        self.channel.queue_bind(queue=constants.QUEUE_ON_OFF, exchange=constants.EXCHANGE)
+        self.bus.channel.queue_declare(queue=constants.QUEUE_ON_OFF)
+        self.bus.channel.queue_bind(queue=constants.QUEUE_ON_OFF, exchange=constants.EXCHANGE)
         return True
 
     def connection_cleanup(self):
@@ -387,7 +386,7 @@ class Webinterface:
         logger.info(f"Publishing message. queue={queue}, message={message}")
         message = json.dumps(message)
         data = dict(exchange=constants.EXCHANGE, routing_key=queue, body=message)
-        return self.channel.basic_publish(**data)
+        return self.bus.channel.basic_publish(**data)
 
     def render_activation_response(self, request: ActivationRequest, response: ActivationResponse, **kwargs):
         """
