@@ -437,7 +437,7 @@ class Manager(Service):
         timer.start()
 
         # Poll the queue until timeout.
-        while not timeout_event.is_set():
+        while not timeout_event.is_set() and not self.shutting_down:
             logger.debug("Waiting for action response from workers")
             try:
                 # TODO: Decode a more rich response item in the future, not only a bytearry (Zip archive).

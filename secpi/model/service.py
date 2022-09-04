@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 class Service:
     def __init__(self):
+        # Flag to tell whether we are shutting down.
         self.shutting_down = False
 
     def stop(self):

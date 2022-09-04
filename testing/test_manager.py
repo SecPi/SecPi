@@ -58,3 +58,6 @@ def test_manager_receive_alarm(manager_service):
     )
     # assert "Created directory for alarm:" in app_log
     assert "[LATE] Alarm from sensor id=1, worker id=1: Got TCP connection, raising alarm" in app_log
+    assert "Executing actions" in app_log
+    assert "Starting to wait for action response from workers" in app_log
+    assert "Waiting for action response from workers" in app_log
