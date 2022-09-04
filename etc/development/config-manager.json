@@ -9,7 +9,7 @@
     "uri": "sqlite:///secpi-database-development.sqlite"
   },
   "directories": {
-    "alarms": "./var/spool/alarms"
+    "__alarms": "./var/spool/alarms"
   },
   "global": {
     "adam6000": {

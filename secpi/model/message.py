@@ -61,6 +61,7 @@ class NotificationMessage(DataContainer):
     sensor_name: str
     worker_name: str
     alarm: AlarmMessage
+    payload: t.Optional[bytearray] = None
 
 
 @dataclasses.dataclass

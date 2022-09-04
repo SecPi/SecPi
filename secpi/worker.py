@@ -278,8 +278,8 @@ class Worker(Service):
                 logger.info("Sent data to manager")
             else:
                 logger.info("No data to send")
-                # Send empty message which acts like a finished
-                self.send_msg(constants.QUEUE_ACTION_RESPONSE, "")
+                # Send `NODATA` message.
+                self.send_msg(constants.QUEUE_ACTION_RESPONSE, "__NODATA__")
 
         else:
             logger.debug("Received action but wasn't active")

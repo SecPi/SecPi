@@ -8,6 +8,9 @@
   "database": {
     "uri": "sqlite:///secpi-database-testing.sqlite"
   },
+  "directories": {
+    "__alarms": "/tmp/secpi-testing/alarms"
+  },
   "global": {
     "adam6000": {
       "mqtt_broker_ip": "localhost",

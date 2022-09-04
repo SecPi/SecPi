@@ -1,14 +1,14 @@
 import datetime
-import hashlib
 import json
 import logging
 import os
-import pathlib
+import queue
 import sys
 import tempfile
 import threading
 import time
 import typing as t
+from pathlib import Path
 
 import appdirs
 import pika
@@ -43,19 +43,25 @@ class Manager(Service):
         self.notifiers = []
 
         self.database_uri = config.get("database", {}).get("uri")
-        self.data_timeout = int(config.get("data_timeout", 180))
-        self.holddown_timer = int(config.get("holddown_timer", 210))
+        self.holddown_time = int(config.get("holddown_time", 210))
+        self.action_response_timeout = int(config.get("action_response_timeout", 180))
 
         # Configure "alarms" directory.
-        self.alarm_dir = config.get("directories", {}).get("alarms", str(self.alarms_directory))
-        logger.info(f"Storing alarms to {self.alarm_dir}")
+        # TODO: Enable alarm history storage again.
+        # self.alarm_dir = config.get("directories", {}).get("alarms", str(self.alarms_directory))
+        # logger.info(f"Storing alarms to {self.alarm_dir}")
 
         logger.info("Initializing manager")
-        self.standalone_mode = False
 
+        # When the Manager is running in standalone mode.
+        # self.standalone_mode = False
+
+        # When system is in holddown state, further alarms should be muted.
+        # TODO: Make holddown state work _per sensor_.
         self.holddown_state = False
-        self.num_of_workers = 0
-        self.received_data_counter = 0
+
+        # Queue for forwarding responses to action events.
+        self.action_response_queue = queue.Queue()
 
         # Connect to database.
         self.db = DatabaseAdapter(uri=self.database_uri)
@@ -81,13 +87,6 @@ class Manager(Service):
         # When a setup is active, also activate the notifiers.
         if activate_notifiers:
             self.setup_notifiers()
-            self.num_of_workers = (
-                self.db.session.query(Worker)
-                .join((Action, Worker.actions))
-                .filter(Worker.active_state == True)
-                .filter(Action.active_state == True)
-                .count()
-            )
 
         logger.info("Manager is ready")
 
@@ -231,19 +230,11 @@ class Manager(Service):
         When the manager receives data from a worker after executing an action.
         """
         logger.info("Received response from action invocation")
-        newFile_bytes = bytearray(body)
-        if newFile_bytes:  # only write data when body is not empty
-            filename = hashlib.md5(newFile_bytes).hexdigest() + ".zip"
-            # TODO: Revisit and review.
-            # AttributeError: 'Manager' object has no attribute 'current_alarm_dir'
-            filepath = os.path.join(self.current_alarm_dir, filename)
-            try:
-                logger.info(f"Writing data to current alarm dir: {filepath}")
-                with open(filepath, "wb") as newFile:
-                    newFile.write(newFile_bytes)
-            except Exception:
-                logger.exception("Failed to write data to current alarm dir")
-        self.received_data_counter += 1
+
+        # TODO: Don't only receive a bytearray (Zip archive). Also receive a more rich response message.
+        self.action_response_queue.put(bytearray(body))
+
+        # TODO: Run the notifier again/once more?
 
     # callback for log messages
     def got_log(self, ch, method, properties, body):
@@ -325,7 +316,8 @@ class Manager(Service):
             holddown_thread.start()
 
             # Create alarm directory.
-            # TODO: Revisit and review.
+            # TODO: Enable alarm history storage again.
+            """
             # AttributeError: 'Manager' object has no attribute 'current_alarm_dir'
             self.current_alarm_dir = os.path.join(self.alarm_dir, time.strftime("%Y%m%d_%H%M%S"))
             try:
@@ -333,7 +325,7 @@ class Manager(Service):
                 logger.debug(f"Created directory for alarm: {self.current_alarm_dir}")
             except OSError:
                 logger.exception(f"Creating directory for alarm failed: {self.current_alarm_dir}")
-            self.received_data_counter = 0
+            """
 
             # Execute actions on workers.
             self.execute_actions(alarm)
@@ -355,7 +347,6 @@ class Manager(Service):
             .filter(Action.active_state == True)
             .all()
         )
-        self.num_of_workers = len(workers)
 
         action_message = ActionRequestMessage(
             msg="execute",
@@ -404,26 +395,17 @@ class Manager(Service):
             self.notifiers.append(noti)
             logger.info("Set up notifier %s" % notifier.cl)
 
-    # timeout thread which sends the received data from workers
     def notify(self, notification: NotificationMessage):
+        """
+        Run all notifiers after waiting for action responses from workers.
+        """
 
-        for i in range(0, self.data_timeout):
-            if self.received_data_counter < self.num_of_workers:  # not all data here yet
-                logger.debug(
-                    "Waiting for data from workers: data counter: %d, #workers: %d"
-                    % (self.received_data_counter, self.num_of_workers)
-                )
-                threading.Event().wait(0.25)
-            else:
-                logger.debug("Received all data from workers, cancelling the timeout")
-                break
-        # continue code execution
-        if self.received_data_counter < self.num_of_workers:
-            self.log_msg(
-                "TIMEOUT: Only %d out of %d workers replied with data"
-                % (self.received_data_counter, self.num_of_workers),
-                constants.LEVEL_INFO,
-            )
+        # TODO: Don't run the whole waiting thing in standalone mode.
+        # if not self.standalone_mode:
+        #     return
+
+        # Transfer data from action response to notification message.
+        notification.payload = self.wait_for_action_response()
 
         # let the notifiers do their work
         notification_message = notification.to_dict()
@@ -440,6 +422,58 @@ class Manager(Service):
                 logger.exception("Notification failed")
                 self.log_err("Error notifying %u: %s" % (notifier.id, e))
 
+    def wait_for_action_response(self):
+        """
+        Wait for response message to `secpi-action-response` queue.
+
+        # TODO: Collect multiple results. Currently, only the first result is used.
+        """
+
+        queue_timeout = 0.1
+        poll_interval = 0.25
+
+        retval = None
+
+        logger.info(f"Starting to wait for action response from workers for {self.action_response_timeout} seconds")
+
+        # Event which is signalled when total `action_response_timeout` is reached.
+        timeout_event = threading.Event()
+
+        # Timer to signal the `timeout_event` when `action_response_timeout` is reached.
+        timer = threading.Timer(self.action_response_timeout, timeout_event.set)
+        timer.start()
+
+        # Poll the queue until timeout.
+        while not timeout_event.is_set():
+            logger.debug("Waiting for action response from workers")
+            try:
+                # TODO: Decode a more rich response item in the future, not only a bytearry (Zip archive).
+                action_response_item = self.action_response_queue.get(timeout=queue_timeout)
+
+                # Break out from the loop when data has been received.
+                # TODO: Collect multiple results.
+                if b"__NODATA__" in action_response_item:
+                    logger.debug("Received empty action response from worker")
+                    break
+
+                # Use queue item as return value.
+                if action_response_item:
+                    logger.debug("Received action response from worker")
+                    retval = action_response_item
+                    break
+
+            except queue.Empty:
+                threading.Event().wait(poll_interval)
+
+        # Add a log message when timeout has been reached.
+        if timeout_event.is_set():
+            logger.warning(
+                f"Timeout: Workers did not respond to action request within {self.action_response_timeout} seconds"
+            )
+        timer.cancel()
+
+        return retval
+
     # go into holddown state, while in this state subsequent alarms are interpreted as one alarm
     def holddown(self):
 
@@ -448,7 +482,7 @@ class Manager(Service):
             return
 
         self.holddown_state = True
-        for i in range(0, self.holddown_timer):
+        for i in range(0, self.holddown_time):
             time.sleep(1)
         logger.debug("Holddown is over")
         self.holddown_state = False
@@ -520,12 +554,19 @@ class Manager(Service):
 
     @property
     def alarms_directory(self):
-        data_directory = os.path.join(appdirs.user_data_dir("secpi"))
+        """
+        Provide the target filesystem location for the "alarms directory".
+        """
+
+        # Compute path to base directory.
+        secpi_work_directory = Path(appdirs.user_data_dir("secpi"))
         if "PYTEST_CURRENT_TEST" in os.environ:
-            data_directory = tempfile.mkdtemp()
-        path = pathlib.Path(data_directory).joinpath("alarms")
-        path.mkdir(parents=True, exist_ok=True)
-        return path
+            secpi_work_directory = Path(tempfile.mkdtemp())
+
+        # Make sure the `alarms` directory exists.
+        alarms_dir = secpi_work_directory.joinpath("alarms")
+        alarms_dir.mkdir(parents=True, exist_ok=True)
+        return alarms_dir
 
 
 def run_manager(options: StartupOptions):

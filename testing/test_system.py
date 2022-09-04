@@ -1,5 +1,4 @@
 import json
-import re
 import subprocess
 import time
 from email.message import Message
@@ -80,7 +79,14 @@ def test_manager_process_alarm(webinterface_service, manager_service):
     subprocess.check_output(command, shell=True)
 
     # Give system some time for processing.
-    time.sleep(0.50)
+    time.sleep(0.05)
+
+    # Emulate an action response signal using AMQP.
+    command = """echo '__NODATA__' | amqp-publish --routing-key=secpi-action-response"""
+    subprocess.check_output(command, shell=True)
+
+    # Give system some time for processing.
+    time.sleep(0.25)
 
     # Read application log.
     web_log = webinterface_service.read_log()
@@ -111,9 +117,14 @@ def test_manager_process_alarm(webinterface_service, manager_service):
         "Received late alarm:" in app_log
         and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
     )
-    assert "Created directory for alarm:" in app_log
+    # assert "Created directory for alarm:" in app_log
     assert "[LATE] Alarm from sensor id=1, worker id=1: Got TCP connection, raising alarm" in app_log
-    # assert "Received all data from workers, cancelling the timeout" in app_log
+
+    assert "Executing actions" in app_log
+    assert "Starting to wait for action response from worker" in app_log
+    assert "Waiting for action response from worker"
+    assert "Received response from action invocation" in app_log
+    assert "Received empty action response from worker" in app_log
 
     # Notification.
     assert "Notifying via SMTP email" in app_log
@@ -160,7 +171,7 @@ def test_full_stack(manager_service, worker_service, webinterface_service, smtpd
     assert "Setup of sensors and actions completed" in worker_log
 
     assert "Alarm from sensor id=1, worker worker-testing: Got TCP connection, raising alarm" in manager_log
-    assert "Created directory for alarm:" in manager_log
+    # assert "Created directory for alarm:" in manager_log
     assert "Executing actions" in manager_log
 
     assert "Executing Test Action" in worker_log
@@ -174,9 +185,9 @@ def test_full_stack(manager_service, worker_service, webinterface_service, smtpd
     assert "Got log message from Worker 1: Executing Test Action" in manager_log
     assert "Got log message from Worker 1: Test Action message: foobar" in manager_log
     assert "Received response from action invocation" in manager_log
-    assert re.match(r".*Writing data to current alarm dir:.*\.zip", manager_log, re.DOTALL | re.MULTILINE)
+    # assert re.match(r".*Writing data to current alarm dir:.*\.zip", manager_log, re.DOTALL | re.MULTILINE)
 
-    assert "Received all data from workers, cancelling the timeout" in manager_log
+    assert "Received action response from worker" in manager_log
     assert "Notifying via SMTP email" in manager_log
 
     assert "Mailer: Attached file 'index.txt' to message" in manager_log

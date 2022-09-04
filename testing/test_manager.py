@@ -26,7 +26,7 @@ def test_manager_start_stop():
 
     # Verify everything is in place.
     assert "Loading configuration from etc/testing/config-manager.json" in app_log
-    assert "Storing alarms to" in app_log
+    # assert "Storing alarms to" in app_log
     assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
     assert "Connecting to AMQP broker at localhost:5672" in app_log
     assert "Manager is ready" in app_log
@@ -55,6 +55,5 @@ def test_manager_receive_alarm(manager_service):
         "Received late alarm:" in app_log
         and '"sensor_id": 1, "message": "Got TCP connection, raising alarm"' in app_log
     )
-    assert "Created directory for alarm:" in app_log
+    # assert "Created directory for alarm:" in app_log
     assert "[LATE] Alarm from sensor id=1, worker id=1: Got TCP connection, raising alarm" in app_log
-    assert "Received all data from workers, cancelling the timeout" in app_log

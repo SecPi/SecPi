@@ -12,7 +12,7 @@
     "uri": "sqlite:///var/lib/secpi/secpi-database.sqlite"
   },
   "directories": {
-    "alarms": "/var/spool/secpi/alarms"
+    "__alarms": "/var/spool/secpi/alarms"
   },
   "global": {
   }

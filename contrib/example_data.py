@@ -43,12 +43,6 @@ def main():
             object_type="notifier",
         ),
         Param(
-            key="data_dir",
-            value="/var/tmp/secpi/alarms",
-            description="Directory to fetch the files from.",
-            object_type="notifier",
-        ),
-        Param(
             key="smtp_address",
             value="mail.secpi.local",
             description="SMTP Server to send mails from.",
