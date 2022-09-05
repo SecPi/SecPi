@@ -57,22 +57,9 @@ Project and code II
 - [/] Use JSON5 and add comments to configuration files
 - [x] Use TOML for configuration files
 - [x] Naming things: Replace ``Pi`` or ``pi_id`` with ``worker_id`` across the board.
-- [o] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
-- [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
-- [o] Test _all_ the plugins _for-real_ to discover if something went south.
-
-Project and code III
-====================
-- [o] Dependencies: Make installing ``pygame`` optional
-- [o] Check RabbitMQ 3.10.7
-- [o] Revisit all ``FIXME`` items
-- [o] s/==/is/, s/!=/is not/
-- [o] Add pytest-docker-compose for GarageMQ and Mosquitto
-- [o] ``tweepy/auth.py:120: DeprecationWarning: OAuthHandler is deprecated; use OAuth1UserHandler instead.``
-
-Bugs
-====
-- [o] Webinterface: Croaks right away when navigating to "Alarm Data": ``FileNotFoundError: [Errno 2] No such file or directory: '/var/tmp/secpi/alarms'``
+- [x] Fix ``raise BadZipFile("File is not a zip file")``
+- [x] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
+- [x] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
 
 Documentation
 =============
@@ -97,10 +84,13 @@ Documentation
 Standalone mode
 ===============
 - [o] Improve generic NoBroker wiring
-- [o] Use TOML for configuration?
+- [x] Use TOML for configuration?
 
 Features
 ========
+- [o] UI: Facelift with Materialize
+- [o] UI: Dropdown boxes providing lists of built-in sensors, notifiers, and actions
+- [o] UI: Compound forms with {Action,Notifier} + params
 - [o] ADAM: Summary message should also be submitted on "ACTIVATE".
 - [o] ADAM: Summary message should only be a message, not an alarm.
 - [o] Alarm notifications: We need to have two mails per alarm. One should be emitted
@@ -108,7 +98,6 @@ Features
   Alternatively, think about uploading them to S3 or Nextcloud.
 - [o] DO schalten: Als Action.
 - [o] SIP: Fritzbox instead of Asterisk?
-- [o] UI: Dropdown boxes providing lists of built-in sensors, notifiers, and actions
 
 
 ***********
@@ -119,7 +108,10 @@ Towards 2.0.0.
 
 Project and code
 ================
+- [o] Dependencies: Make installing ``pygame`` optional
+- [o] Test _all_ the plugin modules _for-real_ to discover if something went south.
 - [o] Bring back AMQP SSL connection abilities.
+- [o] Bring back Alarm file storage & Web UI ``/alarmdata`` as "Audit" feature.
 - [o] Add MQTT SSL connection abilities.
 - [o] Improve UI
 
@@ -149,7 +141,16 @@ Deployment and production
 Iteration 4
 ***********
 
-Ideas for the future.
+Project and code III
+====================
+- [o] Check RabbitMQ 3.10.7
+- [o] Revisit all ``FIXME`` items
+- [o] Add pytest-docker-compose for GarageMQ and Mosquitto
+- [o] ``tweepy/auth.py:120: DeprecationWarning: OAuthHandler is deprecated; use OAuth1UserHandler instead.``
+
+
+Ideas for the future
+====================
 
 - [o] SQLAlchemy: Resolve flaws with concurrent access.
   https://github.com/isarengineering/SecPi/issues/6
@@ -162,5 +163,4 @@ Ideas for the future.
 - [o] Notifications using Apprise or mqttwarn
 - [o] Command for configuring SecPi, like ``secpictl add sensor foo ...``
 - [o] Integration with https://github.com/hostcc/pyg90alarm
-- [o] UI: Facelift with Materialize
 - [o] Integrate with Home Assistant
