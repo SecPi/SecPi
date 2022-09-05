@@ -75,6 +75,9 @@ def test_manager_process_alarm(webinterface_service, manager_service):
     # Populate database, using the HTTP API.
     create_and_activate_setup(with_notifier=True)
 
+    # Give system some time for processing.
+    time.sleep(0.15)
+
     # Emulate an alarm signal using AMQP.
     command = f"""echo '{json.dumps(OLD_ALARM_EVENT)}' | amqp-publish --routing-key=secpi-alarm"""
     subprocess.check_output(command, shell=True)
