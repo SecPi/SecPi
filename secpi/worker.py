@@ -41,7 +41,7 @@ class Worker(Service):
         self.sensors: t.List[Sensor] = []
         self.active = False
 
-        self.worker_id = self.config.get("main").get("worker_id")
+        self.worker_id = self.config.get("worker").get("worker_id")
 
         logger.info(f"Initializing worker {self.worker_id}")
 
@@ -63,7 +63,7 @@ class Worker(Service):
             self.fetch_init_config()
         else:
             logger.info("Setting up sensors and actions")
-            self.active = self.config.get("main").get("active")
+            self.active = self.config.get("worker").get("active")
             self.setup_sensors()
             self.setup_actions()
             logger.info("Setup of sensors and actions completed")
@@ -315,7 +315,7 @@ class Worker(Service):
             except Exception:
                 logger.exception("Writing configuration file failed")
 
-            if self.config.get("main").get("active"):
+            if self.config.get("worker").get("active"):
                 logger.info("Activating actions and sensors")
                 self.setup_sensors()
                 self.setup_actions()
@@ -328,7 +328,7 @@ class Worker(Service):
     def got_config(self, ch, method, properties, body):
         logger.info("Received config %r" % (body))
 
-        if self.config.get("main").get("config_no_update"):
+        if self.config.get("worker").get("config_no_update"):
             logger.info("Configuration is tagged with `config_no_update`, skip updating")
             return
 

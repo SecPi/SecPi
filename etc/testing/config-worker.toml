@@ -1,4 +1,4 @@
-[main]
+[worker]
 worker_id = 1
 active = true
 config_no_update = true

@@ -1,3 +1,5 @@
+[worker]
+
 [amqp]
 uri = "amqp://guest:guest@localhost:5672"
 cacert = "/etc/secpi/certs/ca/cacert.pem"

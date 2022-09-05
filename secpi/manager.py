@@ -262,7 +262,7 @@ class Manager(Service):
             config = self.prepare_config(worker.id)
             # check if we are deactivating --> worker should be deactivated!
             if msg["active_state"] == False:
-                config["main"]["active"] = False
+                config["worker"]["active"] = False
                 logger.info("Deactivating setup: %s" % msg["setup_name"])
 
             self.send_json_message(constants.QUEUE_CONFIG + str(worker.id), config)
@@ -488,7 +488,7 @@ class Manager(Service):
     def prepare_config(self, worker_id):
         logger.info("Preparing config for worker with id %s" % worker_id)
         conf = {
-            "main": {
+            "worker": {
                 "worker_id": worker_id,
                 # Default to False, will be overridden when it should be True instead.
                 "active": False,
@@ -506,7 +506,7 @@ class Manager(Service):
 
         # if we have sensors we are active
         if len(sensors) > 0:
-            conf["main"]["active"] = True
+            conf["worker"]["active"] = True
 
         # A configuration setting container which will be available on all workers.
         conf["global"] = self.config.get("global")
@@ -533,7 +533,7 @@ class Manager(Service):
 
         # if we have actions we are also active
         if len(actions) > 0:
-            conf["main"]["active"] = True
+            conf["worker"]["active"] = True
 
         # Convert `Action` database model instances to plain dictionary, and propagate to configuration.
         config_actions = []
