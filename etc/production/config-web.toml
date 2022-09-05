@@ -1,3 +1,7 @@
+[webserver]
+# host = "localhost"
+# port = 16677
+
 [amqp]
 uri = "amqp://guest:guest@localhost:5672"
 cacert = "/etc/secpi/certs/ca/cacert.pem"
@@ -6,5 +10,3 @@ keyfile = "/etc/secpi/certs/webui.key.pem"
 
 [database]
 uri = "sqlite:///var/lib/secpi/secpi-database.sqlite"
-
-[webserver]

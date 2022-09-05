@@ -6,6 +6,7 @@ from email.message import Message
 import requests
 
 from testing.util.events import OLD_ALARM_EVENT
+from testing.util.service import WebinterfaceServiceWrapper
 
 WORKER_ENTITY = {"id": 1, "name": "worker-testing", "address": "localhost"}
 
@@ -35,32 +36,32 @@ def create_and_activate_setup(with_notifier=False, with_worker=False, with_actio
     Populate the database, using the HTTP API.
     """
 
+    baseurl = WebinterfaceServiceWrapper.BASEURL
+
     # Create a setup.
-    requests.post(
-        url="http://localhost:8000/setups/add", json={"name": "secpi-testing", "description": "Created by test suite"}
-    )
-    response = requests.get(url="http://localhost:8000/setups/list").json()
+    requests.post(url=f"{baseurl}/setups/add", json={"name": "secpi-testing", "description": "Created by test suite"})
+    response = requests.get(url=f"{baseurl}/setups/list").json()
     setup_identifier = response["data"][0]["id"]
 
     # Optionally create notifier items.
     if with_notifier:
-        requests.post(url="http://localhost:8000/notifiers/add", json=NOTIFIER_ENTITY)
+        requests.post(url=f"{baseurl}/notifiers/add", json=NOTIFIER_ENTITY)
         for param in NOTIFIER_PARAMS:
-            requests.post(url="http://localhost:8000/notifierparams/add", json=param)
+            requests.post(url=f"{baseurl}/notifierparams/add", json=param)
 
     # Optionally create worker items.
     if with_worker:
-        requests.post(url="http://localhost:8000/workers/add", json=WORKER_ENTITY)
+        requests.post(url=f"{baseurl}/workers/add", json=WORKER_ENTITY)
 
     # Optionally create action items.
     if with_action:
-        requests.post(url="http://localhost:8000/actions/add", json=ACTION_ENTITY)
+        requests.post(url=f"{baseurl}/actions/add", json=ACTION_ENTITY)
         for param in ACTION_PARAMS:
-            requests.post(url="http://localhost:8000/actionparams/add", json=param)
-        requests.post(url="http://localhost:8000/workersactions/add", json=ACTION_WORKER_ENTITY)
+            requests.post(url=f"{baseurl}/actionparams/add", json=param)
+        requests.post(url=f"{baseurl}/workersactions/add", json=ACTION_WORKER_ENTITY)
 
     # Activate setup.
-    requests.post(url="http://localhost:8000/activate", json={"id": setup_identifier})
+    requests.post(url=f"{baseurl}/activate", json={"id": setup_identifier})
 
 
 def test_manager_process_alarm(webinterface_service, manager_service):

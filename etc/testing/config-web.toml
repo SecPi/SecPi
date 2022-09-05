@@ -1,7 +1,9 @@
+[webserver]
+# host = "localhost"
+# port = 16677
+
 [amqp]
 uri = "amqp://guest:guest@localhost:5672"
 
 [database]
 uri = "sqlite:///secpi-database-testing.sqlite"
-
-[webserver]

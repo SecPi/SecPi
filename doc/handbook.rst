@@ -20,7 +20,7 @@ Submit operational shutdown message::
     echo '{"action": "shutdown"}' | amqp-publish --routing-key=secpi-op-1
 
     # Webinterface
-    echo '{"action": "shutdown"}' | http POST http://localhost:8000/operational
+    echo '{"action": "shutdown"}' | http POST http://localhost:16677/operational
 
 
 Manager
@@ -64,8 +64,8 @@ Webinterface
 
 Activate setup::
 
-    echo '{"id": 1}' | http POST http://localhost:8000/activate
+    echo '{"id": 1}' | http POST http://localhost:16677/activate
 
 Deactivate setup::
 
-    echo '{"id": 1}' | http POST http://localhost:8000/deactivate
+    echo '{"id": 1}' | http POST http://localhost:16677/deactivate

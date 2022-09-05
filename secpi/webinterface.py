@@ -145,10 +145,8 @@ class Webinterface:
 
         cherrypy.config.update(
             {
-                # TODO: Make configurable.
-                "server.socket_host": "0.0.0.0",
-                # TODO: Make configurable. Use other non-standard port as default.
-                "server.socket_port": 8000,
+                "server.socket_host": self.config.get("webserver", {}).get("host", "localhost"),
+                "server.socket_port": int(self.config.get("webserver", {}).get("port", 16677)),
                 # TODO: Make configurable. Would logging to stderr be actually enough?
                 # 'log.error_file': "/var/log/secpi/webinterface.log",
                 # 'log.access_file': "/var/log/secpi/webinterface_access.log",
@@ -413,7 +411,7 @@ class Webinterface:
 
         Usage::
 
-            echo '{"action": "shutdown"}' | http POST http://localhost:8000/operational
+            echo '{"action": "shutdown"}' | http POST http://localhost:16677/operational
         """
         message = cherrypy.request.json
         logger.info(f"Got message on operational endpoint: {message}")

@@ -115,6 +115,9 @@ class WorkerServiceWrapper(AmqpServiceWrapper):
 
 
 class WebinterfaceServiceWrapper(BaseServiceWrapper):
+
+    BASEURL = "http://localhost:16677"
+
     def run(self):
         self.start_process(
             name="secpi-web",
@@ -132,7 +135,7 @@ class WebinterfaceServiceWrapper(BaseServiceWrapper):
 
         # 1. Send shutdown signal to make the service terminate itself.
         try:
-            requests.post(url="http://localhost:8000/operational", json={"action": "shutdown"})
+            requests.post(url=f"{self.BASEURL}/operational", json={"action": "shutdown"})
         except Exception as ex:
             if "Connection aborted" not in str(ex) and "Max retries exceeded" not in str(ex):
                 raise
