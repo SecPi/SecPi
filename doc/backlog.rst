@@ -45,22 +45,39 @@ Project and code I
 
 Project and code II
 ===================
+- [x] Put code coverage information into subdirectory
+- [x] Refactor test suite
+- [x] Use real objects instead of dictionaries for message containers
+- [x] Worker/Action: Eradicate writing and reading back data to/from filesystem
+  at ``/var/tmp/secpi/worker_data`` and ````/var/tmp/secpi/alarms``.
+  Instead, use ``tempfile`` objects all over the place, where applicable, and
+  pass all data along with method calls.
+- [x] Remove hard-coding of ``/var/tmp/secpi/alarms`` from all plugins
+- [x] Use ``AMQP_URL``-style configuration
+- [/] Use JSON5 and add comments to configuration files
+- [x] Use TOML for configuration files
+- [x] Naming things: Replace ``Pi`` or ``pi_id`` with ``worker_id`` across the board.
 - [o] Webinterface: Start on non-standard port 16677 by default. Don't listen on ``0.0.0.0`` by default.
 - [o] Webinterface: Make CherryPy's ``--listen-address`` configurable. What about Unix sockets?
+- [o] Test _all_ the plugins _for-real_ to discover if something went south.
+
+Project and code III
+====================
 - [o] Dependencies: Make installing ``pygame`` optional
 - [o] Check RabbitMQ 3.10.7
 - [o] Revisit all ``FIXME`` items
+- [o] s/==/is/, s/!=/is not/
+- [o] Add pytest-docker-compose for GarageMQ and Mosquitto
+- [o] ``tweepy/auth.py:120: DeprecationWarning: OAuthHandler is deprecated; use OAuth1UserHandler instead.``
 
 Bugs
 ====
-- [o] Remove hard-coding of ``/var/tmp/secpi/alarms`` from all plugins
 - [o] Webinterface: Croaks right away when navigating to "Alarm Data": ``FileNotFoundError: [Errno 2] No such file or directory: '/var/tmp/secpi/alarms'``
-- [o] When using GarageMQ, AMQP service does not subscribe properly again after a restart.
-  With RabbitMQ, everything works well.
 
 Documentation
 =============
 - [o] Update/improve https://github.com/isarengineering/SecPi/blob/next/doc/sandbox.rst
+- [o] Add more comments in configuration files
 - [o] Tutorial I: socat -> TCPListener -> Mailer -> mailserver.py
   while true; do echo hello | socat - tcp:localhost:1234; done
 - [o] Improve. "From installation to operation" (e.g. ``journalctl``)
@@ -70,9 +87,17 @@ Documentation
 - [o] First commit: 14 May 2015. -- https://github.com/SecPi/SecPi/commit/e9d86f31d9
 - [o] Other projects
 
-  - https://pypi.org/project/RPIHomeAlarmSystem/
+  - https://github.com/nielsfaber/alarmo
+  - https://github.com/bkbilly/AlarmPI
   - https://pypi.org/project/automate-home/
   - https://pypi.org/project/home-service/
+  - https://pypi.org/project/RPIHomeAlarmSystem/
+  - https://projects.privateeyepi.com/
+
+Standalone mode
+===============
+- [o] Improve generic NoBroker wiring
+- [o] Use TOML for configuration?
 
 Features
 ========
@@ -82,8 +107,8 @@ Features
   instantly, and the second one after shoveling all the camera images together.
   Alternatively, think about uploading them to S3 or Nextcloud.
 - [o] DO schalten: Als Action.
-- [o] Fritzbox instead of Asterisk?
-- [o] Dropdown boxes providing lists of built-in sensors, notifiers, and actions
+- [o] SIP: Fritzbox instead of Asterisk?
+- [o] UI: Dropdown boxes providing lists of built-in sensors, notifiers, and actions
 
 
 ***********
@@ -110,7 +135,7 @@ Project and code
   - Database interaction
 
 - [o] ADAM: Resolve ambiguation with ``mqtt_broker_ip`` vs. "port"
-- [o] Webinterface: Bump JavaScript dependencies and rebundle using Yarn and webpack
+- [o] Webinterface: Bump JavaScript dependencies and re-bundle using Yarn and webpack
 
 Deployment and production
 =========================
@@ -126,7 +151,6 @@ Iteration 4
 
 Ideas for the future.
 
-- [o] Naming things: Replace ``Pi`` or ``pi_id`` with something more meaningful
 - [o] SQLAlchemy: Resolve flaws with concurrent access.
   https://github.com/isarengineering/SecPi/issues/6
 - [o] Webinterface: Optimize (reduce) number of backend requests
@@ -137,3 +161,6 @@ Ideas for the future.
   Maybe map from subsystem to subject.
 - [o] Notifications using Apprise or mqttwarn
 - [o] Command for configuring SecPi, like ``secpictl add sensor foo ...``
+- [o] Integration with https://github.com/hostcc/pyg90alarm
+- [o] UI: Facelift with Materialize
+- [o] Integrate with Home Assistant
