@@ -41,7 +41,9 @@ class Worker(Service):
         self.sensors: t.List[Sensor] = []
         self.active = False
 
-        logger.info("Initializing worker")
+        self.worker_id = self.config.get("main").get("worker_id")
+
+        logger.info(f"Initializing worker {self.worker_id}")
 
         # Queue for initial configuration request.
         # The name of the exclusive callback queue used for requesting the initial configuration.
@@ -57,11 +59,11 @@ class Worker(Service):
 
         # if we don't have a pi id we need to request the initial config, afterwards we have to reconnect
         # to the queues which are specific to the pi id -> hence, call connect again
-        if not config.get("pi_id"):
+        if not self.worker_id:
             self.fetch_init_config()
         else:
             logger.info("Setting up sensors and actions")
-            self.active = config.get("active")
+            self.active = self.config.get("main").get("active")
             self.setup_sensors()
             self.setup_actions()
             logger.info("Setup of sensors and actions completed")
@@ -79,7 +81,7 @@ class Worker(Service):
         # INIT CONFIG MODE
         # When the worker does not have an identifier, only define a basic
         # setup to receive an initial configuration from the manager.
-        if not self.config.get("pi_id"):
+        if not self.worker_id:
             logger.info("Worker is in INIT CONFIG mode")
             callback_queue_id = get_random_identifier(length=6)
             self.callback_queue = f"init-callback-{callback_queue_id}"
@@ -95,7 +97,7 @@ class Worker(Service):
         else:
             logger.info("Worker is in OPERATIVE mode")
             # Get worker identifier from configuration.
-            worker_identifier = str(self.config.get("pi_id"))
+            worker_identifier = str(self.worker_id)
 
             # Declare exchanges and queues.
             channel.exchange_declare(exchange=constants.EXCHANGE, exchange_type="direct")
@@ -163,7 +165,7 @@ class Worker(Service):
         err = {
             "msg": msg,
             "level": constants.LEVEL_ERR,
-            "sender": f"Worker {self.config.get('pi_id')}",
+            "sender": f"Worker {self.worker_id}",
             "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
@@ -174,7 +176,7 @@ class Worker(Service):
         lg = {
             "msg": msg,
             "level": lvl,
-            "sender": f"Worker {self.config.get('pi_id')}",
+            "sender": f"Worker {self.worker_id}",
             "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
@@ -285,8 +287,12 @@ class Worker(Service):
             logger.debug("Received action but wasn't active")
 
     def apply_config(self, new_config):
+        """
+        Apply received configuration locally.
+        """
 
         # We don't get the `amqp` config snippet sent to us, so add the current one.
+        # TODO: Only whitelist specific keys, like `sensors` and `actions`.
         new_config["amqp"] = self.config.get("amqp")
         new_config["directories"] = self.config.get("directories", {})
 
@@ -309,7 +315,7 @@ class Worker(Service):
             except Exception:
                 logger.exception("Writing configuration file failed")
 
-            if self.config.get("active"):
+            if self.config.get("main").get("active"):
                 logger.info("Activating actions and sensors")
                 self.setup_sensors()
                 self.setup_actions()
@@ -322,8 +328,8 @@ class Worker(Service):
     def got_config(self, ch, method, properties, body):
         logger.info("Received config %r" % (body))
 
-        if self.config.get("no_update"):
-            logger.info("Configuration is tagged with `no_update`, skip updating")
+        if self.config.get("main").get("config_no_update"):
+            logger.info("Configuration is tagged with `config_no_update`, skip updating")
             return
 
         try:
@@ -348,8 +354,7 @@ class Worker(Service):
                 sen.activate()
             except Exception as e:
                 self.post_err(
-                    "Pi with id '%s' wasn't able to register sensor '%s':\n%s"
-                    % (self.config.get("pi_id"), sensor["class"], e)
+                    "Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (self.worker_id, sensor["class"], e)
                 )
             else:
                 self.sensors.append(sen)
@@ -378,8 +383,7 @@ class Worker(Service):
                 act = a(action["id"], action["params"], self)
             except Exception as e:  # AttributeError, KeyError
                 self.post_err(
-                    "Pi with id '%s' wasn't able to register action '%s':\n%s"
-                    % (self.config.get("pi_id"), action["class"], e)
+                    "Pi with id '%s' wasn't able to register action '%s':\n%s" % (self.worker_id, action["class"], e)
                 )
             else:
                 self.actions.append(act)
@@ -399,7 +403,7 @@ class Worker(Service):
 
             # Send message to the alarm queue.
             msg = AlarmMessage(
-                worker_id=self.config.get("pi_id"),
+                worker_id=self.worker_id,
                 sensor_id=sensor_id,
                 message=message,
                 datetime=datetime.datetime.now(),
