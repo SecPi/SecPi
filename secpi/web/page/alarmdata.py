@@ -44,6 +44,9 @@ class AlarmDataPage:
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out(handler=json_handler)
     def list(self):
+
+        return {"status": "error", "message": "This feature is currently disabled"}
+
         dirs = []
         # TODO: error management
         for d in listdir(self.datapath):
