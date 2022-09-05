@@ -18,6 +18,9 @@ def test_manager_start_stop():
     service = ManagerServiceWrapper()
     service.run()
 
+    # Before shutting down, wait a bit so that we can receive the whole log.
+    time.sleep(0.25)
+
     # Send service a shutdown signal.
     service.shutdown(identifier="m")
 
