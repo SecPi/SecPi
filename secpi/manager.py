@@ -43,8 +43,8 @@ class Manager(Service):
         self.notifiers = []
 
         self.database_uri = config.get("database", {}).get("uri")
-        self.holddown_time = int(config.get("holddown_time", 210))
-        self.action_response_timeout = int(config.get("action_response_timeout", 180))
+        self.holddown_time = int(config.get("main", {}).get("holddown_time", 210))
+        self.action_response_timeout = int(config.get("main", {}).get("action_response_timeout", 180))
 
         # Configure "alarms" directory.
         # TODO: Enable alarm history storage again.
@@ -262,7 +262,7 @@ class Manager(Service):
             config = self.prepare_config(worker.id)
             # check if we are deactivating --> worker should be deactivated!
             if msg["active_state"] == False:
-                config["active"] = False
+                config["main"]["active"] = False
                 logger.info("Deactivating setup: %s" % msg["setup_name"])
 
             self.send_json_message(constants.QUEUE_CONFIG + str(worker.id), config)
@@ -488,8 +488,11 @@ class Manager(Service):
     def prepare_config(self, worker_id):
         logger.info("Preparing config for worker with id %s" % worker_id)
         conf = {
-            "worker_id": worker_id,
-            "active": False,  # default to false, will be overriden if should be true
+            "main": {
+                "worker_id": worker_id,
+                # Default to False, will be overridden when it should be True instead.
+                "active": False,
+            }
         }
 
         sensors = (
@@ -503,7 +506,7 @@ class Manager(Service):
 
         # if we have sensors we are active
         if len(sensors) > 0:
-            conf["active"] = True
+            conf["main"]["active"] = True
 
         # A configuration setting container which will be available on all workers.
         conf["global"] = self.config.get("global")
@@ -530,7 +533,7 @@ class Manager(Service):
 
         # if we have actions we are also active
         if len(actions) > 0:
-            conf["active"] = True
+            conf["main"]["active"] = True
 
         # Convert `Action` database model instances to plain dictionary, and propagate to configuration.
         config_actions = []
