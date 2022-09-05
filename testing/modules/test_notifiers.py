@@ -2,6 +2,7 @@ import datetime
 import pathlib
 import re
 import tempfile
+from email.message import Message
 
 import pytest
 
@@ -51,7 +52,7 @@ def test_notifier_dropbox(caplog):
     assert "DropboxFileUpload: Uploading file failed" in caplog.text
 
 
-def test_notifier_mailer(caplog):
+def test_notifier_mailer(caplog, smtpd):
     """
     Test the SMTP email notifier.
     """
@@ -60,7 +61,7 @@ def test_notifier_mailer(caplog):
     component = load_class("secpi.notifier.mailer", "Mailer")
     parameters = {
         "smtp_address": "localhost",
-        "smtp_port": "12525",
+        "smtp_port": "8025",
         "smtp_user": "",
         "smtp_pass": "",
         "smtp_security": "NOAUTH_NOSSL",
@@ -79,17 +80,27 @@ def test_notifier_mailer(caplog):
     assert "Loading class successful: secpi.notifier.mailer.Mailer" in caplog.messages
     assert "Mailer: Notifier initialized" in caplog.messages
     assert "Notifying via SMTP email" in caplog.messages
+    assert "Mailer: Decoding zip file as requested" in caplog.messages
     assert "Failed to prepare email attachments" in caplog.messages
     # assert re.match(".*Mailer: Will look into .+ for data.*", caplog.text, re.DOTALL)
     assert "Mailer: Trying to send mail without authentication" in caplog.messages
     assert "Mailer: Establishing connection to SMTP server" in caplog.messages
+    assert "Mailer: Mail sent" in caplog.messages
 
-    # It is expected to fail, because nothing should be listening on port 12525.
-    assert "Mailer: Unexpected error" in caplog.messages
+    assert len(smtpd.messages) == 1
+
+    message: Message = smtpd.messages[0]
+
+    assert message.is_multipart()
+    assert message.get("From") == "secpi@example.org"
+    assert message.get("To") == "user@example.org"
+    assert message.get("Subject") == "SecPi Alarm"
+
+    message_part2: Message = message.get_payload()[1]
+    message_body2: str = message_part2.get_payload()
     assert (
-        "ConnectionRefusedError: [Errno 61] Connection refused" in caplog.text
-        or "ConnectionRefusedError: [Errno 111] Connection refused" in caplog.text
-        or "OSError: [Errno 99] Cannot assign requested address" in caplog.text
+        "Received alarm on sensor sensor-testing from worker worker-testing: "
+        "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern" in message_body2
     )
 
 
