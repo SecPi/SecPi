@@ -1,0 +1,40 @@
+pi_id = 1
+active = true
+no_update = true
+
+[[actions]]
+id = 1
+name = "test-action-1"
+module = "test"
+class = "TestAction"
+active_state = true
+
+[actions.params]
+msg = "foobar"
+
+[[actions]]
+id = 2
+name = "test-action-2"
+module = "test"
+class = "TestAction"
+active_state = false
+
+[actions.params]
+msg = "bazqux"
+
+[[sensors]]
+id = 1
+name = "tcp-listener-1234"
+module = "network"
+class = "TCPPortListener"
+
+[sensors.params]
+ip = "localhost"
+port = "1234"
+
+[amqp]
+uri = "amqp://guest:guest@localhost:5672"
+
+[global.adam6000]
+mqtt_broker_ip = "localhost"
+mqtt_topic = "Advantech/11E1DAF0ECCE"

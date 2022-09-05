@@ -1,0 +1,12 @@
+[amqp]
+uri = "amqp://guest:guest@localhost:5672"
+
+[database]
+uri = "sqlite:///secpi-database-testing.sqlite"
+
+[directories]
+__alarms = "/tmp/secpi-testing/alarms"
+
+[global.adam6000]
+mqtt_broker_ip = "localhost"
+mqtt_topic = "Advantech/11E1DAF0ECCE"

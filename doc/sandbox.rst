@@ -81,8 +81,8 @@ virtual machine, two directories will be provisioned:
 - ``/opt/secpi``
   This directory holds the virtual environment for the SecPi installation on Linux.
 
-On top of that, the programs ``secpi-manager`` and ``secpi-worker`` are available in
-the global program search path.
+On top of that, the programs ``secpi-manager``, ``secpi-worker``, and ``secpi-web``
+are available in the global program search path.
 
 
 =====
@@ -96,8 +96,9 @@ Usage
     vagrant ssh
 
     # Run SecPi Worker.
-    secpi-manager --app-config=/usr/src/secpi/manager/config.json
-    secpi-worker --app-config=/usr/src/secpi/worker/config.json
+    secpi-manager --app-config=/usr/src/secpi/etc/development/config-manager.toml
+    secpi-worker --app-config=/usr/src/secpi/etc/development/config-worker.toml
+    secpi-web --app-config=/usr/src/secpi/etc/development/config-web.toml
 
 Run software tests::
 

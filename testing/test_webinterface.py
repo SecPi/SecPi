@@ -26,7 +26,7 @@ def test_webinterface_start_stop():
     # Verify everything is in place.
     assert "Configuring Webinterface" in app_log
     assert "Using template path" in app_log
-    assert "Loading configuration from etc/testing/config-web.json" in app_log
+    assert "Loading configuration from etc/testing/config-web.toml" in app_log
     assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
     assert "Initializing Webserver" in app_log
     assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log

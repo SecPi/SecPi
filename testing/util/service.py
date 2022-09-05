@@ -97,7 +97,7 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
 
         self.start_process(
             name="secpi-manager",
-            app_config="etc/testing/config-manager.json",
+            app_config="etc/testing/config-manager.toml",
             target=secpi.manager.main,
         )
         # Manager needs a bit longer to start?
@@ -108,7 +108,7 @@ class WorkerServiceWrapper(AmqpServiceWrapper):
     def run(self):
         self.start_process(
             name="secpi-worker",
-            app_config="etc/testing/config-worker.json",
+            app_config="etc/testing/config-worker.toml",
             target=secpi.worker.main,
         )
         # time.sleep(0.25)
@@ -118,7 +118,7 @@ class WebinterfaceServiceWrapper(BaseServiceWrapper):
     def run(self):
         self.start_process(
             name="secpi-web",
-            app_config="etc/testing/config-web.json",
+            app_config="etc/testing/config-web.toml",
             target=secpi.webinterface.main,
         )
 

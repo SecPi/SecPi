@@ -1,7 +1,8 @@
-import json
 import logging
 import pathlib
 import typing as t
+
+import tomlkit
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class ApplicationConfig:
             raise FileNotFoundError(self.ERROR_FILE_MISSING)
         logger.info(f"Loading configuration from {self.filepath}")
         with open(self.filepath, "r") as config_file:
-            self.config = json.load(config_file)
+            self.config = tomlkit.load(config_file)
 
     def save(self):
         if self.filepath is None:
@@ -31,7 +32,7 @@ class ApplicationConfig:
             return
         logger.info(f"Saving configuration to {self.filepath}")
         with open(self.filepath, "w") as config_file:
-            json.dump(self.config, fp=config_file, indent=2)
+            tomlkit.dump(self.config, fp=config_file)
 
     def get(self, key, default=None):
         return self.config.get(key, default)

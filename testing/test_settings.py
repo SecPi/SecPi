@@ -1,13 +1,14 @@
-import json
 from pathlib import Path
+
+import tomlkit
 
 
 def test_configuration_files():
     """
     Verify that all configuration files are valid JSON.
     """
-    json_files = list(Path("./etc").rglob("*.json"))
-    assert len(json_files) >= 9
-    for json_file in json_files:
-        with open(json_file, "r") as f:
-            json.load(f)
+    config_files = list(Path("./etc").rglob("*.toml"))
+    assert len(config_files) >= 9
+    for config_file in config_files:
+        with open(config_file, "r") as f:
+            tomlkit.load(f)

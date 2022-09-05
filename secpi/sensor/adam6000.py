@@ -34,14 +34,11 @@ Setup
 Configuration
 =============
 
-Add this snippet to your `manager/config.json`::
+Add this snippet to your `config-manager.toml`::
 
-    "global": {
-            "adam6000": {
-                    "mqtt_broker_ip": "localhost",
-                    "mqtt_topic": "Advantech/11E1DAF0ECCE"
-            }
-    }
+    [global.adam6000]
+    mqtt_broker_ip = "localhost"
+    mqtt_topic = "Advantech/11E1DAF0ECCE"
 
 
 Usage

@@ -1,0 +1,13 @@
+[amqp]
+uri = "amqp://guest:guest@localhost:5672"
+cacert = "/etc/secpi/certs/ca/cacert.pem"
+certfile = "/etc/secpi/certs/manager.cert.pem"
+keyfile = "/etc/secpi/certs/manager.key.pem"
+
+[database]
+uri = "sqlite:///var/lib/secpi/secpi-database.sqlite"
+
+[directories]
+__alarms = "/var/spool/secpi/alarms"
+
+[global]

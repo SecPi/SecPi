@@ -7,15 +7,15 @@ then
 
 	if [ $1 = "manager" ]
 	then
-		secpi-manager --app-config=etc/development/config-manager.json
+		secpi-manager --app-config=etc/development/config-manager.toml
 
 	elif [ $1 = "worker" ]
 	then
-		secpi-worker --app-config=etc/development/config-worker.json
+		secpi-worker --app-config=etc/development/config-worker.toml
 
 	elif [ $1 = "webinterface" ]
 	then
-		secpi-web --app-config=etc/development/config-web.json
+		secpi-web --app-config=etc/development/config-web.toml
 	else
 		echo "Usage: startup.sh <manager|worker|webinterface>"
 	fi

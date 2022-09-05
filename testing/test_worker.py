@@ -25,7 +25,7 @@ def test_worker_start_stop():
     app_log = service.read_log()
 
     # Verify everything is in place.
-    assert "Loading configuration from etc/testing/config-worker.json" in app_log
+    assert "Loading configuration from etc/testing/config-worker.toml" in app_log
     assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log
     assert "Connecting to AMQP broker successful" in app_log
     assert "Setting up sensors and actions" in app_log

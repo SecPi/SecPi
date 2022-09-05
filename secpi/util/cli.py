@@ -12,7 +12,7 @@ def parse_cmd_args() -> StartupOptions:
         dest="app_config",
         type=pathlib.Path,
         required=False,
-        help="Path to the `config-worker.json` configuration file",
+        help="Path to the `config-{manager,worker,web}.toml` configuration file",
     )
     parser.add_argument(
         "--logging-config",
