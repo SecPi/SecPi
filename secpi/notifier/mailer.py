@@ -86,6 +86,10 @@ class Mailer(Notifier):
         """
         Add file artefacts as attachments to the email.
         """
+        if info.payload is None:
+            logger.debug("Notification has no attachments")
+            return
+
         if not self.unzip_attachments:
             filename = f"{info.attachment_name}.zip"
             self.prepare_add_attachment(filename, info.payload)

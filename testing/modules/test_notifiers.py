@@ -80,8 +80,7 @@ def test_notifier_mailer(caplog, smtpd):
     assert "Loading class successful: secpi.notifier.mailer.Mailer" in caplog.messages
     assert "Mailer: Notifier initialized" in caplog.messages
     assert "Notifying via SMTP email" in caplog.messages
-    assert "Mailer: Decoding zip file as requested" in caplog.messages
-    assert "Failed to prepare email attachments" in caplog.messages
+    assert "Notification has no attachments" in caplog.messages
     # assert re.match(".*Mailer: Will look into .+ for data.*", caplog.text, re.DOTALL)
     assert "Mailer: Trying to send mail without authentication" in caplog.messages
     assert "Mailer: Establishing connection to SMTP server" in caplog.messages
