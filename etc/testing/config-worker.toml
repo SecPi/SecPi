@@ -18,8 +18,7 @@ name = "test-action-1"
 module = "test"
 class = "TestAction"
 active_state = true
-[actions.params]
-msg = "foobar"
+params = { msg = "foobar" }
 
 [[actions]]
 id = 2
@@ -27,8 +26,7 @@ name = "test-action-2"
 module = "test"
 class = "TestAction"
 active_state = false
-[actions.params]
-msg = "bazqux"
+params = { msg = "bazqux" }
 
 
 # Sensor items
@@ -37,7 +35,4 @@ id = 1
 name = "tcp-listener-1234"
 module = "network"
 class = "TCPPortListener"
-[sensors.params]
-ip = "localhost"
-port = "1234"
-
+params = { ip = "localhost", port = "1234" }
