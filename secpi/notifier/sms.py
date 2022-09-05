@@ -73,7 +73,8 @@ class Sms(Notifier):
             for recipient in self.recipients:
                 try:
                     logger.debug("Sms: Sending message to %s" % recipient)
-                    success = self.modem.sendSms(recipient, info_str, waitForDeliveryReport=False)
+                    # TODO: Where to report successful outcome?
+                    _ = self.modem.sendSms(recipient, info_str, waitForDeliveryReport=False)
 
                 # Timeout when sending the SMS.
                 except gsmmodem.exceptions.TimeoutException:

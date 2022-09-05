@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class SparkNotifier(Notifier):
     def __init__(self, id, params):
         super(SparkNotifier, self).__init__(id, params)
-        if not "personal_token" in params or not "room" in params:
+        if "personal_token" not in params or "room" not in params:
             self.corrupted = True
             logger.error("Token or room name missing")
             return
@@ -48,9 +48,10 @@ class SparkNotifier(Notifier):
 
                     room_id = new_room["id"]
 
-                if room_id != None:
+                if room_id is not None:
                     logger.debug("Found room: %s" % room_id)
-                    noti_req = requests.post(
+                    # TODO: Where to report successful outcome?
+                    _ = requests.post(
                         "https://api.ciscospark.com/v1/messages",
                         headers=auth_header,
                         data={"roomId": room_id, "text": info_str},

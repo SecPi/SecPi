@@ -42,7 +42,8 @@ class DropboxFileUpload(Notifier):
 
             try:
                 logger.info(f"DropboxFileUpload: Uploading file {filename} to {self.path}")
-                res = self.dbx.files_upload(info.payload, filepath)
+                # TODO: Where to report successful outcome?
+                _ = self.dbx.files_upload(info.payload, filepath)
                 logger.info(f"DropboxFileUpload: Upload of file {filename} succeeded")
             except Exception:
                 logger.exception("DropboxFileUpload: Uploading file failed")

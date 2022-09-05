@@ -89,6 +89,7 @@ class SystemTemperature(Sensor):  # DS18B20 digital temperature sensor
             lines = self.read_temp_raw()
         equals_pos = lines[1].find("t=")
         if equals_pos != -1:
-            temp_string = lines[1][equals_pos + 2 :]
+            begin = equals_pos + 2
+            temp_string = lines[1][begin:]
             temp_c = float(temp_string) / 1000.00
         return temp_c

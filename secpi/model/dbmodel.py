@@ -1,4 +1,5 @@
 import datetime
+import typing as t
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
@@ -124,7 +125,9 @@ class Action(Base):
     module = Column(String, nullable=False)
     active_state = Column(Boolean, nullable=False, default=True)
 
-    params = relationship("Param", primaryjoin="and_(Param.object_id==Action.id, Param.object_type=='action')")
+    params: t.List["Param"] = relationship(
+        "Param", primaryjoin="and_(Param.object_id==Action.id, Param.object_type=='action')"
+    )
 
     def __repr__(self):
         return "Action %s with class %s" % (self.name, self.cl)

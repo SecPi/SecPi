@@ -547,8 +547,9 @@ class ResponseItem:
     def open_circuit_humanized(items: t.List["ResponseItem"]):
         open_circuit = []
         for state in items:
-            sensor_id = state.registration.sensor.id
-            sensor_channel = state.registration.channel
+            # TODO: Use more information, for...?
+            # sensor_id = state.registration.sensor.id
+            # sensor_channel = state.registration.channel
             sensor_name = state.registration.name
             value = state.value
             if value is True:

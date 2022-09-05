@@ -1,4 +1,5 @@
 /.cache
+/.ruff_cache
 /.idea
 /.vagrant
 /.venv*

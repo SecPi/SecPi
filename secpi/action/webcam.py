@@ -36,11 +36,15 @@ class Webcam(Action):
         logger.debug("Webcam: Trying to take pictures")
         try:
             self.cam.start()
-        except SystemError as se:  # device path wrong
+
+        # Device path wrong.
+        except SystemError:
             logger.exception("Starting webcam failed")
             self.post_err("Webcam: Wasn't able to find video device at device path: %s" % self.path)
             return
-        except AttributeError as ae:  # init failed, taking pictures won't work -> shouldn't happen but anyway
+
+        # Init failed, taking pictures won't work -> shouldn't happen but anyway.
+        except AttributeError:
             logger.exception("Starting webcam failed")
             self.post_err("Webcam: Couldn't take pictures because video device wasn't initialized properly")
             return

@@ -12,6 +12,8 @@ from pathlib import Path
 
 import appdirs
 import pika
+import pika.channel
+from sqlalchemy import true
 
 from secpi.model import constants
 from secpi.model.dbmodel import (
@@ -253,15 +255,15 @@ class Manager(Service):
 
         self.cleanup_notifiers()
 
-        if msg["active_state"] == True:
+        if msg["active_state"] is True:
             self.setup_notifiers()
             logger.info("Activating setup: %s" % msg["setup_name"])
 
-        workers = self.db.session.query(Worker).filter(Worker.active_state == True).all()
+        workers = self.db.session.query(Worker).filter(Worker.active_state == true()).all()
         for worker in workers:
             config = self.prepare_config(worker.id)
             # check if we are deactivating --> worker should be deactivated!
-            if msg["active_state"] == False:
+            if msg["active_state"] is False:
                 config["worker"]["active"] = False
                 logger.info("Deactivating setup: %s" % msg["setup_name"])
 
@@ -341,8 +343,8 @@ class Manager(Service):
         workers = (
             self.db.session.query(Worker)
             .join((Action, Worker.actions))
-            .filter(Worker.active_state == True)
-            .filter(Action.active_state == True)
+            .filter(Worker.active_state == true())
+            .filter(Action.active_state == true())
             .all()
         )
 
@@ -381,7 +383,7 @@ class Manager(Service):
     # initialize the notifiers
     def setup_notifiers(self):
         logger.info("Setting up notifiers")
-        notifiers = self.db.session.query(Notifier).filter(Notifier.active_state == True).all()
+        notifiers = self.db.session.query(Notifier).filter(Notifier.active_state == true()).all()
 
         for notifier in notifiers:
             params = {}
@@ -499,7 +501,7 @@ class Manager(Service):
             self.db.session.query(Sensor)
             .join(Zone)
             .join((Setup, Zone.setups))
-            .filter(Setup.active_state == True)
+            .filter(Setup.active_state == true())
             .filter(Sensor.worker_id == worker_id)
             .all()
         )
@@ -527,7 +529,7 @@ class Manager(Service):
             self.db.session.query(Action)
             .join((Worker, Action.workers))
             .filter(Worker.id == worker_id)
-            .filter(Action.active_state == True)
+            .filter(Action.active_state == true())
             .all()
         )
 

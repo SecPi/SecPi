@@ -52,7 +52,8 @@ class SecPiTCPHandler(socketserver.BaseRequestHandler):
         return
 
     def handle(self):
-        data = self.request.recv(1024)
+        # TODO: Evaluate received data.
+        _ = self.request.recv(1024)
         self.request.close()
         return
 
