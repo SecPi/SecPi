@@ -5,7 +5,7 @@
 
 <h1>Workers</h1>
 
-A worker is a Pi which listens to sensor inputs and performs actions in the event of an alarm.
+A worker listens to sensor inputs and performs actions in the event of an alarm.
 
 
 <%include file="angular_edit.mako" args="baseclass='workers', basetitle='Worker'" />

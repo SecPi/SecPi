@@ -113,11 +113,11 @@ class Manager(Service):
 
         # Load workers from database.
         workers = self.db.session.query(Worker).all()
-        for pi in workers:
-            channel.queue_declare(queue=constants.QUEUE_ACTION + str(pi.id))
-            channel.queue_declare(queue=constants.QUEUE_CONFIG + str(pi.id))
-            channel.queue_bind(queue=constants.QUEUE_ACTION + str(pi.id), exchange=constants.EXCHANGE)
-            channel.queue_bind(queue=constants.QUEUE_CONFIG + str(pi.id), exchange=constants.EXCHANGE)
+        for worker in workers:
+            channel.queue_declare(queue=constants.QUEUE_ACTION + str(worker.id))
+            channel.queue_declare(queue=constants.QUEUE_CONFIG + str(worker.id))
+            channel.queue_bind(queue=constants.QUEUE_ACTION + str(worker.id), exchange=constants.EXCHANGE)
+            channel.queue_bind(queue=constants.QUEUE_CONFIG + str(worker.id), exchange=constants.EXCHANGE)
 
         # Define callbacks for alarm and data queues.
         channel.basic_consume(
@@ -200,11 +200,9 @@ class Manager(Service):
         ip_addresses = json.loads(body)
         logger.info("Got config request with following IP addresses: %s" % ip_addresses)
 
-        pi_id = None
-        worker = self.db.session.query(Worker).filter(Worker.address.in_(ip_addresses)).first()
+        worker: Worker = self.db.session.query(Worker).filter(Worker.address.in_(ip_addresses)).first()
         if worker:
-            pi_id = worker.id
-            logger.debug("Found worker id %s for IP address %s" % (pi_id, worker.address))
+            logger.debug(f"Found worker id {worker.id} for IP address {worker.address}")
         else:
             logger.error("Unable able to find worker for given IP address(es)")
             reply_properties = pika.BasicProperties(correlation_id=properties.correlation_id)
@@ -213,8 +211,8 @@ class Manager(Service):
             )
             return
 
-        config = self.prepare_config(pi_id)
-        logger.info("Sending initial config to worker with id %s" % pi_id)
+        config = self.prepare_config(worker.id)
+        logger.info(f"Sending initial config to worker with id {worker.id}")
         reply_properties = pika.BasicProperties(
             correlation_id=properties.correlation_id, content_type="application/json"
         )
@@ -260,15 +258,15 @@ class Manager(Service):
             logger.info("Activating setup: %s" % msg["setup_name"])
 
         workers = self.db.session.query(Worker).filter(Worker.active_state == True).all()
-        for pi in workers:
-            config = self.prepare_config(pi.id)
+        for worker in workers:
+            config = self.prepare_config(worker.id)
             # check if we are deactivating --> worker should be deactivated!
             if msg["active_state"] == False:
                 config["active"] = False
                 logger.info("Deactivating setup: %s" % msg["setup_name"])
 
-            self.send_json_message(constants.QUEUE_CONFIG + str(pi.id), config)
-            logger.info("Sent config to worker %s" % pi.name)
+            self.send_json_message(constants.QUEUE_CONFIG + str(worker.id), config)
+            logger.info("Sent config to worker %s" % worker.name)
 
     def got_alarm(self, ch, method, properties, body):
         """
@@ -487,10 +485,10 @@ class Manager(Service):
 
         self.notifiers = []
 
-    def prepare_config(self, pi_id):
-        logger.info("Preparing config for worker with id %s" % pi_id)
+    def prepare_config(self, worker_id):
+        logger.info("Preparing config for worker with id %s" % worker_id)
         conf = {
-            "pi_id": pi_id,
+            "worker_id": worker_id,
             "active": False,  # default to false, will be overriden if should be true
         }
 
@@ -499,7 +497,7 @@ class Manager(Service):
             .join(Zone)
             .join((Setup, Zone.setups))
             .filter(Setup.active_state == True)
-            .filter(Sensor.worker_id == pi_id)
+            .filter(Sensor.worker_id == worker_id)
             .all()
         )
 
@@ -525,7 +523,7 @@ class Manager(Service):
         actions: t.List[Action] = (
             self.db.session.query(Action)
             .join((Worker, Action.workers))
-            .filter(Worker.id == pi_id)
+            .filter(Worker.id == worker_id)
             .filter(Action.active_state == True)
             .all()
         )

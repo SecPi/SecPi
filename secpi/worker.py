@@ -57,8 +57,8 @@ class Worker(Service):
         self.bus = AMQPAdapter.from_uri(config.get("amqp", {}).get("uri"))
         self.connect()
 
-        # if we don't have a pi id we need to request the initial config, afterwards we have to reconnect
-        # to the queues which are specific to the pi id -> hence, call connect again
+        # if we don't have a worker id we need to request the initial config, afterwards we have to reconnect
+        # to the queues which are specific to the worker id -> hence, call connect again
         if not self.worker_id:
             self.fetch_init_config()
         else:
@@ -352,9 +352,9 @@ class Worker(Service):
                 s = self.load_plugin(sensor["module"], sensor["class"])
                 sen = s(sensor["id"], sensor["params"], self)
                 sen.activate()
-            except Exception as e:
+            except Exception as ex:
                 self.post_err(
-                    "Pi with id '%s' wasn't able to register sensor '%s':\n%s" % (self.worker_id, sensor["class"], e)
+                    f"Worker with id '{self.worker_id}' wasn't able to register sensor '{sensor['class']}': {ex}"
                 )
             else:
                 self.sensors.append(sen)
@@ -381,9 +381,9 @@ class Worker(Service):
                 logger.info("Registering action: %s" % action["id"])
                 a = self.load_plugin(action["module"], action["class"])
                 act = a(action["id"], action["params"], self)
-            except Exception as e:  # AttributeError, KeyError
+            except Exception as ex:
                 self.post_err(
-                    "Pi with id '%s' wasn't able to register action '%s':\n%s" % (self.worker_id, action["class"], e)
+                    f"Worker with id '{self.worker_id}' wasn't able to register sensor '{action['class']}': {ex}"
                 )
             else:
                 self.actions.append(act)

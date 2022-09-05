@@ -44,7 +44,7 @@ Raise alarm per message to the AMQP bus::
     amqp-consume --queue=secpi-alarm cat
 
     # Emulate "raise alarm" bus message.
-    echo '{"pi_id": 1, "sensor_id": 1, "message": "Got TCP connection, raising alarm", "datetime": "2022-08-27 02:33:33"}' | amqp-publish --routing-key=secpi-alarm
+    echo '{"worker_id": 1, "sensor_id": 1, "message": "Got TCP connection, raising alarm", "datetime": "2022-08-27 02:33:33"}' | amqp-publish --routing-key=secpi-alarm
 
 
 
