@@ -98,5 +98,8 @@ def test_webinterface_version_in_footer(webinterface_service):
     """
     Verify that the current software version is reflected in the website footer.
     """
+    # Before testing, wait a bit.
+    time.sleep(0.1)
+
     response = requests.get(url=webinterface_service.BASEURL)
     assert f"Version {__version__}" in response.text
