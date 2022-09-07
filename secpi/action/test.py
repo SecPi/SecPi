@@ -33,7 +33,7 @@ class TestAction(Action):
         try:
             logger.info("Creating file artefacts in memory")
             return self.create_file_artefacts()
-        except:
+        except Exception:
             logger.exception("Failed creating file artefacts")
 
     def create_file_artefacts(self):

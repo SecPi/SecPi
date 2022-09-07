@@ -64,7 +64,7 @@ class Mailer(Notifier):
 
             try:
                 self.prepare_mail_attachments(info)
-            except:
+            except Exception:
                 logger.exception("Failed to prepare email attachments")
 
             if self.smtp_security == "STARTTLS":
@@ -113,7 +113,7 @@ class Mailer(Notifier):
         """Add single attachment to current mail message"""
 
         # Determine content type
-        ctype, encoding = mimetypes.guess_type(filename, strict=False)
+        ctype, _ = mimetypes.guess_type(filename, strict=False)
         maintype, subtype = ctype.split("/", 1)
 
         # Create proper MIME part by maintype

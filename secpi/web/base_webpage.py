@@ -7,7 +7,7 @@ from secpi.util.common import str_to_value
 from secpi.util.web import json_handler
 
 
-class BaseWebPage(object):
+class BaseWebPage:
     """A baseclass for a CherryPy web page."""
 
     def __init__(self, baseclass):
@@ -17,7 +17,7 @@ class BaseWebPage(object):
     def objectToDict(self, obj):
         data = {}
 
-        for k, v in self.fields.items():
+        for k in self.fields.keys():
             data[k] = obj.__dict__[k]
 
         return data

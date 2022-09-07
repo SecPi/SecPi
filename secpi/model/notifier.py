@@ -1,7 +1,7 @@
 import abc
 
 
-class Notifier(object):
+class Notifier:
     def __init__(self, id, params):
         self.id = id
         self.params = params

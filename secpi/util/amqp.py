@@ -95,11 +95,11 @@ class AMQPAdapter:
             logger.info("Disconnecting")
             try:
                 self.channel.close()
-            except:
+            except Exception:
                 pass
             try:
                 self.connection.close()
-            except:
+            except Exception:
                 pass
 
         self.channel = None
@@ -237,7 +237,7 @@ class AMQPAdapter:
             if self.connection is not None and self.connection.is_open:
                 self.connection.sleep(duration)
                 return
-        except:
+        except Exception:
             logger.exception("Sleeping failed")
 
         time.sleep(duration)

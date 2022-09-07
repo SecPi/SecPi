@@ -66,7 +66,7 @@ class Webcam(Action):
 
         try:
             self.cam.stop()
-        except:
+        except Exception:
             logger.exception("Stopping Webcam failed")
 
         logger.debug("Webcam: Finished taking pictures")

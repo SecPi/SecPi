@@ -203,7 +203,7 @@ format = [
   {cmd="isort ."},
 ]
 check-style = [
-  {cmd="ruff ."},
+  {cmd="ruff --ignore=F821 ."},
   {cmd="black --check ."},
   {cmd="isort --check ."},
 ]

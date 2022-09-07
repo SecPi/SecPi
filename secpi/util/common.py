@@ -54,7 +54,7 @@ def str_to_value(val):
                 try:
                     dat = dateutil.parser.parse(val)
                     return dat.replace(tzinfo=None)  # pytz.UTC.localize(dat)
-                except:
+                except Exception:
                     return val
 
     return val

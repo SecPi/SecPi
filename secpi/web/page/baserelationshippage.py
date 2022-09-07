@@ -3,7 +3,7 @@ import cherrypy
 from secpi.util.web import json_handler
 
 
-class BaseRelationshipPage(object):
+class BaseRelationshipPage:
     def __init__(self, leftclass, leftclassname, rightclass, rightclassname):
         self.lclass = leftclass
         self.lclname = leftclassname

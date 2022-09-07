@@ -26,7 +26,7 @@ class AlarmDataPage:
 
     def get_size(self, start_path):
         total_size = 0
-        for dirpath, dirnames, filenames in walk(start_path):
+        for dirpath, _, filenames in walk(start_path):
             for f in filenames:
                 fp = path.join(dirpath, f)
                 total_size += path.getsize(fp)

@@ -44,5 +44,5 @@ class Service:
             # Invoke shutdown.
             if action == "shutdown":
                 self.stop()
-        except:
+        except Exception:
             logger.exception("Processing operational message failed")

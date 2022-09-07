@@ -26,7 +26,7 @@ def reset_database():
     except TypeError:
         try:
             p.unlink()
-        except:
+        except Exception:
             pass
 
 

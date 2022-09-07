@@ -239,7 +239,7 @@ class Webinterface:
             "Content-Type" in cherrypy.request.headers
             and "application/json" in cherrypy.request.headers["Content-Type"].lower()
         ):
-            exc_type, exc_value, exc_traceback = sys.exc_info()
+            _, exc_value, _ = sys.exc_info()
             payload = json.dumps(
                 {
                     "status": "error",
@@ -427,7 +427,7 @@ class Webinterface:
                     message = "Remote shutdown not allowed, skipping signal"
                     logger.warning(message)
                     return FailedResponse(message).to_dict()
-        except:
+        except Exception:
             if self.is_shutting_down:
                 raise SystemExit(0)
             logger.exception("Processing operational message failed")
@@ -452,7 +452,7 @@ def run_webinterface(options: StartupOptions):
     try:
         app_config = ApplicationConfig(filepath=options.app_config)
         app_config.load()
-    except:
+    except Exception:
         logger.exception("Loading configuration failed")
         sys.exit(1)
 

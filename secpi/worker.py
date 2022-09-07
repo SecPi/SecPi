@@ -422,7 +422,7 @@ def run_worker(options: StartupOptions):
     try:
         app_config = ApplicationConfig(filepath=options.app_config)
         app_config.load()
-    except:
+    except Exception:
         logger.exception("Loading configuration failed")
         sys.exit(1)
 

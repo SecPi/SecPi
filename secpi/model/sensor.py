@@ -6,7 +6,7 @@ from secpi.model import constants
 logger = logging.getLogger(__name__)
 
 
-class Sensor(object):
+class Sensor:
     def __init__(self, id, params, worker):
         self.id = id
         self.params = params

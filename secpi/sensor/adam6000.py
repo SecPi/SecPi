@@ -298,7 +298,7 @@ class AdvantechAdamMqttConnector:
             all_responses = self.process_device_data(data=self.state)
             self.submit_summary_alarm(all_responses, self.state)
 
-        except:
+        except Exception:
             logger.exception("Seeding state failed")
 
     def mqtt_subscribe(self):

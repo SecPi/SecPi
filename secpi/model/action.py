@@ -5,7 +5,7 @@ import typing as t
 import zipfile
 
 
-class Action(object):
+class Action:
     def __init__(self, id, params, worker):
         self.id = id
         self.params = params

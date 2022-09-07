@@ -13,7 +13,7 @@ def main():
 
     while cap.isOpened():
         ret, frame = cap.read()
-        if ret == True:
+        if ret is True:
             frame = cv2.flip(frame, 0)
 
             # write the flipped frame

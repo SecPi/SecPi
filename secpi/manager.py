@@ -69,7 +69,7 @@ class Manager(Service):
         self.db = DatabaseAdapter(uri=self.database_uri)
         try:
             self.db.connect()
-        except:
+        except Exception:
             logger.exception(f"Connecting to database at '{self.database_uri}' failed")
             sys.exit(1)
 
@@ -475,7 +475,7 @@ class Manager(Service):
             return
 
         self.holddown_state = True
-        for i in range(0, self.holddown_time):
+        for _ in range(0, self.holddown_time):
             time.sleep(1)
         logger.debug("Holddown is over")
         self.holddown_state = False
@@ -570,7 +570,7 @@ def run_manager(options: StartupOptions):
     try:
         app_config = ApplicationConfig(filepath=options.app_config)
         app_config.load()
-    except:
+    except Exception:
         logger.exception("Loading configuration failed")
         sys.exit(1)
 
