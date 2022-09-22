@@ -176,8 +176,9 @@ omit = [
 
 [tool.ruff]
 line-length = 120
-exclude = [
+extend-exclude = [
   "tmp",
+  ".venv39",
   "secpi/web/page/__init__.py",
 ]
 
@@ -204,5 +205,8 @@ check-style = [
   {cmd="ruff ."},
   {cmd="black --check ."},
   {cmd="isort --check ."},
+]
+test = [
+  {cmd="pytest"},
 ]
 build = {cmd="python -m build"}
