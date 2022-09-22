@@ -150,7 +150,8 @@ line-length = 120
 
 [tool.isort]
 profile = "black"
-skip_glob = "**/site-packages/**"
+extend_skip = [".cache", ".coverage-reports", ".github", ".pytest_cache", ".ruff_cache", ".vagrant", ".venv39", "tmp", "var"]
+extend_skip_glob = ["**/site-packages/**"]
 
 [tool.pytest.ini_options]
 minversion = "2.0"
