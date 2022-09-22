@@ -32,7 +32,7 @@ class ApplicationConfig:
             return
         logger.info(f"Saving configuration to {self.filepath}")
         with open(self.filepath, "w") as config_file:
-            tomlkit.dump(self.config, fp=config_file)
+            tomlkit.dump(self.config, fp=config_file, sort_keys=True)
 
     def get(self, key, default=None):
         return self.config.get(key, default)
