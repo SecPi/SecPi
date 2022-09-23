@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import tomlkit
+import toml
 
 
 def test_configuration_files():
@@ -11,4 +11,4 @@ def test_configuration_files():
     assert len(config_files) >= 9
     for config_file in config_files:
         with open(config_file, "r") as f:
-            tomlkit.load(f)
+            toml.load(f)

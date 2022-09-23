@@ -64,7 +64,7 @@ dependencies = [
   # Baseline modules.
   "appdirs<2",
   "dataclass-wizard<1",
-  "tomlkit<1",
+  "toml<1",
   "requests<3",
   "pika<2",
   "python-dateutil<3",

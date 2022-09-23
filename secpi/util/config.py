@@ -2,7 +2,7 @@ import logging
 import pathlib
 import typing as t
 
-import tomlkit
+import toml
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class ApplicationConfig:
             raise FileNotFoundError(self.ERROR_FILE_MISSING)
         logger.info(f"Loading configuration from {self.filepath}")
         with open(self.filepath, "r") as config_file:
-            self.config = tomlkit.load(config_file)
+            self.config = toml.load(config_file)
 
     def save(self):
         if self.filepath is None:
@@ -32,7 +32,7 @@ class ApplicationConfig:
             return
         logger.info(f"Saving configuration to {self.filepath}")
         with open(self.filepath, "w") as config_file:
-            tomlkit.dump(self.config, fp=config_file, sort_keys=True)
+            toml.dump(self.config, f=config_file)
 
     def get(self, key, default=None):
         return self.config.get(key, default)
