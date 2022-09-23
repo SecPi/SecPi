@@ -34,8 +34,8 @@ class Service:
 
         Usage::
 
-            echo '{"action": "shutdown"}' | amqp-publish --url="amqp://guest:guest@localhost:5672" --routing-key=secpi-op-1  # noqa:E501
-        """
+            echo '{"action": "shutdown"}' | amqp-publish --url="amqp://guest:guest@localhost:5672" --routing-key=secpi-op-1
+        """  # noqa:E501
         logger.info(f"Got message on operational channel: {body}")
         try:
             message = json.loads(body)
