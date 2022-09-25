@@ -83,8 +83,8 @@ class Manager(Service):
         for setup in setups:
             if setup.active_state:
                 activate_notifiers = True
-            logger.info(f"Found active setup: {setup.name}")
-            break
+                logger.info(f"Found active setup: {setup.name}")
+                break
 
         # When a setup is active, also activate the notifiers.
         if activate_notifiers:
