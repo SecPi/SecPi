@@ -37,7 +37,7 @@ class ApplicationConfig:
     def get(self, key, default=None):
         return self.config.get(key, default)
 
-    def set(self, key, value):
+    def set(self, key, value):  # noqa:A003
         self.config[key] = value
 
     def update(self, new_config):

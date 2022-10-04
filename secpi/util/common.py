@@ -25,11 +25,11 @@ from dataclass_wizard import DumpMeta, JSONSerializable
 logger = logging.getLogger(__name__)
 
 
-def filter_fields(fields, filter):
+def filter_fields(fields, filter_label):
     filtered_data = OrderedDict()
 
     for k, v in fields.items():
-        if filter in v["visible"]:
+        if filter_label in v["visible"]:
             filtered_data[k] = v
 
     return filtered_data
@@ -183,7 +183,7 @@ class DataContainer(JSONSerializable):
     https://github.com/rnag/dataclass-wizard/issues/63
     """
 
-    def __init_subclass__(cls, str=True):
+    def __init_subclass__(cls, str=True):  # noqa:A002
         """
         Method for binding child class to DumpMeta.
         """

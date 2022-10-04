@@ -43,16 +43,16 @@ class AlarmDataPage:
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out(handler=json_handler)
-    def list(self):
+    def list(self):  # noqa:A003
 
         return {"status": "error", "message": "This feature is currently disabled"}
 
-        dirs = []
+        directories = []
         # TODO: error management
         for d in listdir(self.datapath):
             dp = path.join(self.datapath, d)
             if path.isdir(dp):
-                dirs.append(
+                directories.append(
                     {
                         "name": d,
                         "path": dp,
@@ -62,9 +62,9 @@ class AlarmDataPage:
                     }
                 )
 
-        dirs.sort(key=lambda dir: dir["name"], reverse=True)
+        directories.sort(key=lambda directory: directory["name"], reverse=True)
 
-        return {"status": "success", "data": dirs}
+        return {"status": "success", "data": directories}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -115,15 +115,15 @@ class AlarmDataPage:
                 and "name" in cherrypy.request.json
                 and cherrypy.request.json["name"] != ""
             ):
-                dir = cherrypy.request.json["dir"]
+                directory = cherrypy.request.json["dir"]
                 name = cherrypy.request.json["name"]
 
-                fdir = path.join(self.datapath, dir)
+                fdir = path.join(self.datapath, directory)
                 fp = path.join(fdir, name)
                 if path.exists(fp):
                     with zipfile.ZipFile(fp, "r") as z:
                         z.extractall(fdir)
-                        return {"status": "success", "message": "File %s/%s extracted" % (dir, name)}
+                        return {"status": "success", "message": "File %s/%s extracted" % (directory, name)}
                 else:
                     return {"status": "error", "message": "File doesn't exist"}
             else:

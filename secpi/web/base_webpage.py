@@ -47,7 +47,7 @@ class BaseWebPage:
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out(handler=json_handler)
-    def list(self):
+    def list(self):  # noqa:A003
         if hasattr(cherrypy.request, "json"):
             qry = self.db.query(self.baseclass)
 

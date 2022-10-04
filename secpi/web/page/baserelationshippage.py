@@ -57,7 +57,7 @@ class BaseRelationshipPage:
     @cherrypy.expose()
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out(handler=json_handler)
-    def list(self):
+    def list(self):  # noqa:A003
         lefts = self.db.query(self.lclass).all()
 
         data = []
