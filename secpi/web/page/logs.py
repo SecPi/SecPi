@@ -8,7 +8,7 @@ from ..base_webpage import BaseWebPage
 
 class LogEntriesPage(BaseWebPage):
     def __init__(self):
-        super(LogEntriesPage, self).__init__(LogEntry)
+        super().__init__(LogEntry)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["logtime"] = {"name": "Time", "visible": ["list", "add"]}
         self.fields["ack"] = {"name": "Ack", "visible": ["list", "add", "update"], "type": "bool"}

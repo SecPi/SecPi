@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class Webcam(Action):
     def __init__(self, identifier, params, worker):
-        super(Webcam, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
 
         try:
             self.path = params["path"]

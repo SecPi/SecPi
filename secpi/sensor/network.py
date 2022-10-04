@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class TCPPortListener(Sensor):
     def __init__(self, identifier, params, worker):
         logger.info(f"Initializing sensor id={identifier} with parameters {params}")
-        super(TCPPortListener, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
         self.active = False
         address = (self.params["ip"], int(self.params["port"]))
         self.server = SecPiTCPServer(self, address, SecPiTCPHandler)
@@ -63,7 +63,7 @@ class SecPiTCPServer(socketserver.TCPServer):
     allow_reuse_address = True
 
     def __init__(self, sensor, server_address, handler_class=SecPiTCPHandler):
-        super(SecPiTCPServer, self).__init__(server_address, handler_class)
+        super().__init__(server_address, handler_class)
         self.sensor = sensor
         return
 

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Sms(Notifier):
     def __init__(self, identifier, params):
-        super(Sms, self).__init__(identifier, params)
+        super().__init__(identifier, params)
 
         try:
             self.port = params["port"]

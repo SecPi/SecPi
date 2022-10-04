@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class Mailer(Notifier):
     def __init__(self, identifier, params):
-        super(Mailer, self).__init__(identifier, params)
+        super().__init__(identifier, params)
 
         try:
             # SMTP Server config + data dir

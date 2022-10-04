@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class Speaker(Action):
     def __init__(self, identifier, params, worker):
-        super(Speaker, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
         try:
             self.path_to_audio = params["path_to_audio"]
             self.repetitions = int(params["repetitions"])

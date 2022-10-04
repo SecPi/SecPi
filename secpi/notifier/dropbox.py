@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class DropboxFileUpload(Notifier):
     def __init__(self, identifier, params):
 
-        super(DropboxFileUpload, self).__init__(identifier, params)
+        super().__init__(identifier, params)
         try:
             self.access_token = params["access_token"]
             self.path = params.get("path", "")

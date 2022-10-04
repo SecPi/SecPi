@@ -429,7 +429,7 @@ class AdvantechAdamSensor(Sensor):
 
     def __init__(self, identifier, params, worker):
         logger.info(f"Initializing sensor id={identifier} with parameters {params}")
-        super(AdvantechAdamSensor, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
 
         self.config = worker.config
 

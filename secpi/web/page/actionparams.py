@@ -5,7 +5,7 @@ from ..base_webpage import BaseWebPage
 
 class ActionParamsPage(BaseWebPage):
     def __init__(self):
-        super(ActionParamsPage, self).__init__(Param)
+        super().__init__(Param)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["object_id"] = {
             "name": "Action ID",

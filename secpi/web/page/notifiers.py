@@ -7,7 +7,7 @@ from ..base_webpage import BaseWebPage
 
 class NotifiersPage(BaseWebPage):
     def __init__(self):
-        super(NotifiersPage, self).__init__(Notifier)
+        super().__init__(Notifier)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["name"] = {"name": "Name", "visible": ["list", "add", "update"]}
         self.fields["description"] = {"name": "Description", "visible": ["list", "add", "update"]}

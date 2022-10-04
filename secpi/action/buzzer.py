@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class Buzzer(Action):
     def __init__(self, identifier, params, worker):
-        super(Buzzer, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
         try:
             self.duration = int(params["duration"])
             self.gpio_pin = int(params["gpio_pin"])

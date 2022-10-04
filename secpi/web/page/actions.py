@@ -7,7 +7,7 @@ from ..base_webpage import BaseWebPage
 
 class ActionsPage(BaseWebPage):
     def __init__(self):
-        super(ActionsPage, self).__init__(Action)
+        super().__init__(Action)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["name"] = {"name": "Name", "visible": ["list", "add", "update"]}
         self.fields["description"] = {"name": "Description", "visible": ["list", "add", "update"]}

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class GPIOSensor(Sensor):
     def __init__(self, identifier, params, worker):
         logger.info(f"Initializing sensor id={identifier} with parameters {params}")
-        super(GPIOSensor, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
         self.active = False
         try:
             self.gpio = int(params["gpio"])

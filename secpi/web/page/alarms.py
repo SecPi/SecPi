@@ -8,7 +8,7 @@ from ..base_webpage import BaseWebPage
 
 class AlarmsPage(BaseWebPage):
     def __init__(self):
-        super(AlarmsPage, self).__init__(Alarm)
+        super().__init__(Alarm)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["alarmtime"] = {"name": "Alarm Time", "visible": ["list"]}
         self.fields["sensor_id"] = {"name": "Sensor ID", "visible": ["list", "add"], "type": "number"}

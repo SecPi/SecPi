@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class SlackNotifier(Notifier):
     def __init__(self, identifier, params):
-        super(SlackNotifier, self).__init__(identifier, params)
+        super().__init__(identifier, params)
         if "bot_token" not in params or "channel" not in params:
             self.corrupted = True
             logger.error("Slack: Token or channel name missing")

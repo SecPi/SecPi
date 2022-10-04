@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Pinger(Sensor):
     def __init__(self, identifier, params, worker):
         logger.info(f"Initializing sensor id={identifier} with parameters {params}")
-        super(Pinger, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
 
         try:
             self.interval = float(params["interval"])

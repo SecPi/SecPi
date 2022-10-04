@@ -5,4 +5,4 @@ from .baserelationshippage import BaseRelationshipPage
 
 class WorkersActionsPage(BaseRelationshipPage):
     def __init__(self):
-        super(WorkersActionsPage, self).__init__(Worker, "worker", Action, "action")
+        super().__init__(Worker, "worker", Action, "action")

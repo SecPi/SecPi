@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class SystemTemperature(Sensor):  # DS18B20 digital temperature sensor
     def __init__(self, identifier, params, worker):
         logger.info(f"Initializing sensor id={identifier} with parameters {params}")
-        super(SystemTemperature, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
         # self.active = False
         try:
             self.min = int(params["min"])

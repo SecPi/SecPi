@@ -5,7 +5,7 @@ from ..base_webpage import BaseWebPage
 
 class SensorParamsPage(BaseWebPage):
     def __init__(self):
-        super(SensorParamsPage, self).__init__(Param)
+        super().__init__(Param)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["object_id"] = {
             "name": "Sensor ID",

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class TestAction(Action):
     def __init__(self, identifier, params, worker):
-        super(TestAction, self).__init__(identifier, params, worker)
+        super().__init__(identifier, params, worker)
 
         logger.debug("Test Action initialized")
 

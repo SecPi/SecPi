@@ -7,7 +7,7 @@ from ..base_webpage import BaseWebPage
 
 class WorkersPage(BaseWebPage):
     def __init__(self):
-        super(WorkersPage, self).__init__(Worker)
+        super().__init__(Worker)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
         self.fields["name"] = {"name": "Name", "visible": ["list", "add", "update"]}
         self.fields["address"] = {"name": "IP Address", "visible": ["list", "add", "update"]}

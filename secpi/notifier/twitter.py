@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class Twitter(Notifier):
     def __init__(self, identifier, params):
-        super(Twitter, self).__init__(identifier, params)
+        super().__init__(identifier, params)
 
         try:
             self.consumer_key = params["consumer_key"]
