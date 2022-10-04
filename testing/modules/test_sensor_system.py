@@ -27,7 +27,7 @@ def system_temperature_sensor(fake_device, worker_mock) -> Sensor:
     }
 
     # Create sensor instance.
-    sensor: Sensor = component(id=99, params=parameters, worker=worker_mock)
+    sensor: Sensor = component(identifier=99, params=parameters, worker=worker_mock)
 
     yield sensor
 

@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 class SipCall(Notifier):
-    def __init__(self, id, params):
-        super(SipCall, self).__init__(id, params)
+    def __init__(self, identifier, params):
+        super(SipCall, self).__init__(identifier, params)
 
         try:
             self.sip_number = params["sip_number"]

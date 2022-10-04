@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 class TCPPortListener(Sensor):
-    def __init__(self, id, params, worker):
-        logger.info(f"Initializing sensor id={id} with parameters {params}")
-        super(TCPPortListener, self).__init__(id, params, worker)
+    def __init__(self, identifier, params, worker):
+        logger.info(f"Initializing sensor id={identifier} with parameters {params}")
+        super(TCPPortListener, self).__init__(identifier, params, worker)
         self.active = False
         address = (self.params["ip"], int(self.params["port"]))
         self.server = SecPiTCPServer(self, address, SecPiTCPHandler)
@@ -36,13 +36,13 @@ class TCPPortListener(Sensor):
         t = threading.Thread(target=self.server.serve_forever)
         t.daemon = True
         t.start()
-        self.post_log(f"TCPPortListener: Sensor activated successfully, id={self.id}")
+        self.post_log(f"TCPPortListener: Sensor activated successfully, id={self.identifier}")
 
     def deactivate(self):
         self.active = False
         self.server.shutdown()
         self.server.server_close()
-        self.post_log(f"TCPPortListener: Sensor deactivated successfully, id={self.id}")
+        self.post_log(f"TCPPortListener: Sensor deactivated successfully, id={self.identifier}")
 
 
 # Request Handler

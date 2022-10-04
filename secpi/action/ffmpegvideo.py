@@ -22,8 +22,8 @@ class FFMPEGVideo(Action):
 
     DEBUG_FFMPEG_OUTPUT = True
 
-    def __init__(self, id, params, worker):
-        super(FFMPEGVideo, self).__init__(id, params, worker)
+    def __init__(self, identifier, params, worker):
+        super(FFMPEGVideo, self).__init__(identifier, params, worker)
 
         logger.info("FFMPEGVideo: Initializing")
 

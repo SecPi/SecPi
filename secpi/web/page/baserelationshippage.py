@@ -65,8 +65,8 @@ class BaseRelationshipPage:
         for item in lefts:
             rights = []
             for r in getattr(item, self.rclname + "s"):
-                rights.append({"name": r.name, "id": r.id})
+                rights.append({"name": r.name, "id": r.identifier})
 
-            data.append({"name": item.name, "id": item.id, self.rclname + "s": rights})
+            data.append({"name": item.name, "id": item.identifier, self.rclname + "s": rights})
 
         return {"status": "success", "data": data}

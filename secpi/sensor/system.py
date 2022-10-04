@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class SystemTemperature(Sensor):  # DS18B20 digital temperature sensor
-    def __init__(self, id, params, worker):
-        logger.info(f"Initializing sensor id={id} with parameters {params}")
-        super(SystemTemperature, self).__init__(id, params, worker)
+    def __init__(self, identifier, params, worker):
+        logger.info(f"Initializing sensor id={identifier} with parameters {params}")
+        super(SystemTemperature, self).__init__(identifier, params, worker)
         # self.active = False
         try:
             self.min = int(params["min"])
@@ -53,16 +53,16 @@ class SystemTemperature(Sensor):  # DS18B20 digital temperature sensor
                 name="thread-checker-%s" % self.device_id, target=self.check_temperature
             )
             self.checker_thread.start()
-            self.post_log(f"SystemTemperature: Sensor activated successfully, id={self.id}")
+            self.post_log(f"SystemTemperature: Sensor activated successfully, id={self.identifier}")
         else:
-            self.post_err(f"SystemTemperature: Sensor could not be activated, id={self.id}")
+            self.post_err(f"SystemTemperature: Sensor could not be activated, id={self.identifier}")
 
     def deactivate(self):
         if not self.corrupted:
             self.stop_thread = True
-            self.post_log(f"SystemTemperature: Sensor deactivated successfully, id={self.id}")
+            self.post_log(f"SystemTemperature: Sensor deactivated successfully, id={self.identifier}")
         else:
-            self.post_err(f"SystemTemperature: Sensor could not be deactivated, id={self.id}")
+            self.post_err(f"SystemTemperature: Sensor could not be deactivated, id={self.identifier}")
 
     def check_temperature(self):
         while True:

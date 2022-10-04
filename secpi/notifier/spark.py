@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class SparkNotifier(Notifier):
-    def __init__(self, id, params):
-        super(SparkNotifier, self).__init__(id, params)
+    def __init__(self, identifier, params):
+        super(SparkNotifier, self).__init__(identifier, params)
         if "personal_token" not in params or "room" not in params:
             self.corrupted = True
             logger.error("Token or room name missing")

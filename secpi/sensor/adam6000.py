@@ -427,9 +427,9 @@ class AdvantechAdamSensor(Sensor):
     lock = threading.Lock()
     connector: AdvantechAdamMqttConnector = None
 
-    def __init__(self, id, params, worker):
-        logger.info(f"Initializing sensor id={id} with parameters {params}")
-        super(AdvantechAdamSensor, self).__init__(id, params, worker)
+    def __init__(self, identifier, params, worker):
+        logger.info(f"Initializing sensor id={identifier} with parameters {params}")
+        super(AdvantechAdamSensor, self).__init__(identifier, params, worker)
 
         self.config = worker.config
 
@@ -456,7 +456,7 @@ class AdvantechAdamSensor(Sensor):
 
             def event_handler(response: ResponseItem, all_responses: t.List["ResponseItem"]):
                 logger.debug(
-                    f"Sensor state changed. id={self.id}, params={self.params}, "
+                    f"Sensor state changed. id={self.identifier}, params={self.params}, "
                     f"channel={response.registration.channel}, value={response.value}"
                 )
                 message_title = response.circuit_transition_humanized()
@@ -467,20 +467,20 @@ class AdvantechAdamSensor(Sensor):
 
             AdvantechAdamSensor.connector.register(self, event_handler)
 
-            self.post_log(f"ADAM: Sensor activated successfully, id={self.id}", constants.LEVEL_INFO)
+            self.post_log(f"ADAM: Sensor activated successfully, id={self.identifier}", constants.LEVEL_INFO)
         else:
-            self.post_err(f"ADAM: Sensor could not be activated, id={self.id}")
+            self.post_err(f"ADAM: Sensor could not be activated, id={self.identifier}")
 
     def deactivate(self):
         if not self.corrupted:
             AdvantechAdamSensor.connector.unregister(self)
-            self.post_log(f"ADAM: Sensor deactivated successfully, id={self.id}", constants.LEVEL_INFO)
+            self.post_log(f"ADAM: Sensor deactivated successfully, id={self.identifier}", constants.LEVEL_INFO)
 
             # When there are no registrations left, the MQTT subscriber can be stopped.
             if not AdvantechAdamSensor.connector.registrations:
                 self.stop_mqtt_subscriber()
         else:
-            self.post_err(f"ADAM: Sensor could not be deactivated, id={self.id}")
+            self.post_err(f"ADAM: Sensor could not be deactivated, id={self.identifier}")
 
     def start_mqtt_subscriber(self):
         """

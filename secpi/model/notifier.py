@@ -2,8 +2,8 @@ import abc
 
 
 class Notifier:
-    def __init__(self, id, params):
-        self.id = id
+    def __init__(self, identifier, params):
+        self.identifier = identifier
         self.params = params
         self.corrupted = False
 

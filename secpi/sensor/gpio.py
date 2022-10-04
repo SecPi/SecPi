@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 class GPIOSensor(Sensor):
-    def __init__(self, id, params, worker):
-        logger.info(f"Initializing sensor id={id} with parameters {params}")
-        super(GPIOSensor, self).__init__(id, params, worker)
+    def __init__(self, identifier, params, worker):
+        logger.info(f"Initializing sensor id={identifier} with parameters {params}")
+        super(GPIOSensor, self).__init__(identifier, params, worker)
         self.active = False
         try:
             self.gpio = int(params["gpio"])
@@ -74,15 +74,15 @@ class GPIOSensor(Sensor):
         if not self.corrupted:
             self.active = True
             self.setup_sensor()
-            self.post_log(f"GPIOSensor: Sensor activated successfully, id={self.id}")
+            self.post_log(f"GPIOSensor: Sensor activated successfully, id={self.identifier}")
         else:
-            self.post_err(f"GPIOSensor: Sensor could not be activated, id={self.id}")
+            self.post_err(f"GPIOSensor: Sensor could not be activated, id={self.identifier}")
 
     def deactivate(self):
         if not self.corrupted:
             self.active = False
             self.cleanup_sensor()
-            self.post_log(f"GPIOSensor: Sensor deactivated successfully, id={self.id}")
+            self.post_log(f"GPIOSensor: Sensor deactivated successfully, id={self.identifier}")
         else:
             # maybe make this more clear
-            self.post_err(f"GPIOSensor: Sensor could not be deactivated, id={self.id}")
+            self.post_err(f"GPIOSensor: Sensor could not be deactivated, id={self.identifier}")

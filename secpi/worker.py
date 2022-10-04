@@ -365,7 +365,7 @@ class Worker(Service):
         if self.sensors:
             for sensor in self.sensors:
                 sensor.deactivate()
-                logger.debug("Removed sensor: %d" % int(sensor.id))
+                logger.debug("Removed sensor: %d" % int(sensor.identifier))
 
         self.sensors = []
 
@@ -392,7 +392,7 @@ class Worker(Service):
     def cleanup_actions(self):
         for action in self.actions:
             action.cleanup()
-            logger.debug("Removed action: %d" % int(action.id))
+            logger.debug("Removed action: %d" % int(action.identifier))
 
         self.actions = []
 

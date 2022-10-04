@@ -19,7 +19,7 @@ def testaction_action(worker_mock) -> Action:
     }
 
     # Create action instance.
-    action: Action = component(id=99, params=parameters, worker=worker_mock)
+    action: Action = component(identifier=99, params=parameters, worker=worker_mock)
 
     yield action
 

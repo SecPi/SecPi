@@ -413,7 +413,7 @@ class Manager(Service):
                 notifier.notify(notification)
             except Exception as e:
                 logger.exception("Notification failed")
-                self.log_err("Error notifying %u: %s" % (notifier.id, e))
+                self.log_err("Error notifying %u: %s" % (notifier.identifier, e))
 
     def wait_for_action_response(self):
         """

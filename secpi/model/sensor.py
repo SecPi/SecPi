@@ -7,14 +7,14 @@ logger = logging.getLogger(__name__)
 
 
 class Sensor:
-    def __init__(self, id, params, worker):
-        self.id = id
+    def __init__(self, identifier, params, worker):
+        self.identifier = identifier
         self.params = params
         self.worker = worker
         self.corrupted = False
 
     def alarm(self, message):
-        self.worker.alarm(self.id, message)
+        self.worker.alarm(self.identifier, message)
 
     def post_log(self, msg, lvl=constants.LEVEL_INFO):
         self.worker.post_log(msg, lvl)

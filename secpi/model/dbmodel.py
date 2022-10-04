@@ -17,7 +17,7 @@ zone_setup_table = Table(
 
 class Setup(Base):
     __tablename__ = "setups"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     name = Column(String, nullable=False)
     description = Column(String)
     active_state = Column(Boolean, nullable=False, default=False)
@@ -30,7 +30,7 @@ class Setup(Base):
 
 class Zone(Base):
     __tablename__ = "zones"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     name = Column(String, nullable=False)
     description = Column(String)
 
@@ -42,7 +42,7 @@ class Zone(Base):
 
 class Sensor(Base):
     __tablename__ = "sensors"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     name = Column(String, nullable=False)
     description = Column(String)
 
@@ -62,7 +62,7 @@ class Sensor(Base):
 class Alarm(Base):
     __tablename__ = "alarms"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     alarmtime = Column(DateTime, nullable=False, default=datetime.datetime.now)
     ack = Column(Boolean, default=False)
     sensor_id = Column(Integer, ForeignKey("sensors.id"))
@@ -80,7 +80,7 @@ class Alarm(Base):
 class LogEntry(Base):
     __tablename__ = "logs"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     logtime = Column(DateTime, nullable=False, default=datetime.datetime.now)
     ack = Column(Boolean, default=False)
     level = Column(Integer, nullable=False)
@@ -102,7 +102,7 @@ worker_action_table = Table(
 class Worker(Base):
     __tablename__ = "workers"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     name = Column(String, nullable=False)
     address = Column(String, nullable=False)
     description = Column(String)
@@ -118,7 +118,7 @@ class Worker(Base):
 class Action(Base):
     __tablename__ = "actions"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     name = Column(String, nullable=False)
     description = Column(String)
     cl = Column(String, nullable=False)
@@ -136,7 +136,7 @@ class Action(Base):
 class Notifier(Base):
     __tablename__ = "notifiers"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     name = Column(String, nullable=False)
     description = Column(String)
     cl = Column(String, nullable=False)
@@ -152,7 +152,7 @@ class Notifier(Base):
 class Param(Base):
     __tablename__ = "params"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
     key = Column(String, nullable=False)
     value = Column(String, nullable=False)
     description = Column(String)

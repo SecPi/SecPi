@@ -23,7 +23,7 @@ def gpio_sensor(worker_mock, mocker) -> Sensor:
     }
 
     # Create sensor instance.
-    sensor: Sensor = component(id=99, params=parameters, worker=worker_mock)
+    sensor: Sensor = component(identifier=99, params=parameters, worker=worker_mock)
 
     yield sensor
 

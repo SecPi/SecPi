@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 class Speaker(Action):
-    def __init__(self, id, params, worker):
-        super(Speaker, self).__init__(id, params, worker)
+    def __init__(self, identifier, params, worker):
+        super(Speaker, self).__init__(identifier, params, worker)
         try:
             self.path_to_audio = params["path_to_audio"]
             self.repetitions = int(params["repetitions"])

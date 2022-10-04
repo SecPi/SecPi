@@ -69,9 +69,9 @@ class BaseWebPage:
     @cherrypy.tools.json_out(handler=json_handler)
     def delete(self):
         if hasattr(cherrypy.request, "json"):
-            id = cherrypy.request.json["id"]
-            if id:
-                obj = self.db.query(self.baseclass).get(id)
+            identifier = cherrypy.request.json["id"]
+            if identifier:
+                obj = self.db.query(self.baseclass).get(identifier)
                 if obj:
                     self.db.delete(obj)
                     self.db.commit()
@@ -96,7 +96,7 @@ class BaseWebPage:
 
                 self.db.add(newObj)
                 self.db.commit()
-                return {"status": "success", "message": "Added new object with id %i" % newObj.id}
+                return {"status": "success", "message": "Added new object with id %i" % newObj.identifier}
 
         return {"status": "error", "message": "No data received"}
 
@@ -107,14 +107,14 @@ class BaseWebPage:
         if hasattr(cherrypy.request, "json"):
             data = cherrypy.request.json
 
-            id = data["id"]
+            identifier = data["id"]
 
             # check for valid id
-            if id and id > 0:
+            if identifier and identifier > 0:
 
                 if data and len(data) > 0:
                     cherrypy.log("update something %s" % data)
-                    obj = self.db.query(self.baseclass).get(id)
+                    obj = self.db.query(self.baseclass).get(identifier)
 
                     for k, v in data.items():
                         if not k == "id":  # and v is not None --> can be null!?
@@ -122,7 +122,7 @@ class BaseWebPage:
 
                     self.db.commit()
 
-                    return {"status": "success", "message": "Updated object with id %i" % obj.id}
+                    return {"status": "success", "message": "Updated object with id %i" % obj.identifier}
 
             else:
                 return {"status": "error", "message": "Invalid ID"}

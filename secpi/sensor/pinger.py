@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class Pinger(Sensor):
-    def __init__(self, id, params, worker):
-        logger.info(f"Initializing sensor id={id} with parameters {params}")
-        super(Pinger, self).__init__(id, params, worker)
+    def __init__(self, identifier, params, worker):
+        logger.info(f"Initializing sensor id={identifier} with parameters {params}")
+        super(Pinger, self).__init__(identifier, params, worker)
 
         try:
             self.interval = float(params["interval"])
@@ -35,16 +35,16 @@ class Pinger(Sensor):
             self.stop_thread = False
             self.pinger_thread = threading.Thread(name="thread-pinger-%s" % self.destination_ip, target=self.check_up)
             self.pinger_thread.start()
-            self.post_log(f"Pinger: Sensor activated successfully, id={self.id}")
+            self.post_log(f"Pinger: Sensor activated successfully, id={self.identifier}")
         else:
-            self.post_err(f"Pinger: Sensor could not be activated, id={self.id}")
+            self.post_err(f"Pinger: Sensor could not be activated, id={self.identifier}")
 
     def deactivate(self):
         if not self.corrupted:
             self.stop_thread = True
-            self.post_log(f"Pinger: Sensor deactivated successfully, id={self.id}")
+            self.post_log(f"Pinger: Sensor deactivated successfully, id={self.identifier}")
         else:
-            self.post_err(f"Pinger: Sensor could not be deactivated, id={self.id}")
+            self.post_err(f"Pinger: Sensor could not be deactivated, id={self.identifier}")
 
     def check_up(self):
         losses = 0

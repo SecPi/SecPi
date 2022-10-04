@@ -6,8 +6,8 @@ import zipfile
 
 
 class Action:
-    def __init__(self, id, params, worker):
-        self.id = id
+    def __init__(self, identifier, params, worker):
+        self.identifier = identifier
         self.params = params
         self.corrupted = False
         self.worker = worker

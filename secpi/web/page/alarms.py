@@ -26,13 +26,13 @@ class AlarmsPage(BaseWebPage):
     @cherrypy.tools.json_out(handler=json_handler)
     def ack(self):
         if hasattr(cherrypy.request, "json"):
-            id = cherrypy.request.json["id"]
-            if id:
-                obj = self.db.query(Alarm).get(id)
+            identifier = cherrypy.request.json["id"]
+            if identifier:
+                obj = self.db.query(Alarm).get(identifier)
                 if obj:
                     obj.ack = True
                     self.db.commit()
-                    return {"status": "success", "message": "Acknowledged alarm with id %s" % obj.id}
+                    return {"status": "success", "message": "Acknowledged alarm with id %s" % obj.identifier}
 
         return {"status": "error", "message": "ID not found"}
 
