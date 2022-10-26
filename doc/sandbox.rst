@@ -40,6 +40,7 @@ Setup Python virtualenv and install dependencies::
 
     python3 -m venv .venv
     source .venv/bin/activate
+    pip install "pip>=22" "setuptools>=64" --upgrade
     pip install --editable=.[test,develop]
 
 
