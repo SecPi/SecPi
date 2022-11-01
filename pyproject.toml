@@ -102,7 +102,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
   "pytest<8",
-  "pytest-cov<4",
+  "pytest-cov<5",
   "pytest-mock<4",
   "pyfakefs<5",
   "smtpdfix<1",
