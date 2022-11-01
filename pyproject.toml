@@ -104,7 +104,7 @@ test = [
   "pytest<8",
   "pytest-cov<5",
   "pytest-mock<4",
-  "pyfakefs<5",
+  "pyfakefs<6",
   "smtpdfix<1",
   "surrogate<1",
 ]
