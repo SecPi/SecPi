@@ -96,7 +96,7 @@ class BaseWebPage:
 
                 self.db.add(newObj)
                 self.db.commit()
-                return {"status": "success", "message": "Added new object with id %i" % newObj.identifier}
+                return {"status": "success", "message": "Added new object with id %i" % newObj.id}
 
         return {"status": "error", "message": "No data received"}
 
@@ -122,7 +122,7 @@ class BaseWebPage:
 
                     self.db.commit()
 
-                    return {"status": "success", "message": "Updated object with id %i" % obj.identifier}
+                    return {"status": "success", "message": "Updated object with id %i" % obj.id}
 
             else:
                 return {"status": "error", "message": "Invalid ID"}
