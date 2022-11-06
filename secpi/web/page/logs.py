@@ -27,7 +27,7 @@ class LogEntriesPage(BaseWebPage):
                 if obj:
                     obj.ack = True
                     self.db.commit()
-                    return {"status": "success", "message": "Acknowledged log message with id %s" % obj.identifier}
+                    return {"status": "success", "message": "Acknowledged log message with id %s" % obj.id}
 
         return {"status": "error", "message": "ID not found"}
 
