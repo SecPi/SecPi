@@ -71,6 +71,10 @@ jobs:
         # https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400
         pip install "setuptools>=64" --upgrade
         
+        # Install `pygame-2.1.3.dev8`, which is compatible with Python 3.11.
+        # https://github.com/pygame/pygame/issues/3522
+        pip install "pygame<3" --upgrade --pre
+
         # Install package in editable mode.
         pip install --editable=.[test,develop]
         
