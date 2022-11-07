@@ -9,4 +9,4 @@ certfile = "/etc/secpi/certs/webui.cert.pem"
 keyfile = "/etc/secpi/certs/webui.key.pem"
 
 [database]
-uri = "sqlite:///var/lib/secpi/secpi-database.sqlite"
+uri = "mysql+pymysql://secpi:secret@localhost/secpi"

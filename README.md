@@ -50,7 +50,8 @@ A more comprehensive guide can be found at https://github.com/SecPi/SecPi/wiki/I
 ### Technologies
 
 The system is based on Python, AMQP (RabbitMQ/GarageMQ, Pika), MQTT (Mosquitto, Paho),
-SQLAlchemy (SQLite), HTTP/HTML (CherryPy, Mako), and JavaScript (Angular).
+SQLAlchemy (SQLite, MySQL, MariaDB, PostgreSQL, etc.), HTTP/HTML (CherryPy, Mako), 
+and JavaScript (Angular).
 
 
 ## Project information
@@ -67,6 +68,17 @@ report or fix a bug.
 In order to set up a development environment on your workstation, please head over
 to the [development sandbox] documentation. When you see the software tests succeed,
 you should be ready to start hacking.
+
+
+### Production
+
+While early versions of SecPi used an SQLite database for storing its database contents,
+it caused conflicts because both the Manager and the Web Interface daemon accessed the
+database file concurrently.
+
+In order to improve the situation, it is strongly recommended to use a real database
+service in a production environment. SecPi has been verified to work together with
+MySQL, but other databases supported by SQLAlchemy should work equally well.
 
 
 ### Resources

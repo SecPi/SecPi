@@ -70,6 +70,7 @@ dependencies = [
   "pika<2",
   "python-dateutil<3",
   "SQLAlchemy<1.5",
+  "PyMySQL<2",
   "netifaces<1",
   "dataclasses; python_version<'3.7'",
   "importlib-metadata; python_version<'3.8'",

@@ -5,7 +5,7 @@ certfile = "/etc/secpi/certs/manager.cert.pem"
 keyfile = "/etc/secpi/certs/manager.key.pem"
 
 [database]
-uri = "sqlite:///var/lib/secpi/secpi-database.sqlite"
+uri = "mysql+pymysql://secpi:secret@localhost/secpi"
 
 [directories]
 __alarms = "/var/spool/secpi/alarms"
