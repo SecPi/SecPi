@@ -1,7 +1,7 @@
 import datetime
 import typing as t
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Table, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -18,8 +18,8 @@ zone_setup_table = Table(
 class Setup(Base):
     __tablename__ = "setups"
     id = Column(Integer, primary_key=True)  # noqa:A003
-    name = Column(String, nullable=False)
-    description = Column(String)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
     active_state = Column(Boolean, nullable=False, default=False)
 
     zones = relationship("Zone", secondary=zone_setup_table, backref="setups")
@@ -31,8 +31,8 @@ class Setup(Base):
 class Zone(Base):
     __tablename__ = "zones"
     id = Column(Integer, primary_key=True)  # noqa:A003
-    name = Column(String, nullable=False)
-    description = Column(String)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
 
     sensors = relationship("Sensor", backref="zone")
 
@@ -43,11 +43,11 @@ class Zone(Base):
 class Sensor(Base):
     __tablename__ = "sensors"
     id = Column(Integer, primary_key=True)  # noqa:A003
-    name = Column(String, nullable=False)
-    description = Column(String)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
 
-    cl = Column(String, nullable=False)
-    module = Column(String, nullable=False)
+    cl = Column(Text, nullable=False)
+    module = Column(Text, nullable=False)
     params = relationship("Param", primaryjoin="and_(Param.object_id==Sensor.id, Param.object_type=='sensor')")
 
     zone_id = Column(Integer, ForeignKey("zones.id"))
@@ -66,7 +66,7 @@ class Alarm(Base):
     alarmtime = Column(DateTime, nullable=False, default=datetime.datetime.now)
     ack = Column(Boolean, default=False)
     sensor_id = Column(Integer, ForeignKey("sensors.id"))
-    message = Column(String)
+    message = Column(Text)
 
     def __repr__(self):
         return "Alarm@%s for sensor %s (ack: %s): %s" % (
@@ -84,8 +84,8 @@ class LogEntry(Base):
     logtime = Column(DateTime, nullable=False, default=datetime.datetime.now)
     ack = Column(Boolean, default=False)
     level = Column(Integer, nullable=False)
-    sender = Column(String, nullable=True)
-    message = Column(String, nullable=False)
+    sender = Column(Text, nullable=True)
+    message = Column(Text, nullable=False)
 
     def __repr__(self):
         return "%s[%i,%s]: %s" % (self.logtime.strftime("%Y-%m-%d %H:%M:%S"), self.level, self.message, self.ack)
@@ -103,9 +103,9 @@ class Worker(Base):
     __tablename__ = "workers"
 
     id = Column(Integer, primary_key=True)  # noqa:A003
-    name = Column(String, nullable=False)
-    address = Column(String, nullable=False)
-    description = Column(String)
+    name = Column(Text, nullable=False)
+    address = Column(Text, nullable=False)
+    description = Column(Text)
     active_state = Column(Boolean, nullable=False, default=True)
 
     sensors = relationship("Sensor", backref="worker")
@@ -119,10 +119,10 @@ class Action(Base):
     __tablename__ = "actions"
 
     id = Column(Integer, primary_key=True)  # noqa:A003
-    name = Column(String, nullable=False)
-    description = Column(String)
-    cl = Column(String, nullable=False)
-    module = Column(String, nullable=False)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
+    cl = Column(Text, nullable=False)
+    module = Column(Text, nullable=False)
     active_state = Column(Boolean, nullable=False, default=True)
 
     params: t.List["Param"] = relationship(
@@ -137,10 +137,10 @@ class Notifier(Base):
     __tablename__ = "notifiers"
 
     id = Column(Integer, primary_key=True)  # noqa:A003
-    name = Column(String, nullable=False)
-    description = Column(String)
-    cl = Column(String, nullable=False)
-    module = Column(String, nullable=False)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
+    cl = Column(Text, nullable=False)
+    module = Column(Text, nullable=False)
     active_state = Column(Boolean, nullable=False, default=True)
 
     params = relationship("Param", primaryjoin="and_(Param.object_id == Notifier.id, Param.object_type=='notifier')")
@@ -153,10 +153,10 @@ class Param(Base):
     __tablename__ = "params"
 
     id = Column(Integer, primary_key=True)  # noqa:A003
-    key = Column(String, nullable=False)
-    value = Column(String, nullable=False)
-    description = Column(String)
-    object_type = Column(String, nullable=False)
+    key = Column(Text, nullable=False)
+    value = Column(Text, nullable=False)
+    description = Column(Text)
+    object_type = Column(Text, nullable=False)
 
     object_id = Column(Integer, ForeignKey("actions.id"), ForeignKey("notifiers.id"), ForeignKey("sensors.id"))
 

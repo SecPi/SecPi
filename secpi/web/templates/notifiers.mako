@@ -11,5 +11,5 @@ After an alarm was raised notifications will be sent to inform the user about th
 
 <h2>Parameters</h2>
 
-<%include file="angular_edit.mako" args="baseclass='notifierparams', basetitle='Notifier Parameter', query_filter='object_type==\'notifier\''" />
+<%include file="angular_edit.mako" args="baseclass='notifierparams', basetitle='Notifier Parameter', query_filter='object_type=\'notifier\''" />
 

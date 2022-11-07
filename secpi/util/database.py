@@ -23,9 +23,9 @@ class DatabaseAdapter:
 
     def connect(self):
         logger.info(f"Connecting to database {self.uri}")
+
         # `echo = True` activates debug logging.
-        # TODO: think about `check_same_thread=False`
-        self.engine = create_engine(self.uri, connect_args={"check_same_thread": False}, echo=False)
+        self.engine = create_engine(self.uri, echo=False)
 
         create_session = sessionmaker(bind=self.engine)
         self.session = create_session()

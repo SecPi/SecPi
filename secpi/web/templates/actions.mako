@@ -11,5 +11,5 @@ An action is executed after an alarm was raised.
 
 <h2>Parameters</h2>
 
-<%include file="angular_edit.mako" args="baseclass='actionparams', basetitle='Action Parameter', query_filter='object_type==\'action\''" />
+<%include file="angular_edit.mako" args="baseclass='actionparams', basetitle='Action Parameter', query_filter='object_type=\'action\''" />
 
