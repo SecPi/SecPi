@@ -2,8 +2,7 @@ from enum import Enum
 
 import pymysql
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from secpi.model.dbmodel import (
     Action,
@@ -15,6 +14,7 @@ from secpi.model.dbmodel import (
     Worker,
     Zone,
 )
+from secpi.util.database import DatabaseAdapter
 
 
 class SqlAlchemyWrapper:
@@ -44,9 +44,10 @@ class SqlAlchemyWrapper:
         """
         Create the SQLAlchemy session.
         """
-        self.engine = create_engine(self.uri)
-        self.engine.dispose()
-        self.session = sessionmaker(bind=self.engine)()
+        dba = DatabaseAdapter(uri=self.uri)
+        dba.connect()
+        self.engine = dba.engine
+        self.session = dba.session
         Base.metadata.create_all(self.engine)
         return self.session
 
@@ -84,7 +85,7 @@ class SqlAlchemyWrapper:
         statements = []
         statements += ["SET FOREIGN_KEY_CHECKS = 0;"]
         statements += [item[0] for item in cursor.fetchall()]
-        statements += ["SET FOREIGN_KEY_CHECKS = 1;"]
+        # statements += ["SET FOREIGN_KEY_CHECKS = 1;"]
 
         # Run all drop table statements.
         for statement in statements:
