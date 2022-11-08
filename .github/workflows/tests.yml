@@ -28,6 +28,13 @@ jobs:
         ports:
           - 5672:5672
 
+      mariadb:
+        image: mariadb:10
+        ports:
+          - 3306:3306
+        env:
+          MARIADB_ROOT_PASSWORD: secret
+
     name: Python ${{ matrix.python-version }} on OS ${{ matrix.os }}
     steps:
 

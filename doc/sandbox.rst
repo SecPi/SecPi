@@ -15,6 +15,10 @@ Choose AMQP broker.
 - RabbitMQ: The reference AMQP broker written in Erlang.
   https://github.com/rabbitmq/rabbitmq-server
 
+Start the MariaDB database server::
+
+    docker run --name=mariadb --rm -it --publish=3306:3306 --env "MARIADB_ROOT_PASSWORD=secret" mariadb:10
+
 Start an AMQP broker using Docker::
 
     # GarageMQ

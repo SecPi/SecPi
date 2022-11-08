@@ -1,3 +1,6 @@
+from enum import Enum
+
+import pymysql
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -14,30 +17,108 @@ from secpi.model.dbmodel import (
 )
 
 
-@pytest.fixture
-def dbsession() -> Session:
+class SqlAlchemyWrapper:
     """
-    Provide an SQLAlchemy session to the test cases.
+    Database wrapper for test infrastructure.
+    Provides database and SQLAlchemy session to the test cases.
     """
-    uri = "sqlite:///:memory:"
-    engine = create_engine(uri)
-    session = sessionmaker(bind=engine)()
-    Base.metadata.create_all(engine)
-    return session
+
+    def __init__(self, uri: str):
+        self.uri: str = uri
+        self.setup()
+        self.engine = None
+        self.session: Session = self.session_factory()
+
+    def setup(self):
+        if self.uri.startswith("mysql"):
+            # FIXME: Use `host`, `user`, `password`, and `dbname` from DB URI.
+            dbname = "secpi-testdrive"
+            conn = pymysql.connect(host="localhost", user="root", password="secret")
+            cursor = conn.cursor()
+            cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbname}`;")
+            cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbname}`;")
+            cursor.close()
+            conn.close()
+
+    def session_factory(self) -> Session:
+        """
+        Create the SQLAlchemy session.
+        """
+        self.engine = create_engine(self.uri)
+        self.engine.dispose()
+        self.session = sessionmaker(bind=self.engine)()
+        Base.metadata.create_all(self.engine)
+        return self.session
+
+    def commit_and_flush(self):
+        """
+        Shortcut function to commit, flush, and expire/expunge objects to/from the SQLAlchemy session.
+        """
+        self.session.commit()
+        self.session.flush()
+        self.session.expire_all()
+        self.session.expunge_all()
+        self.session.close()
+
+    @staticmethod
+    def mysql_drop_all_tables(dbname):
+        """
+        Drop all tables in MySQL/MariaDB database.
+        """
+
+        # Connect to database.
+        conn = pymysql.connect(host="localhost", user="root", password="secret")
+        conn.select_db(dbname)
+
+        # Inquire database schema for table names.
+        cursor = conn.cursor()
+        cursor.execute(
+            query=f"""
+        SELECT concat('DROP TABLE IF EXISTS `', table_name, '`;')
+        FROM information_schema.tables
+        WHERE table_schema = '{dbname}';
+                """
+        )
+
+        # Build statements for dropping all tables.
+        statements = []
+        statements += ["SET FOREIGN_KEY_CHECKS = 0;"]
+        statements += [item[0] for item in cursor.fetchall()]
+        statements += ["SET FOREIGN_KEY_CHECKS = 1;"]
+
+        # Run all drop table statements.
+        for statement in statements:
+            conn.query(sql=statement)
+
+        conn.close()
+
+    def __del__(self):
+        """
+        Close and dispose SQLAlchemy session and engine.
+        """
+        self.session.close()
+        self.engine.dispose()
 
 
-def commit_and_flush(dbsession):
+class DbType(Enum):
     """
-    Shortcut function to commit, flush, and expire/expunge objects to/from the SQLAlchemy session.
+    Database URIs to enumerate for all the test cases.
     """
-    dbsession.commit()
-    dbsession.flush()
-    dbsession.expire_all()
-    dbsession.expunge_all()
-    dbsession.close()
+
+    SQLITE = "sqlite:///:memory:"
+    MYSQL = "mysql+pymysql://root:secret@localhost/secpi-testdrive"
 
 
-def test_dbmodel_setup_zone_worker_sensor(dbsession):
+@pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
+def db(request):
+    """
+    Provide the database wrapper to the test cases.
+    """
+    uri = request.param.value
+    return SqlAlchemyWrapper(uri=uri)
+
+
+def test_dbmodel_setup_zone_worker_sensor(db):
     """
     Verify adding `Setup`, `Zone`, `Worker`, and `Sensor` entities.
     """
@@ -59,23 +140,23 @@ def test_dbmodel_setup_zone_worker_sensor(dbsession):
     )
 
     # Store to database and flush session.
-    dbsession.add_all([setup, zone, worker, sensor])
-    commit_and_flush(dbsession)
+    db.session.add_all([setup, zone, worker, sensor])
+    db.commit_and_flush()
 
     # Query database and verify outcome.
     assert (
-        str(dbsession.query(Setup).first())
+        str(db.session.query(Setup).first())
         == "Setup(id=1000, name=testdrive-setup, zones=[Zone(id=2000, name=testdrive-zone)])"
     )
 
     assert (
-        str(dbsession.query(Sensor).first())
+        str(db.session.query(Sensor).first())
         == "Sensor(id=4000, name=testdrive-sensor-4000, zone=Zone(id=2000, name=testdrive-zone), "
         "worker=Worker(id=3000, name=testdrive-worker, address=127.0.0.1))"
     )
 
 
-def test_dbmodel_sensor_parameters(dbsession):
+def test_dbmodel_sensor_parameters(db):
     """
     Verify adding `Param` items to a `Sensor` entity.
     """
@@ -96,11 +177,11 @@ def test_dbmodel_sensor_parameters(dbsession):
     sensor.params.append(param_baz)
 
     # Store to database and flush session.
-    dbsession.add(sensor)
-    commit_and_flush(dbsession)
+    db.session.add(sensor)
+    db.commit_and_flush()
 
     # Query database and verify outcome.
-    sensor = dbsession.query(Sensor).first()
+    sensor = db.session.query(Sensor).first()
     assert str(sensor) == "Sensor(id=4001, name=testdrive-sensor-4001, zone=None, worker=None)"
 
     assert list(map(str, sensor.params)) == [
@@ -109,7 +190,7 @@ def test_dbmodel_sensor_parameters(dbsession):
     ]
 
 
-def test_dbmodel_action_notifier_parameters(dbsession):
+def test_dbmodel_action_notifier_parameters(db):
     """
     Verify adding `Param` items to `Action` and `Notifier` entities.
     """
@@ -146,19 +227,19 @@ def test_dbmodel_action_notifier_parameters(dbsession):
     )
 
     # Store to database and flush session.
-    dbsession.add_all([action, notifier])
-    commit_and_flush(dbsession)
+    db.session.add_all([action, notifier])
+    db.commit_and_flush()
 
     # Query database and verify outcome.
 
-    action = dbsession.query(Action).first()
+    action = db.session.query(Action).first()
     assert str(action) == "Action(id=5000, name=testdrive-action-5000, module=test_module cl=TestAction)"
     assert list(map(str, action.params)) == [
         "Param(id=1, object_type=action, object_id=5000, key=action-foo, value=action-bar)",
         "Param(id=2, object_type=action, object_id=5000, key=action-baz, value=action-qux)",
     ]
 
-    notifier = dbsession.query(Notifier).first()
+    notifier = db.session.query(Notifier).first()
     assert str(notifier) == "Notifier(id=6000, name=testdrive-notifier-6000, module=test_module cl=TestNotifier)"
     assert list(map(str, notifier.params)) == [
         "Param(id=3, object_type=notifier, object_id=6000, key=notifier-foo, value=notifier-bar)",
