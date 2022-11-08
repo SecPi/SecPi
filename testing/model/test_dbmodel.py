@@ -1,7 +1,9 @@
+import typing as t
 from enum import Enum
 
 import pymysql
 import pytest
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from secpi.model.dbmodel import (
@@ -25,9 +27,9 @@ class SqlAlchemyWrapper:
 
     def __init__(self, uri: str):
         self.uri: str = uri
+        self.engine: t.Optional[Engine] = None
+        self.session: t.Optional[Session] = None
         self.setup()
-        self.engine = None
-        self.session: Session = self.session_factory()
 
     def setup(self):
         if self.uri.startswith("mysql"):
@@ -39,6 +41,7 @@ class SqlAlchemyWrapper:
             cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbname}`;")
             cursor.close()
             conn.close()
+        self.session: Session = self.session_factory()
 
     def session_factory(self) -> Session:
         """
@@ -97,8 +100,10 @@ class SqlAlchemyWrapper:
         """
         Close and dispose SQLAlchemy session and engine.
         """
-        self.session.close()
-        self.engine.dispose()
+        if self.session is not None:
+            self.session.close()
+        if self.engine is not None:
+            self.engine.dispose()
 
 
 class DbType(Enum):
@@ -116,7 +121,10 @@ def db(request):
     Provide the database wrapper to the test cases.
     """
     uri = request.param.value
-    return SqlAlchemyWrapper(uri=uri)
+    try:
+        return SqlAlchemyWrapper(uri=uri)
+    except Exception as ex:
+        raise pytest.skip(f"Skipping tests for MySQL/MariaDB. Server not running. Reason: {ex}")
 
 
 def test_dbmodel_setup_zone_worker_sensor(db):
