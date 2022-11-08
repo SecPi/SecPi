@@ -25,7 +25,7 @@ class Setup(Base):
     zones = relationship("Zone", secondary=zone_setup_table, backref="setups")
 
     def __repr__(self):
-        return "Setup: %s" % (self.name)
+        return f"Setup(id={self.id}, name={self.name}, zones={self.zones})"
 
 
 class Zone(Base):
@@ -37,7 +37,7 @@ class Zone(Base):
     sensors = relationship("Sensor", backref="zone")
 
     def __repr__(self):
-        return "Zone: %s" % (self.name)
+        return f"Zone(id={self.id}, name={self.name})"
 
 
 class Sensor(Base):
@@ -56,7 +56,7 @@ class Sensor(Base):
     alarms = relationship("Alarm", backref="sensor")
 
     def __repr__(self):
-        return "Sensor: %s in Zone %s on Worker %s" % (self.name, self.zone, self.worker.name)
+        return f"Sensor(id={self.id}, name={self.name}, zone={self.zone}, worker={self.worker})"
 
 
 class Alarm(Base):
@@ -112,7 +112,7 @@ class Worker(Base):
     actions = relationship("Action", secondary=worker_action_table, backref="workers")
 
     def __repr__(self):
-        return "Worker %s (%i, %s)" % (self.name, self.id, self.address)
+        return f"Worker(id={self.id}, name={self.name}, address={self.address})"
 
 
 class Action(Base):
@@ -130,7 +130,7 @@ class Action(Base):
     )
 
     def __repr__(self):
-        return "Action %s with class %s" % (self.name, self.cl)
+        return f"Action(id={self.id}, name={self.name}, module={self.module} cl={self.cl})"
 
 
 class Notifier(Base):
@@ -146,7 +146,7 @@ class Notifier(Base):
     params = relationship("Param", primaryjoin="and_(Param.object_id == Notifier.id, Param.object_type=='notifier')")
 
     def __repr__(self):
-        return "Notifier %s with class %s" % (self.name, self.cl)
+        return f"Notifier(id={self.id}, name={self.name}, module={self.module} cl={self.cl})"
 
 
 class Param(Base):
@@ -161,7 +161,10 @@ class Param(Base):
     object_id = Column(Integer, ForeignKey("actions.id"), ForeignKey("notifiers.id"), ForeignKey("sensors.id"))
 
     def __repr__(self):
-        return "Param %s:%s" % (self.key, self.value)
+        return (
+            f"Param(id={self.id}, object_type={self.object_type}, object_id={self.object_id}, "
+            f"key={self.key}, value={self.value})"
+        )
 
 
 def setup(engine):
