@@ -169,11 +169,9 @@ class Param(Base):
 
     def __repr__(self):
         return (
-            f"Param(id={self.id},
-            object_type={self.object_type},
-            action_id={self.action_id},
-            sensor_id={self.sensor_id},
-            notifier_id={self.notifier_id}"
+            f"Param(id={self.id}, object_type={self.object_type},"
+            f" action_id={self.action_id}, sensor_id={self.sensor_id},"
+            f" notifier_id={self.notifier_id}"
             f"key={self.key}, value={self.value})"
         )
 
