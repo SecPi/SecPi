@@ -162,7 +162,7 @@ class Param(Base):
     description = Column(Text)
     object_type = Column(Text, nullable=False)
 
-    #object_id = Column(Integer, ForeignKey("actions.id"), ForeignKey("notifiers.id"), ForeignKey("sensors.id"))
+    # object_id = Column(Integer, ForeignKey("actions.id"), ForeignKey("notifiers.id"), ForeignKey("sensors.id"))
     action_id = Column(Integer, ForeignKey("actions.id"))
     sensor_id = Column(Integer, ForeignKey("sensors.id"))
     notifier_id = Column(Integer, ForeignKey("notifiers.id"))
