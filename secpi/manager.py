@@ -510,6 +510,8 @@ class Manager(Service):
         if len(sensors) > 0:
             conf["worker"]["active"] = True
 
+        logger.info(f"Sensors: {sensors}")
+
         # A configuration setting container which will be available on all workers.
         conf["global"] = self.config.get("global")
 
