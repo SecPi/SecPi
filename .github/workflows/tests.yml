@@ -33,6 +33,7 @@ jobs:
         ports:
           - 3306:3306
         env:
+          MARIADB_ROOT_PASSWORD: secret
           MARIADB_USER: secpi
           MARIADB_PASSWORD: secret
 
