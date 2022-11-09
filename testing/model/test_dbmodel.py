@@ -34,7 +34,7 @@ class SqlAlchemyWrapper:
     def setup(self):
         if self.uri.startswith("mysql"):
             # FIXME: Use `host`, `user`, `password`, and `dbname` from DB URI.
-            dbname = "secpi-testdrive"
+            dbname = "secpi_testdrive"
             conn = pymysql.connect(host="localhost", user="secpi", password="secret")
             cursor = conn.cursor()
             cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbname}`;")
@@ -112,7 +112,7 @@ class DbType(Enum):
     """
 
     SQLITE = "sqlite:///:memory:"
-    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi-testdrive"
+    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi_testdrive"
 
 
 @pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))

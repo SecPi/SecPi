@@ -32,7 +32,7 @@ def test_webinterface_start_stop():
     assert "Using template path" in app_log
     assert "Loading configuration from etc/testing/config-web.toml" in app_log
     # assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
-    assert "Connecting to database mysql+pymysql://secpi:secret@localhost/secpi-testdrive" in app_log
+    assert "Connecting to database mysql+pymysql://secpi:secret@localhost/secpi_testdrive" in app_log
     assert "Initializing Webserver" in app_log
     assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log
     assert "Connecting to AMQP broker successful" in app_log

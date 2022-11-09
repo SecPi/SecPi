@@ -57,16 +57,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	
 	# Setup MariaDB
     machine.vm.provision :shell, privileged: true, inline: <<-SHELL
-        #debconf-set-selections <<< "mysql-server mysql-server/root_password password secret"
+		#debconf-set-selections <<< "mysql-server mysql-server/root_password password secret"
 		#debconf-set-selections <<< "mysql-server mysql-server/root_password_again password secret"
 
 		mysql -e "CREATE DATABASE secpi;"
 		mysql -e "grant all privileges on secpi.* TO 'secpi'@'localhost' identified by 'secret';"
 		mysql -e "grant all privileges on secpi.* TO 'secpi'@'%' identified by 'secret';"
 		
-		mysql -e "CREATE DATABASE secpi-testdrive;"
-		mysql -e "grant all privileges on secpi.* TO 'secpi-testdrive'@'localhost' identified by 'secret';"
-		mysql -e "grant all privileges on secpi.* TO 'secpi-testdrive'@'%' identified by 'secret';"
+		mysql -e "CREATE DATABASE secpi_testdrive;"
+		mysql -e "grant all privileges on secpi_testdrive.* TO 'secpi'@'localhost' identified by 'secret';"
+		mysql -e "grant all privileges on secpi_testdrive.* TO 'secpi'@'%' identified by 'secret';"
     SHELL
 
     # Setup SecPi sandbox
