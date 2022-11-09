@@ -119,7 +119,7 @@ class DbType(Enum):
     MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi_testdrive"
 
 
-@pytest.fixture(params=DbType.MYSQL)
+@pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
 def db(request):
     """
     Provide the database wrapper to the test cases.
