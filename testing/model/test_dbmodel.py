@@ -39,8 +39,9 @@ class SqlAlchemyWrapper:
             cursor = conn.cursor()
             cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbname}`;")
             cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbname}`;")
-            cursor.execute(query="grant all privileges on"
-                                 " secpi_testdrive.* TO 'secpi'@'localhost' identified by 'secret';")
+            cursor.execute(
+                query="grant all privileges on" " secpi_testdrive.* TO 'secpi'@'localhost' identified by 'secret';"
+            )
             cursor.execute(query="grant all privileges on secpi_testdrive.* TO 'secpi'@'%' identified by 'secret';")
             cursor.close()
             conn.close()
