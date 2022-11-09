@@ -115,7 +115,7 @@ class DbType(Enum):
     Database URIs to enumerate for all the test cases.
     """
 
-    # SQLITE = "sqlite:///:memory:"
+    SQLITE = "sqlite:///:memory:"
     MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi_testdrive"
 
 
