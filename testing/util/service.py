@@ -93,8 +93,9 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
         # TODO: Read database URI from application configuration file.
         #       Otherwise, pass "create_schema=True" through `start_process` or app config.
         #       However, this might be dangerous?
-        # DatabaseAdapter(uri="sqlite:///secpi-database-testing.sqlite").connect().setup()
-        DatabaseAdapter(uri="mysql+pymysql://secpi:secret@localhost/secpi-testdrive").connect().setup()
+        # dba = DatabaseAdapter(uri="sqlite:///secpi-database-testing.sqlite").connect().setup()
+        dba = DatabaseAdapter(uri="mysql+pymysql://secpi:secret@localhost/secpi-testdrive")
+        dba.create_database().connect().setup()
         self.start_process(
             name="secpi-manager",
             app_config="etc/testing/config-manager.toml",

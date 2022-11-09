@@ -32,19 +32,8 @@ class SqlAlchemyWrapper:
         self.setup()
 
     def setup(self):
-        if self.uri.startswith("mysql"):
-            # FIXME: Use `host`, `user`, `password`, and `dbname` from DB URI.
-            dbname = "secpi-testdrive"
-            conn = pymysql.connect(host="localhost", user="root", password="secret")
-            cursor = conn.cursor()
-            cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbname}`;")
-            cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbname}`;")
-            cursor.execute(
-                query=f"grant all privileges on" f" `{dbname}`.* TO 'secpi'@'localhost' identified by 'secret';"
-            )
-            cursor.execute(query=f"grant all privileges on `{dbname}`.* TO 'secpi'@'%' identified by 'secret';")
-            cursor.close()
-            conn.close()
+        dba = DatabaseAdapter(uri=self.uri)
+        dba.create_database()
         self.session: Session = self.session_factory()
 
     def session_factory(self) -> Session:

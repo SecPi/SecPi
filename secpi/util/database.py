@@ -2,6 +2,7 @@ import logging
 import os
 import typing as t
 
+import pymysql
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -58,4 +59,20 @@ class DatabaseAdapter:
 
     def setup(self):
         dbmodel.setup(self.engine)
+        return self
+
+    def create_database(self):
+        if self.uri.startswith("mysql"):
+            # FIXME: Use `host`, `user`, `password`, and `dbname` from DB URI.
+            dbname = "secpi-testdrive"
+            conn = pymysql.connect(host="localhost", user="root", password="secret")
+            cursor = conn.cursor()
+            cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbname}`;")
+            cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbname}`;")
+            cursor.execute(
+                query=f"grant all privileges on" f" `{dbname}`.* TO 'secpi'@'localhost' identified by 'secret';"
+            )
+            cursor.execute(query=f"grant all privileges on `{dbname}`.* TO 'secpi'@'%' identified by 'secret';")
+            cursor.close()
+            conn.close()
         return self
