@@ -29,8 +29,8 @@ class FFMPEGVideo(Action):
 
         # Set parameter defaults
         self.params.setdefault("name", "default")
-        self.params.setdefault("count", 3)
-        self.params.setdefault("interval", 5)
+        self.params.setdefault("count", 1)
+        self.params.setdefault("interval", 2)
         self.params.setdefault("ffmpeg_global_options", "-v quiet -stats")
         self.params.setdefault("ffmpeg_input_options", None)
         self.params.setdefault("ffmpeg_output_options", "-pix_fmt yuvj420p -vsync 2 -vframes 1")
