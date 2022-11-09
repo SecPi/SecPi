@@ -8,6 +8,8 @@ VAGRANTFILE_API_VERSION = '2'
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
+  config.vm.network "public_network", bridge: "eth0"
+
   # Always use Vagrant's default insecure key
   config.ssh.insert_key = false
 
@@ -43,13 +45,24 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         echo "Installing required packages"
         set -x
         sudo apt-get update
-        sudo apt-get install --yes git python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients httpie socat
+		sudo apt-get upgrade
+        sudo apt-get install --yes git python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients httpie socat mariadb-server asterisk ffmpeg
 
         # Git settings for `root`.
         sudo git config --global pull.ff only
 
         # Git settings for `vagrant`.
         su vagrant -c "git config --global pull.ff only"
+    SHELL
+	
+	# Setup MariaDB
+    machine.vm.provision :shell, privileged: true, inline: <<-SHELL
+        debconf-set-selections <<< "mysql-server mysql-server/root_password password secret"
+		debconf-set-selections <<< "mysql-server mysql-server/root_password_again password secret"
+		#apt-get -y install mysql-server
+		mysql -e "CREATE DATABASE secpi;"
+		mysql -e "grant all privileges on secpi.* TO 'secpi'@'localhost' identified by 'secret';"
+		mysql -e "grant all privileges on secpi.* TO 'secpi'@'%' identified by 'secret';"
     SHELL
 
     # Setup SecPi sandbox
