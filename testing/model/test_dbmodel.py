@@ -112,7 +112,7 @@ class DbType(Enum):
     """
 
     SQLITE = "sqlite:///:memory:"
-    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi_test"
+    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi-testdrive"
 
 
 @pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))

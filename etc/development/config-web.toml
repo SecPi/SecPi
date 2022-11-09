@@ -7,4 +7,4 @@ uri = "amqp://guest:guest@localhost:5672"
 
 [database]
 #uri = "sqlite:///secpi-database-development.sqlite"
-uri = "mysql+pymysql://secpi:secret@localhost/secpi"
+uri = "mysql+pymysql://secpi:secret@localhost/secpi-development"
