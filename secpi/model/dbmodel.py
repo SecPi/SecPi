@@ -49,7 +49,7 @@ class Sensor(Base):
     cl = Column(Text, nullable=False)
     module = Column(Text, nullable=False)
     params: t.List["Param"] = relationship(
-        "Param", primaryjoin="and_(Param.object_id==Sensor.id, Param.object_type=='sensor')", overlaps="params"
+        "Param", primaryjoin="and_(Param.sensor_id==Sensor.id, Param.object_type=='sensor')", overlaps="params"
     )
 
     zone_id = Column(Integer, ForeignKey("zones.id"))
@@ -128,7 +128,7 @@ class Action(Base):
     active_state = Column(Boolean, nullable=False, default=True)
 
     params: t.List["Param"] = relationship(
-        "Param", primaryjoin="and_(Param.object_id==Action.id, Param.object_type=='action')", overlaps="params"
+        "Param", primaryjoin="and_(Param.action_id==Action.id, Param.object_type=='action')", overlaps="params"
     )
 
     def __repr__(self):
@@ -146,7 +146,7 @@ class Notifier(Base):
     active_state = Column(Boolean, nullable=False, default=True)
 
     params: t.List["Param"] = relationship(
-        "Param", primaryjoin="and_(Param.object_id == Notifier.id, Param.object_type=='notifier')", overlaps="params"
+        "Param", primaryjoin="and_(Param.notifier_id == Notifier.id, Param.object_type=='notifier')", overlaps="params"
     )
 
     def __repr__(self):
@@ -162,7 +162,10 @@ class Param(Base):
     description = Column(Text)
     object_type = Column(Text, nullable=False)
 
-    object_id = Column(Integer, ForeignKey("actions.id"), ForeignKey("notifiers.id"), ForeignKey("sensors.id"))
+    #object_id = Column(Integer, ForeignKey("actions.id"), ForeignKey("notifiers.id"), ForeignKey("sensors.id"))
+    action_id = Column(Integer, ForeignKey("actions.id"))
+    sensor_id = Column(Integer, ForeignKey("sensors.id"))
+    notifier_id = Column(Integer, ForeignKey("notifiers.id"))
 
     def __repr__(self):
         return (

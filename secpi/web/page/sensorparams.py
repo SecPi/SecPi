@@ -7,7 +7,7 @@ class SensorParamsPage(BaseWebPage):
     def __init__(self):
         super().__init__(Param)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
-        self.fields["object_id"] = {
+        self.fields["sensor_id"] = {
             "name": "Sensor ID",
             "visible": ["list", "add", "update"],
             "type": "number",

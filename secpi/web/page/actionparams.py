@@ -7,7 +7,7 @@ class ActionParamsPage(BaseWebPage):
     def __init__(self):
         super().__init__(Param)
         self.fields["id"] = {"name": "ID", "visible": ["list"]}
-        self.fields["object_id"] = {
+        self.fields["action_id"] = {
             "name": "Action ID",
             "visible": ["list", "add", "update"],
             "type": "number",

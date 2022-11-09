@@ -2,7 +2,8 @@
 uri = "amqp://guest:guest@localhost:5672"
 
 [database]
-uri = "sqlite:///secpi-database-testing.sqlite"
+#uri = "sqlite:///secpi-database-testing.sqlite"
+uri = "mysql+pymysql://secpi:secret@localhost/secpi_test"
 
 [directories]
 __alarms = "/tmp/secpi-testing/alarms"

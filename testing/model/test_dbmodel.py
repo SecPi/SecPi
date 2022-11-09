@@ -71,7 +71,7 @@ class SqlAlchemyWrapper:
         """
 
         # Connect to database.
-        conn = pymysql.connect(host="localhost", user="root", password="secret")
+        conn = pymysql.connect(host="localhost", user="secpi", password="secret")
         conn.select_db(dbname)
 
         # Inquire database schema for table names.
@@ -112,7 +112,7 @@ class DbType(Enum):
     """
 
     SQLITE = "sqlite:///:memory:"
-    MYSQL = "mysql+pymysql://root:secret@localhost/secpi-testdrive"
+    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi_test"
 
 
 @pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
