@@ -31,7 +31,7 @@ def test_manager_start_stop():
     assert "Loading configuration from etc/testing/config-manager.toml" in app_log
     # assert "Storing alarms to" in app_log
     # assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
-    assert "Connecting to database mysql+pymysql://secpi:secret@localhost/secpi_testdrive" in app_log
+    assert "Connecting to database mysql+pymysql://secpi:secret@localhost/secpi-testdrive" in app_log
     assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log
     assert "Connecting to AMQP broker successful" in app_log
     assert "Manager is ready" in app_log

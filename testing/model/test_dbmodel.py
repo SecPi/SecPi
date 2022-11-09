@@ -34,15 +34,15 @@ class SqlAlchemyWrapper:
     def setup(self):
         if self.uri.startswith("mysql"):
             # FIXME: Use `host`, `user`, `password`, and `dbname` from DB URI.
-            dbname = "secpi_testdrive"
+            dbname = "secpi-testdrive"
             conn = pymysql.connect(host="localhost", user="root", password="secret")
             cursor = conn.cursor()
             cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbname}`;")
             cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbname}`;")
             cursor.execute(
-                query="grant all privileges on" " secpi_testdrive.* TO 'secpi'@'localhost' identified by 'secret';"
+                query=f"grant all privileges on" f" `{dbname}`.* TO 'secpi'@'localhost' identified by 'secret';"
             )
-            cursor.execute(query="grant all privileges on secpi_testdrive.* TO 'secpi'@'%' identified by 'secret';")
+            cursor.execute(query=f"grant all privileges on `{dbname}`.* TO 'secpi'@'%' identified by 'secret';")
             cursor.close()
             conn.close()
         self.session: Session = self.session_factory()
@@ -116,7 +116,7 @@ class DbType(Enum):
     """
 
     SQLITE = "sqlite:///:memory:"
-    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi_testdrive"
+    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi-testdrive"
 
 
 @pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
@@ -128,7 +128,7 @@ def db(request):
     try:
         return SqlAlchemyWrapper(uri=uri)
     except Exception as ex:
-        raise pytest.skip(f"Skipping tests for MySQL/MariaDB. Server not running. Reason: {ex}")
+        raise pytest.skip(f"Skipping tests for MySQL/MariaDB. Reason: {ex}")
 
 
 def test_dbmodel_setup_zone_worker_sensor(db):

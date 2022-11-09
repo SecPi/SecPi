@@ -64,9 +64,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		mysql -e "grant all privileges on secpi.* TO 'secpi'@'localhost' identified by 'secret';"
 		mysql -e "grant all privileges on secpi.* TO 'secpi'@'%' identified by 'secret';"
 		
-		mysql -e "CREATE DATABASE secpi_testdrive;"
-		mysql -e "grant all privileges on secpi_testdrive.* TO 'secpi'@'localhost' identified by 'secret';"
-		mysql -e "grant all privileges on secpi_testdrive.* TO 'secpi'@'%' identified by 'secret';"
+		mysql -e "CREATE DATABASE `secpi-testdrive`;"
+		mysql -e "grant all privileges on `secpi-testdrive`.* TO 'secpi'@'localhost' identified by 'secret';"
+		mysql -e "grant all privileges on `secpi-testdrive`.* TO 'secpi'@'%' identified by 'secret';"
     SHELL
 
     # Setup SecPi sandbox
