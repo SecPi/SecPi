@@ -115,11 +115,12 @@ class DbType(Enum):
     Database URIs to enumerate for all the test cases.
     """
 
-    SQLITE = "sqlite:///:memory:"
+    # SQLITE = "sqlite:///:memory:"
     MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi_testdrive"
 
 
-@pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
+# @pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
+ @pytest.fixture(params=(DbType.MYSQL))
 def db(request):
     """
     Provide the database wrapper to the test cases.
