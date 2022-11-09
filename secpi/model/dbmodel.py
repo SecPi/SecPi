@@ -176,7 +176,7 @@ class Param(Base):
         if self.sensor_id is not None:
             object_id = self.sensor_id
         return (
-            f"Param(id={self.id}, object_type={self.object_type}, object_id={self.object_id}, "
+            f"Param(id={self.id}, object_type={self.object_type}, object_id={object_id}, "
             f"key={self.key}, value={self.value})"
         )
 
