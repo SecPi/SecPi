@@ -168,10 +168,15 @@ class Param(Base):
     notifier_id = Column(Integer, ForeignKey("notifiers.id"))
 
     def __repr__(self):
+        object_id = None
+        if self.action_id is not None:
+            object_id = self.action_id
+        if self.notifier_id is not None:
+            object_id = self.notifier_id
+        if self.sensor_id is not None:
+            object_id = self.sensor_id
         return (
-            f"Param(id={self.id}, object_type={self.object_type},"
-            f" action_id={self.action_id}, sensor_id={self.sensor_id},"
-            f" notifier_id={self.notifier_id}"
+            f"Param(id={self.id}, object_type={self.object_type}, object_id={self.object_id}, "
             f"key={self.key}, value={self.value})"
         )
 
