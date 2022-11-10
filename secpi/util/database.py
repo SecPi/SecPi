@@ -34,22 +34,25 @@ class DatabaseAdapter:
         # `echo = True` activates debug logging.
         self.engine = create_engine(self.uri, echo=False)
 
-        # FIXME: The current data model is not 100% compatible with SQLAlchemy SQLite+MySQL,
-        #        because it violates foreign key constraints on the relationship between
-        #        {`Action`, `Notifier`, `Sensor`} and `Param` entities.
-        #        See also: https://github.com/isarengineering/SecPi/issues/37
-        #
-        # ERROR:
-        #
-        #   sqlalchemy.exc.IntegrityError: (pymysql.err.IntegrityError)
-        #   Cannot add or update a child row: a foreign key constraint fails (1452)
-        #   `params` CONSTRAINT `lalala` FOREIGN KEY (`object_id`) REFERENCES `{actions,sensors,notifiers}` (`id`))'
-        #
-        # SOLUTION / WORKAROUND:
-        #
-        #   Disable foreign key checks on MySQL/MariaDB.
+        # FIXME: Because there might be stray alarm signals, arriving late, e.g. when the database just has
+        #        been freshly re-created already, the test cases will trigger foreign key constraint violations,
+        #        when inserting `Alarm` records, because the corresponding `Sensor` entities are missing.
+        """
+        
+        ERROR:
+        
+          sqlalchemy.exc.IntegrityError: (pymysql.err.IntegrityError)
+          (1452, 'Cannot add or update a child row: a foreign key constraint fails
+          (`secpi-testdrive`.`alarms`, CONSTRAINT `alarms_ibfk_1` FOREIGN KEY (`sensor_id`) REFERENCES `sensors` (`id`))')
+          [SQL: INSERT INTO alarms (alarmtime, ack, sensor_id, message) VALUES (%(alarmtime)s, %(ack)s, %(sensor_id)s, %(message)s)]
+          [parameters: {'alarmtime': datetime.datetime(2022, 11, 10, 10, 50, 36, 471869), 'ack': 0, 'sensor_id': 1, 'message': '[LATE] Got TCP connection, raising alarm'}]
+        
+        SOLUTION / WORKAROUND:
+        
+          Disable foreign key checks on MySQL/MariaDB, when running the test harness.
+        """  # noqa: E501
 
-        if self.uri.startswith("mysql"):
+        if "PYTEST_CURRENT_TEST" in os.environ and self.uri.startswith("mysql"):
             self.engine.execute("SET FOREIGN_KEY_CHECKS = 0;")
 
         create_session = sessionmaker(bind=self.engine)
