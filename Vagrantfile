@@ -8,10 +8,13 @@ VAGRANTFILE_API_VERSION = '2'
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.network "public_network", bridge: "eth0"
+  # Network access to guest machine. Either bridged, or using port forwarding.
+  # config.vm.network "public_network", bridge: "eth0"
+  config.vm.network "forwarded_port", guest: 3306, host: 13306
+  config.vm.network "forwarded_port", guest: 16677, host: 16677
 
   # Always use Vagrant's default insecure key
-  config.ssh.insert_key = false
+  config.ssh.insert_key = true
 
   # Mount source code directory
   config.vm.synced_folder ".", "/usr/src/secpi"
@@ -45,8 +48,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         echo "Installing required packages"
         set -x
         sudo apt-get update
-		sudo apt-get upgrade
-        sudo apt-get install --yes git python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients httpie socat mariadb-server asterisk ffmpeg
+		# sudo apt-get upgrade
+        sudo apt-get install --yes git python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients httpie socat mariadb-server mariadb-client asterisk ffmpeg
 
         # Git settings for `root`.
         sudo git config --global pull.ff only
@@ -57,16 +60,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	
 	# Setup MariaDB
     machine.vm.provision :shell, privileged: true, inline: <<-SHELL
+
 		#debconf-set-selections <<< "mysql-server mysql-server/root_password password secret"
 		#debconf-set-selections <<< "mysql-server mysql-server/root_password_again password secret"
 
-		mysql -e "CREATE DATABASE `secpi-development`;"
-		mysql -e "grant all privileges on `secpi-development`.* TO 'secpi'@'localhost' identified by 'secret';"
-		mysql -e "grant all privileges on `secpi-development`.* TO 'secpi'@'%' identified by 'secret';"
-		
-		mysql -e "CREATE DATABASE `secpi-testdrive`;"
-		mysql -e "grant all privileges on `secpi-testdrive`.* TO 'secpi'@'localhost' identified by 'secret';"
-		mysql -e "grant all privileges on `secpi-testdrive`.* TO 'secpi'@'%' identified by 'secret';"
+        # set -x
+
+        for database in "secpi-development" "secpi-testdrive"; do
+            echo "Provisioning database $database"
+            mysql -e "CREATE DATABASE IF NOT EXISTS \\\`${database}\\\`;"
+            mysql -e "GRANT ALL PRIVILEGES ON \\\`${database}\\\`.* TO 'secpi'@'localhost' IDENTIFIED BY 'secret';"
+            mysql -e "GRANT ALL PRIVILEGES ON \\\`${database}\\\`.* TO 'secpi'@'%' IDENTIFIED BY 'secret';"
+        done
     SHELL
 
     # Setup SecPi sandbox
@@ -88,7 +93,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400
         pip install "pip>=22" "setuptools>=64" --upgrade
 
-        pip install --editable=${SOURCE}[test,develop] --upgrade
+        pip install --editable=${SOURCE}[test,develop] --upgrade --use-pep517
         ln -sf ${TARGET}/bin/secpi-* /usr/local/bin/
     SHELL
 
