@@ -36,6 +36,7 @@ jobs:
           MARIADB_ROOT_PASSWORD: secret
           MARIADB_USER: secpi
           MARIADB_PASSWORD: secret
+          MARIADB_DATABASE: secpi-testdrive
 
     name: Python ${{ matrix.python-version }} on OS ${{ matrix.os }}
     steps:

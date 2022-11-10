@@ -68,13 +68,6 @@ class DatabaseAdapter:
             cursor = conn.cursor()
             cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbconfig.database}`;")
             cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbconfig.database}`;")
-            cursor.execute(
-                query=f"GRANT ALL PRIVILEGES ON `{dbconfig.database}`.* "
-                f"TO 'secpi'@'localhost' IDENTIFIED BY 'secret';"
-            )
-            cursor.execute(
-                query=f"GRANT ALL PRIVILEGES ON `{dbconfig.database}`.* " f"TO 'secpi'@'%' IDENTIFIED BY 'secret';"
-            )
             cursor.close()
             conn.close()
         return self
