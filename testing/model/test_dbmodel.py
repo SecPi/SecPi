@@ -34,7 +34,7 @@ class SqlAlchemyWrapper:
 
     def setup(self):
         dba = DatabaseAdapter(uri=self.uri)
-        dba.create_database()
+        dba.drop_and_create_database()
         self.session: Session = self.session_factory()
 
     def session_factory(self) -> Session:

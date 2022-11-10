@@ -96,7 +96,7 @@ class ManagerServiceWrapper(AmqpServiceWrapper):
         app_config.load()
         dburi = app_config.get("database", {}).get("uri")
         dba = DatabaseAdapter(uri=dburi)
-        dba.create_database().connect().setup()
+        dba.drop_and_create_database().connect().setup()
 
         # Start manager process.
         self.start_process(

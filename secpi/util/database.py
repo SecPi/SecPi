@@ -64,7 +64,7 @@ class DatabaseAdapter:
         dbmodel.setup(self.engine)
         return self
 
-    def create_database(self):
+    def drop_and_create_database(self):
         if self.uri.startswith("mysql"):
             dbconfig = make_url(self.uri)
             conn = pymysql.connect(host=dbconfig.host, user=dbconfig.username, password=dbconfig.password)
