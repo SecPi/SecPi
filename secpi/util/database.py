@@ -66,6 +66,7 @@ class DatabaseAdapter:
             dbconfig = make_url(self.uri)
             conn = pymysql.connect(host=dbconfig.host, user=dbconfig.username, password=dbconfig.password)
             cursor = conn.cursor()
+            logger.info(f"Re-creating database {dbconfig.database}")
             cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbconfig.database}`;")
             cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbconfig.database}`;")
             cursor.close()

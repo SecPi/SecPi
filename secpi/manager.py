@@ -384,6 +384,7 @@ class Manager(Service):
     def setup_notifiers(self):
         logger.info("Setting up notifiers")
         notifiers = self.db.session.query(Notifier).filter(Notifier.active_state == true()).all()
+        logger.info(f"Found notifiers: {notifiers}")
 
         for notifier in notifiers:
             params = {}
@@ -506,11 +507,11 @@ class Manager(Service):
             .all()
         )
 
+        logger.info(f"Found sensors: {sensors}")
+
         # if we have sensors we are active
         if len(sensors) > 0:
             conf["worker"]["active"] = True
-
-        logger.info(f"Sensors: {sensors}")
 
         # A configuration setting container which will be available on all workers.
         conf["global"] = self.config.get("global")
@@ -534,6 +535,8 @@ class Manager(Service):
             .filter(Action.active_state == true())
             .all()
         )
+
+        logger.info(f"Found actions: {actions}")
 
         # if we have actions we are also active
         if len(actions) > 0:
