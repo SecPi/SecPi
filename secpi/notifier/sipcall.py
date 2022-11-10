@@ -64,5 +64,5 @@ class SipCall(Notifier):
     def sip_submit_call(self, route, number, context):
         c = Call("SIP/%s/%s" % (route, number), wait_time=50, retry_time=120, max_retries=4)
         con = Context(context, "s", "1")
-        cf = CallFile(c, con, user="asterisk")
+        cf = CallFile(c, con, user="asterisk", spool_dir=self.asterisk_spool_dir)
         cf.spool()
