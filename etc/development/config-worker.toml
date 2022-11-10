@@ -1,22 +1,7 @@
-sensors = []
-[[actions]]
-id = 1
-module = "test"
-name = "action-testing"
-active_state = true
-class = "TestAction"
-
-[actions.params]
-msg = "foobar"
-
 [worker]
-worker_id = 1
-active = true
 
 [amqp]
 uri = "amqp://guest:guest@localhost:5672"
-
-[directories]
 
 [global.adam6000]
 mqtt_broker_ip = "localhost"
