@@ -63,7 +63,7 @@ def str_to_value(val):
 def check_late_arrival(date_message):
     date_now = datetime.datetime.now()
 
-    if (date_now - date_message) < datetime.timedelta(0, 30):  # TODO: make delta configurable?
+    if (date_now - date_message) < datetime.timedelta(seconds=30):  # TODO: Make delta configurable?
         return False
     else:
         return True

@@ -15,7 +15,7 @@ def testaction_action(worker_mock) -> Action:
     # Configure action.
     component = load_class("secpi.action.test", "TestAction")
     parameters = {
-        "msg": "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern.",
+        "msg": "A test action",
     }
 
     # Create action instance.
@@ -36,7 +36,7 @@ def test_action_testaction(testaction_action, caplog):
     # Verify the right calls would have been made to the Worker.
     assert testaction_action.worker.mock_calls == [
         call.post_log("Executing Test Action", 50),
-        call.post_log("Test Action message: Franz jagt im komplett verwahrlosten Taxi quer durch Bayern.", 50),
+        call.post_log("Test Action message: A test action", 50),
     ]
 
     # Verify log output matches the expectations.

@@ -9,19 +9,23 @@ import pytest
 from secpi.model.message import AlarmMessage, NotificationMessage
 from secpi.util.common import load_class
 
-NOTIFICATION_MESSAGE = NotificationMessage(
-    sensor_name="sensor-testing",
-    worker_name="worker-testing",
-    alarm=AlarmMessage(
-        sensor_id=1,
-        worker_id=1,
-        message="Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
-        datetime=datetime.datetime.now(),
-    ),
-)
+
+@pytest.fixture
+def notification_message():
+    msg = NotificationMessage(
+        sensor_name="sensor-testing",
+        worker_name="worker-testing",
+        alarm=AlarmMessage(
+            sensor_id=1,
+            worker_id=1,
+            message="Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
+            datetime=datetime.datetime.now(),
+        ),
+    )
+    return msg
 
 
-def test_notifier_dropbox(caplog):
+def test_notifier_dropbox(caplog, notification_message):
     """
     Test the Dropbox file drop notifier.
     """
@@ -34,7 +38,7 @@ def test_notifier_dropbox(caplog):
 
     # Invoke notifier.
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_MESSAGE)
+    notifier.notify(notification_message)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.dropbox.DropboxFileUpload" in caplog.messages
@@ -52,7 +56,7 @@ def test_notifier_dropbox(caplog):
     assert "DropboxFileUpload: Uploading file failed" in caplog.text
 
 
-def test_notifier_mailer(caplog, smtpd):
+def test_notifier_mailer(caplog, smtpd, notification_message):
     """
     Test the SMTP email notifier.
     """
@@ -74,7 +78,7 @@ def test_notifier_mailer(caplog, smtpd):
 
     # Invoke notifier.
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_MESSAGE)
+    notifier.notify(notification_message)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.mailer.Mailer" in caplog.messages
@@ -103,7 +107,7 @@ def test_notifier_mailer(caplog, smtpd):
     )
 
 
-def test_notifier_sipcall(mocker, caplog):
+def test_notifier_sipcall(mocker, caplog, notification_message):
     """
     Verify the SIP call notifier behaves as expected.
     """
@@ -132,7 +136,7 @@ def test_notifier_sipcall(mocker, caplog):
 
         # Invoke notifier.
         notifier = component(1, parameters)
-        notifier.notify(NOTIFICATION_MESSAGE)
+        notifier.notify(notification_message)
 
         # Verify the produced call file matches the expectations.
         firstfile = list(pathlib.Path(tmpdir).iterdir())[0]
@@ -146,7 +150,7 @@ def test_notifier_sipcall(mocker, caplog):
     assert "SipCall: Call to +49-177-1234567 submitted successfully" in caplog.messages
 
 
-def test_notifier_slack(caplog):
+def test_notifier_slack(caplog, notification_message):
     """
     Verify the Slack notifier behaves as expected.
     """
@@ -163,7 +167,7 @@ def test_notifier_slack(caplog):
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
     with pytest.raises(slacker.Error) as ex:
-        notifier.notify(NOTIFICATION_MESSAGE)
+        notifier.notify(notification_message)
     assert ex.match("unknown_method")
 
     # Verify log output matches the expectations.
@@ -176,7 +180,7 @@ def test_notifier_slack(caplog):
     )
 
 
-def test_notifier_sms(mocker, caplog):
+def test_notifier_sms(mocker, caplog, notification_message):
     """
     Verify the SMS notifier behaves as expected.
     """
@@ -193,7 +197,7 @@ def test_notifier_sms(mocker, caplog):
     # Invoke notifier.
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_MESSAGE)
+    notifier.notify(notification_message)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.sms.Sms" in caplog.messages
@@ -204,7 +208,7 @@ def test_notifier_sms(mocker, caplog):
     assert "Sms: Message to bob was sent successfully" in caplog.messages
 
 
-def test_notifier_spark(caplog):
+def test_notifier_spark(caplog, notification_message):
     """
     Verify the Cisco Spark notifier behaves as expected.
     """
@@ -219,7 +223,7 @@ def test_notifier_spark(caplog):
     # Invoke notifier.
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_MESSAGE)
+    notifier.notify(notification_message)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.spark.SparkNotifier" in caplog.messages
@@ -234,7 +238,7 @@ def test_notifier_spark(caplog):
     )
 
 
-def test_notifier_twitter(caplog):
+def test_notifier_twitter(caplog, notification_message):
     """
     Verify the Twitter notifier behaves as expected.
     """
@@ -252,7 +256,7 @@ def test_notifier_twitter(caplog):
     # Invoke notifier.
     # It is expected to fail, probably because of an invalid token?
     notifier = component(1, parameters)
-    notifier.notify(NOTIFICATION_MESSAGE)
+    notifier.notify(notification_message)
 
     # Verify log output matches the expectations.
     assert "Loading class successful: secpi.notifier.twitter.Twitter" in caplog.messages
