@@ -6,13 +6,25 @@ on:
   pull_request:
     branches: [ main, next ]
 
+  # Allow job to be triggered manually.
+  workflow_dispatch:
+
+# Cancel in-progress jobs when pushing to the same branch.
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
 
   tests:
-    runs-on: ${{ matrix.os }}
 
+    runs-on: ${{ matrix.os }}
     strategy:
+
+      # Run all jobs to completion (false), or cancel
+      # all jobs once the first one fails (true).
       fail-fast: true
+
       matrix:
         os: [ "ubuntu-latest" ]  # "macos-latest", "windows-latest"
         python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
@@ -67,7 +79,7 @@ jobs:
         brew install socat rabbitmq mosquitto
 
     - name: Setup Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: x64
@@ -94,7 +106,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest
+        poe test
 
     - name: Upload coverage results to Codecov
       uses: codecov/codecov-action@v3
