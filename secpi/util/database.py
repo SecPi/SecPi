@@ -4,7 +4,7 @@ import typing as t
 
 import pymysql
 from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 from secpi.model import dbmodel
@@ -63,16 +63,18 @@ class DatabaseAdapter:
 
     def create_database(self):
         if self.uri.startswith("mysql"):
-            # FIXME: Use `host`, `user`, `password`, and `dbname` from DB URI.
-            dbname = "secpi-testdrive"
-            conn = pymysql.connect(host="localhost", user="root", password="secret")
+            dbconfig = make_url(self.uri)
+            conn = pymysql.connect(host=dbconfig.host, user=dbconfig.username, password=dbconfig.password)
             cursor = conn.cursor()
-            cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbname}`;")
-            cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbname}`;")
+            cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbconfig.database}`;")
+            cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbconfig.database}`;")
             cursor.execute(
-                query=f"grant all privileges on" f" `{dbname}`.* TO 'secpi'@'localhost' identified by 'secret';"
+                query=f"GRANT ALL PRIVILEGES ON `{dbconfig.database}`.* "
+                f"TO 'secpi'@'localhost' IDENTIFIED BY 'secret';"
             )
-            cursor.execute(query=f"grant all privileges on `{dbname}`.* TO 'secpi'@'%' identified by 'secret';")
+            cursor.execute(
+                query=f"GRANT ALL PRIVILEGES ON `{dbconfig.database}`.* " f"TO 'secpi'@'%' IDENTIFIED BY 'secret';"
+            )
             cursor.close()
             conn.close()
         return self

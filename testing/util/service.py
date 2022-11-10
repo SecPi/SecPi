@@ -12,6 +12,7 @@ import secpi.manager
 import secpi.webinterface
 import secpi.worker
 from secpi.model.settings import StartupOptions
+from secpi.util.config import ApplicationConfig
 from secpi.util.database import DatabaseAdapter
 
 
@@ -90,12 +91,14 @@ class AmqpServiceWrapper(BaseServiceWrapper):
 class ManagerServiceWrapper(AmqpServiceWrapper):
     def run(self):
 
-        # TODO: Read database URI from application configuration file.
-        #       Otherwise, pass "create_schema=True" through `start_process` or app config.
-        #       However, this might be dangerous?
-        # dba = DatabaseAdapter(uri="sqlite:///secpi-database-testing.sqlite").connect().setup()
-        dba = DatabaseAdapter(uri="mysql+pymysql://secpi:secret@localhost/secpi-testdrive")
+        # Provision database.
+        app_config = ApplicationConfig(filepath="etc/testing/config-manager.toml")
+        app_config.load()
+        dburi = app_config.get("database", {}).get("uri")
+        dba = DatabaseAdapter(uri=dburi)
         dba.create_database().connect().setup()
+
+        # Start manager process.
         self.start_process(
             name="secpi-manager",
             app_config="etc/testing/config-manager.toml",

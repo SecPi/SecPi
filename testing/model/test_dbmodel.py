@@ -3,6 +3,7 @@ from enum import Enum
 
 import pymysql
 import pytest
+import sqlalchemy.exc
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -105,7 +106,7 @@ class DbType(Enum):
     """
 
     SQLITE = "sqlite:///:memory:"
-    MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi-testdrive"
+    MYSQL = "mysql+pymysql://root:secret@localhost/secpi-testdrive"
 
 
 @pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
@@ -116,7 +117,7 @@ def db(request):
     uri = request.param.value
     try:
         return SqlAlchemyWrapper(uri=uri)
-    except Exception as ex:
+    except (pymysql.OperationalError, sqlalchemy.exc.OperationalError) as ex:
         raise pytest.skip(f"Skipping tests for MySQL/MariaDB. Reason: {ex}")
 
 
