@@ -382,6 +382,10 @@ class Manager(Service):
 
     # initialize the notifiers
     def setup_notifiers(self):
+
+        # FIXME: Currently needed, because otherwise, the manager may not be aware about database changes.
+        self.db.session.close_all()
+
         logger.info("Setting up notifiers")
         notifiers = self.db.session.query(Notifier).filter(Notifier.active_state == true()).all()
         logger.info(f"Found notifiers: {notifiers}")
