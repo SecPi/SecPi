@@ -13,8 +13,10 @@ from pathlib import Path
 import appdirs
 import pika
 import pika.channel
-from sqlalchemy import true, exists
+from sqlalchemy import exists, true
+
 from secpi.model import constants
+from secpi.model.constants import UNSPECIFIC_SENSOR
 from secpi.model.dbmodel import (
     Action,
     Alarm,
@@ -33,8 +35,6 @@ from secpi.util.cli import parse_cmd_args
 from secpi.util.common import load_class, sa_record_to_dict, setup_logging, str_to_value
 from secpi.util.config import ApplicationConfig
 from secpi.util.database import DatabaseAdapter
-
-from secpi.model.constants import UNSPECIFIC_SENSOR
 
 logger = logging.getLogger(__name__)
 
@@ -75,11 +75,9 @@ class Manager(Service):
             sys.exit(1)
 
         if not self.db.session.query(exists().where(Sensor.id == UNSPECIFIC_SENSOR)).scalar():
-            status_sensor = Sensor(id=UNSPECIFIC_SENSOR,
-                                   name='Status Sensor',
-                                   description='Status Sensor',
-                                   cl='none',
-                                   module='none')
+            status_sensor = Sensor(
+                id=UNSPECIFIC_SENSOR, name="Status Sensor", description="Status Sensor", cl="none", module="none"
+            )
             self.db.session.add(status_sensor)
             self.db.session.commit()
 
