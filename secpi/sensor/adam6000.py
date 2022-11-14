@@ -139,6 +139,8 @@ from sqlalchemy.util import asbool
 from secpi.model import constants
 from secpi.model.sensor import Sensor
 
+from secpi.model.constants import UNSPECIFIC_SENSOR
+
 logger = logging.getLogger(__name__)
 
 
@@ -416,7 +418,7 @@ class AdvantechAdamMqttConnector:
         alarm_message = f"Erste Erfassung. {summary_message_short}\n\n{summary_message_long}"
         logger.info(f"Raising alarm with summary message. {alarm_message}")
         # logger.info(f"Long message:\n{summary_message_long}")
-        all_responses[0].registration.sensor.worker.alarm(sensor_id=None, message=alarm_message)
+        all_responses[0].registration.sensor.worker.alarm(sensor_id=UNSPECIFIC_SENSOR, message=alarm_message)
 
 
 class AdvantechAdamSensor(Sensor):

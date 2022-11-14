@@ -15,3 +15,5 @@ QUEUE_ACTION = "secpi-action-"
 QUEUE_CONFIG = "secpi-config-"
 QUEUE_INIT_CONFIG = "secpi-init_config"
 QUEUE_OPERATIONAL = "secpi-op-"
+
+UNSPECIFIC_SENSOR = -5
