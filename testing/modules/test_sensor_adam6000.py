@@ -5,6 +5,7 @@ from unittest.mock import call
 
 import pytest
 
+from secpi.model.constants import UNSPECIFIC_SENSOR
 from secpi.model.sensor import Sensor
 from secpi.util.common import load_class
 
@@ -117,7 +118,7 @@ def test_sensor_adam6000_with_mqtt(adam6000_sensor, caplog):
     assert adam6000_sensor.worker.mock_calls == [
         call.post_log("ADAM: Sensor activated successfully, id=99", 50),
         call.alarm(
-            sensor_id=None,
+            sensor_id=UNSPECIFIC_SENSOR,
             message="Erste Erfassung. Offene Kontakte: Ferrata\n\n"
             'Summary message\n\nAlle Kontakte:\n- Kontakt "Ferrata" ist offen\n',
         ),
