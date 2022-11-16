@@ -134,7 +134,7 @@ app.controller('DataController', ['$uibModal', '$http', '$log', '$scope', '$time
 	
 	
 	self.edit_active = true;
-	HTTPService.post('/setups/list', {"filter":"active_state=1"},
+	HTTPService.post('/setups/list', {"filter":"active_state=True"},
 		function(data, msg){
 			// FlashService.flash("got data: "+ angular.toJson(data), FlashService.TYPE_INFO);
 			if(data.length > 0){ // we got an active setup, disable edit
@@ -457,7 +457,7 @@ app.controller('AckController', ['$http', '$log', '$interval', '$attrs', 'FlashS
 	self.entries = [];
 	
 	self.fetchData = function(){
-		HTTPService.post('/' +self.ackclass +'s/list', {"filter":"ack=0", "sort": self.sort},
+		HTTPService.post('/' +self.ackclass +'s/list', {"filter":"ack=False", "sort": self.sort},
 			function(data, msg){
 				if(angular.toJson(data) != angular.toJson(self.entries)){
 					self.entries = data;
@@ -531,11 +531,11 @@ app.controller('ActivateController', ['$http', '$log', '$interval', 'FlashServic
 	self.active_setups = [];
 	
 	self.fetch_active = function(){
-		HTTPService.post('/setups/list', {"filter":"active_state=1"}, function(data, msg){self.active_setups = data})
+		HTTPService.post('/setups/list', {"filter":"active_state=True"}, function(data, msg){self.active_setups = data})
 	}
 	
 	self.fetch_inactive = function(){
-		HTTPService.post('/setups/list', {"filter":"active_state=0"}, function(data, msg){self.inactive_setups = data})
+		HTTPService.post('/setups/list', {"filter":"active_state=False"}, function(data, msg){self.inactive_setups = data})
 	}
 	
 	self.activate = function(){
@@ -600,7 +600,7 @@ app.controller('RelationshipController', ['$log', '$timeout', '$attrs', '$uibMod
 	
 	
 	self.edit_active = true;
-	HTTPService.post('/setups/list', {"filter":"active_state=1"},
+	HTTPService.post('/setups/list', {"filter":"active_state=True"},
 		function(data, msg){
 			// FlashService.flash("got data: "+ angular.toJson(data), FlashService.TYPE_INFO);
 			if(data.length > 0){ // we got an active setup, disable edit
@@ -797,12 +797,12 @@ app.controller('NavController', ['$uibModal', '$log', '$scope', '$interval', 'Fl
 	
 	self.fetchCount = function(){
 		self.unread_count = 0;
-		HTTPService.post('/alarms/list', {"filter":"ack=0"},
+		HTTPService.post('/alarms/list', {"filter":"ack=False"},
 			function(data, msg){
 				self.unread_count += data.length;
 			}
 		);
-		HTTPService.post('/logs/list', {"filter":"ack=0"},
+		HTTPService.post('/logs/list', {"filter":"ack=False"},
 			function(data, msg){
 				self.unread_count += data.length;
 			}
