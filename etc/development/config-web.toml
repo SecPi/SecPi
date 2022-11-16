@@ -8,3 +8,4 @@ uri = "amqp://guest:guest@localhost:5672"
 [database]
 #uri = "sqlite:///secpi-database-development.sqlite"
 uri = "mysql+pymysql://secpi:secret@localhost/secpi-development"
+#uri = "postgresql://secpi:secret@localhost/secpi-development"

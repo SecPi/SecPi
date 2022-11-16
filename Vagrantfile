@@ -12,6 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # config.vm.network "public_network", bridge: "eth0"
   config.vm.network "forwarded_port", guest: 3306, host: 13306
   config.vm.network "forwarded_port", guest: 16677, host: 16677
+  config.vm.network "forwarded_port", guest: 5432, host: 15433
 
   # Always use Vagrant's default insecure key
   config.ssh.insert_key = true
@@ -49,7 +50,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         set -x
         sudo apt-get update
 		# sudo apt-get upgrade
-        sudo apt-get install --yes git python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients httpie socat mariadb-server mariadb-client asterisk ffmpeg
+        sudo apt-get install --yes git python3-pip python3-venv rabbitmq-server amqp-tools mosquitto mosquitto-clients httpie socat mariadb-server mariadb-client asterisk ffmpeg postgresql
 
         # Git settings for `root`.
         sudo git config --global pull.ff only
@@ -73,6 +74,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             mysql -e "GRANT ALL PRIVILEGES ON \\\`${database}\\\`.* TO 'secpi'@'%' IDENTIFIED BY 'secret';"
         done
     SHELL
+
+    # Setup PostgreSQL
+    config.vm.provision "shell", path: "bootstrap/pgsql.sh"
 
     # Setup SecPi sandbox
     machine.vm.provision :shell, privileged: true, inline: <<-SHELL
