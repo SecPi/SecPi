@@ -24,6 +24,18 @@ Start the MariaDB database server::
         --env "MARIADB_DATABASE=secpi-testdrive" \
         mariadb:10
 
+Start the PostgreSQL database server::
+
+    # Start service.
+    docker run --name=postgresql --rm -it --publish=5432:5432 \
+        --env "POSTGRES_USER=secpi" \
+        --env "POSTGRES_PASSWORD=secret" \
+        --env "POSTGRES_DB=secpi-testdrive" \
+        postgres:15
+
+    # Probe connection.
+    PGPASSWORD=secret psql --host localhost --dbname secpi-testdrive --user secpi
+
 Start an AMQP broker using Docker::
 
     # GarageMQ
