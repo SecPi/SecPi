@@ -52,7 +52,7 @@ jobs:
 
       postgres:
         image: postgres
-        environment:
+        env:
           POSTGRES_DB: secpi-testdrive
           POSTGRES_PASSWORD: secret
           POSTGRES_USER: secpi
