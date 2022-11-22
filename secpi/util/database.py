@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import typing as t
 
 import psycopg2
@@ -26,10 +27,6 @@ class DatabaseAdapter:
         self.session: t.Optional[Session] = None
 
     def connect(self):
-
-        # Feed a newline to the logger when running the test suite.
-        if "PYTEST_CURRENT_TEST" in os.environ:
-            logger.info("")
 
         logger.info(f"Connecting to database {self.uri}")
 
@@ -67,24 +64,50 @@ class DatabaseAdapter:
         return self
 
     def drop_and_create_database(self):
-        if self.uri.startswith("mysql"):
+
+        # Feed a newline to the logger when running the test suite.
+        if "PYTEST_CURRENT_TEST" in os.environ:
+            sys.stderr.write("\n")
+
+        logger.info(f"Provisioning database at {self.uri}")
+
+        if self.uri.startswith("sqlite"):
+            pass
+
+        elif self.uri.startswith("mysql"):
             dbconfig = make_url(self.uri)
-            conn = pymysql.connect(host=dbconfig.host, user=dbconfig.username, password=dbconfig.password)
+            conn = pymysql.connect(
+                host=dbconfig.host, database=dbconfig.database, user=dbconfig.username, password=dbconfig.password
+            )
             cursor = conn.cursor()
-            logger.info(f"Re-creating database {dbconfig.database}")
+            logger.info(f"Re-creating database {dbconfig}")
             cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbconfig.database}`;")
             cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbconfig.database}`;")
             cursor.close()
             conn.close()
-        elif self.uri.startswith("postgre"):
-            logger.info(f"Re-creating database with {self.uri}")
+
+        elif self.uri.startswith("postgresql"):
             dbconfig = make_url(self.uri)
-            conn = psycopg2.connect(host=dbconfig.host, user=dbconfig.username, password=dbconfig.password)
+            conn = psycopg2.connect(
+                host=dbconfig.host, database=dbconfig.database, user=dbconfig.username, password=dbconfig.password
+            )
             conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             cursor = conn.cursor()
-            logger.info(f"Re-creating database {dbconfig.database}")
-            cursor.execute(query=f'DROP DATABASE IF EXISTS "{dbconfig.database}";')
-            cursor.execute(query=f'CREATE DATABASE "{dbconfig.database}";')
+
+            logger.info(f"Re-creating database {dbconfig}")
+            # https://stackoverflow.com/a/36023359
+            pg_drop_all_tables = """
+                DO $$ DECLARE
+                    r RECORD;
+                BEGIN
+                    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
+                        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                    END LOOP;
+                END $$;
+            """
+            cursor.execute(query=pg_drop_all_tables)
             cursor.close()
             conn.close()
+        else:
+            raise ValueError(f"Provisioning not implemented for database type with URI {self.uri}")
         return self

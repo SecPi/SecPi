@@ -1,9 +1,9 @@
 import typing as t
 from enum import Enum
 
+import psycopg2
 import pymysql
 import pytest
-import sqlalchemy.exc
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -119,8 +119,10 @@ def db(request):
     uri = request.param.value
     try:
         return SqlAlchemyWrapper(uri=uri)
-    except (pymysql.OperationalError, sqlalchemy.exc.OperationalError) as ex:
+    except pymysql.OperationalError as ex:
         raise pytest.skip(f"Skipping tests for MySQL/MariaDB. Reason: {ex}")
+    except psycopg2.OperationalError as ex:
+        raise pytest.skip(f"Skipping tests for PostgreSQL. Reason: {ex}")
 
 
 def test_dbmodel_setup_zone_worker_sensor(db):
