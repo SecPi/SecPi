@@ -55,9 +55,9 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_DB: secpi-testdrive
-          POSTGRES_PASSWORD: secret
           POSTGRES_USER: secpi
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: secpi-testdrive
 
     name: Python ${{ matrix.python-version }} on OS ${{ matrix.os }}
     steps:

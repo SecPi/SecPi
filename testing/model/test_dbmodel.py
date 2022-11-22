@@ -263,7 +263,5 @@ def test_dbmodel_setup_list_querying(db):
     db.commit_and_flush()
 
     # Verify
-    assert (
-        str(db.session.query(Setup).filter(text("active_state=True")).first())
-        == "Setup(id=1000, name=testdrive-setup, zones=[])"
-    )
+    setup_loaded = db.session.query(Setup).filter(text("active_state=True")).first()
+    assert str(setup_loaded) == "Setup(id=1000, name=testdrive-setup, zones=[])"
