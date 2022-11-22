@@ -50,6 +50,13 @@ jobs:
           MARIADB_PASSWORD: secret
           MARIADB_DATABASE: secpi-testdrive
 
+      postgres:
+        image: postgres
+        environment:
+          POSTGRES_DB: secpi-testdrive
+          POSTGRES_PASSWORD: secret
+          POSTGRES_USER: secpi
+
     name: Python ${{ matrix.python-version }} on OS ${{ matrix.os }}
     steps:
 
