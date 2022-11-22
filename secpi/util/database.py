@@ -2,7 +2,9 @@ import logging
 import os
 import typing as t
 
+import psycopg2
 import pymysql
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.orm import Session, sessionmaker
@@ -72,6 +74,17 @@ class DatabaseAdapter:
             logger.info(f"Re-creating database {dbconfig.database}")
             cursor.execute(query=f"DROP DATABASE IF EXISTS `{dbconfig.database}`;")
             cursor.execute(query=f"CREATE DATABASE IF NOT EXISTS `{dbconfig.database}`;")
+            cursor.close()
+            conn.close()
+        elif self.uri.startswith("postgre"):
+            logger.info(f"Re-creating database with {self.uri}")
+            dbconfig = make_url(self.uri)
+            conn = psycopg2.connect(host=dbconfig.host, user=dbconfig.username, password=dbconfig.password)
+            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            cursor = conn.cursor()
+            logger.info(f"Re-creating database {dbconfig.database}")
+            cursor.execute(query=f'DROP DATABASE IF EXISTS "{dbconfig.database}";')
+            cursor.execute(query=f'CREATE DATABASE "{dbconfig.database}";')
             cursor.close()
             conn.close()
         return self

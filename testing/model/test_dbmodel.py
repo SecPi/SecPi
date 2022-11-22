@@ -4,6 +4,7 @@ from enum import Enum
 import pymysql
 import pytest
 import sqlalchemy.exc
+from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -107,9 +108,10 @@ class DbType(Enum):
 
     SQLITE = "sqlite:///:memory:"
     MYSQL = "mysql+pymysql://secpi:secret@localhost/secpi-testdrive"
+    PGSQL = "postgresql://secpi:secret@localhost/secpi-testdrive"
 
 
-@pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL))
+@pytest.fixture(params=(DbType.SQLITE, DbType.MYSQL, DbType.PGSQL))
 def db(request):
     """
     Provide the database wrapper to the test cases.
@@ -248,3 +250,20 @@ def test_dbmodel_action_notifier_parameters(db):
         "Param(id=3, object_type=notifier, object_id=6000, key=notifier-foo, value=notifier-bar)",
         "Param(id=4, object_type=notifier, object_id=6000, key=notifier-baz, value=notifier-qux)",
     ]
+
+
+def test_dbmodel_setup_list_querying(db):
+    """
+    Verify `/setups/list` works equally well on all databases.
+    """
+
+    # Add some entities.
+    setup = Setup(id=1000, name="testdrive-setup", description="Testdrive Setup", active_state=True)
+    db.session.add_all([setup])
+    db.commit_and_flush()
+
+    # Verify
+    assert (
+        str(db.session.query(Setup).filter(text("active_state=True")).first())
+        == "Setup(id=1000, name=testdrive-setup, zones=[])"
+    )
