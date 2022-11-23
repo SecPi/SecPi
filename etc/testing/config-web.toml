@@ -1,12 +1,12 @@
 [webserver]
-# host = "localhost"
-# port = 16677
+host = "0.0.0.0"
+port = 16677
 
 [amqp]
 uri = "amqp://guest:guest@localhost:5672"
 
 [database]
 #uri = "sqlite:///secpi-database-testing.sqlite"
-uri = "mysql+pymysql://secpi:secret@localhost/secpi-testdrive"
-#uri = "postgresql://secpi:secret@localhost/secpi-testdrive"
+#uri = "mysql+pymysql://secpi:secret@localhost/secpi-testdrive"
+uri = "postgresql://secpi:secret@localhost/secpi-testdrive"
 

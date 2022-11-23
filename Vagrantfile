@@ -9,7 +9,7 @@ VAGRANTFILE_API_VERSION = '2'
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Network access to guest machine. Either bridged, or using port forwarding.
-  # config.vm.network "public_network", bridge: "eth0"
+  config.vm.network "public_network", bridge: "eth0"
   config.vm.network "forwarded_port", guest: 3306, host: 13306
   config.vm.network "forwarded_port", guest: 16677, host: 16677
   config.vm.network "forwarded_port", guest: 5432, host: 15433

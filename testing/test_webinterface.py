@@ -32,14 +32,16 @@ def test_webinterface_start_stop():
     assert "Using template path" in app_log
     assert "Loading configuration from etc/testing/config-web.toml" in app_log
     # assert "Connecting to database sqlite:///secpi-database-testing.sqlite" in app_log
-    assert "Connecting to database mysql+pymysql://secpi:secret@localhost/secpi-testdrive" in app_log
+    # assert "Connecting to database mysql+pymysql://secpi:secret@localhost/secpi-testdrive" in app_log
+    assert "Connecting to database postgresql://secpi:secret@localhost/secpi-testdrive" in app_log
     assert "Initializing Webserver" in app_log
     assert "Connecting to AMQP broker <URLParameters host=localhost port=5672 virtual_host=/ ssl=False>" in app_log
     assert "Connecting to AMQP broker successful" in app_log
     assert "AMQP: Connected to broker" in app_log
 
     # TODO: Occasionally missing?
-    assert "Serving on http://localhost:16677" in app_log
+    # assert "Serving on http://localhost:16677" in app_log
+    assert "Serving on http://0.0.0.0:16677" in app_log
     assert "ENGINE Bus STARTED" in app_log
 
     assert "Got message on operational endpoint: {'action': 'shutdown'}" in app_log
@@ -74,7 +76,7 @@ def test_webinterface_with_activate(webinterface_service):
     app_log = webinterface_service.read_log()
 
     # Verify everything is in place.
-    assert "Activating setup id=1" in app_log
+    assert "Activating setup id=" in app_log
     assert (
         """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': True}"""
         in app_log
@@ -84,7 +86,7 @@ def test_webinterface_with_activate(webinterface_service):
         in app_log
     )
 
-    assert "Deactivating setup id=1" in app_log
+    assert "Deactivating setup id=" in app_log
     assert (
         """Publishing message. queue=secpi-on_off, message={'setup_name': 'secpi-testing', 'active_state': False}"""
         in app_log
@@ -93,6 +95,44 @@ def test_webinterface_with_activate(webinterface_service):
         """Activate/deactivate successful: SuccessfulResponse(message="Deactivating setup 'secpi-testing' succeeded")"""
         in app_log
     )
+
+
+def test_webinterface_create_worker(webinterface_service):
+    """
+    Start Webinterface, create, activate, and deactivate setup. Verify that the log output matches the expectations.
+    """
+
+    baseurl = webinterface_service.BASEURL
+
+    # Create a setup.
+    requests.post(url=f"{baseurl}/workers/add", json={"name": "testdrive-worker", "address": "127.0.0.1"})
+    response = requests.get(url=f"{baseurl}/workers/list").json()
+    setup_identifier = response["data"][0]["id"]
+
+def test_webinterface_create_zone(webinterface_service):
+    """
+    Start Webinterface, create, activate, and deactivate setup. Verify that the log output matches the expectations.
+    """
+
+    baseurl = webinterface_service.BASEURL
+
+    # Create a setup.
+    requests.post(url=f"{baseurl}/zones/add", json={"name": "testdrive-zone"})
+    response = requests.get(url=f"{baseurl}/zones/list").json()
+    setup_identifier = response["data"][0]["id"]
+
+def test_webinterface_create_sensor(webinterface_service):
+    """
+    Start Webinterface, create, activate, and deactivate setup. Verify that the log output matches the expectations.
+    """
+
+    baseurl = webinterface_service.BASEURL
+
+    # Create a setup.
+    requests.post(url=f"{baseurl}/sensors/add", json={"name": "testdrive-sensor", "zone_id": 1, "worker_id": 1,
+                                                      "cl": "TCPPortListener", "module": "network"})
+    response = requests.get(url=f"{baseurl}/sensors/list").json()
+    setup_identifier = response["data"][0]["id"]
 
 
 def test_webinterface_version_in_footer(webinterface_service):
